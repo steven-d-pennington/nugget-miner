@@ -107,15 +107,20 @@ export const mockExtractionProvider: ExtractionProvider = {
       throw new ProviderError('Mock extraction fixture failed.');
     }
     const first = firstSpan(transcript);
-    const result = {
+    const result = parseExtractionResult({
       summary: `${presetLabel(context.preset)} summary: ${spanSnippet(transcript, first.span).slice(0, 180)}`,
       nuggets: makeNuggets(transcript, context.preset),
       actions: makeActions(transcript, context.preset),
       questions: makeQuestions(transcript),
       tags: tagWords(transcript.text),
       warnings: transcript.text.length < 40 ? ['Transcript is short; suggestions may be sparse.'] : [],
+    });
+    return {
+      result,
+      provider: this.id,
+      promptVersion: PROMPT_VERSION,
+      model: 'deterministic-mock',
     };
-    return parseExtractionResult(result);
   },
 };
 

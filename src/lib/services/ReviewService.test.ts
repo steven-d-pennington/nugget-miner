@@ -1,9 +1,19 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { db, resetClientDatabaseForTests } from '@/lib/db';
 import { actionItemRepository, extractionRunRepository, ideaRepository, nuggetRepository, questionRepository, transcriptRepository } from '@/lib/repositories';
 import { ReviewService } from './ReviewService';
 
+const cloudResult = {
+  summary: 'Cloud summary',
+  nuggets: [{ title: 'Cloud nugget', category: 'idea', confidence: 0.8, sourceSpan: { start: 0, end: 10 } }],
+  actions: [],
+  questions: [],
+  tags: ['cloud'],
+  warnings: [],
+};
+
 afterEach(async () => {
+  vi.restoreAllMocks();
   await resetClientDatabaseForTests();
 });
 
@@ -53,5 +63,18 @@ describe('ReviewService', () => {
 
     expect(second.run.id).not.toBe(first.run.id);
     await expect(db.extractionRuns.where('ideaId').equals(idea.id).count()).resolves.toBe(2);
+  });
+
+  it('runs cloud extraction through the same persistence path after consent', async () => {
+    const { idea } = await seedTranscribedIdea('We should extract this with the real model.');
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ result: cloudResult, provider: 'cloud', model: 'gpt-test', promptVersion: 'extract-product-idea-v1' }), { status: 200 }),
+    );
+
+    const snapshot = await ReviewService.runCloudExtraction({ ideaId: idea.id, preset: 'product-idea', requestConsent: async () => true });
+
+    expect(snapshot.run).toMatchObject({ provider: 'cloud', promptVersion: 'extract-product-idea-v1', preset: 'product-idea' });
+    expect(snapshot.nuggets[0]).toMatchObject({ title: 'Cloud nugget', status: 'pending' });
+    await expect(ideaRepository.getById(idea.id)).resolves.toMatchObject({ status: 'reviewed' });
   });
 });

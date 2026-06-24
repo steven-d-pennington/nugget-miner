@@ -26,10 +26,11 @@ describe('mockExtractionProvider', () => {
     const second = await mockExtractionProvider.extract(input);
 
     expect(second).toEqual(first);
-    expect(first.summary).toContain('Product idea');
-    expect(first.nuggets.length).toBeGreaterThanOrEqual(2);
-    expect(first.actions[0]?.sourceSpan.end).toBeGreaterThan(first.actions[0]?.sourceSpan.start ?? 0);
-    expect(first.questions[0]?.text).toContain('?');
+    expect(first.result.summary).toContain('Product idea');
+    expect(first.result.nuggets.length).toBeGreaterThanOrEqual(2);
+    expect(first.result.actions[0]?.sourceSpan.end).toBeGreaterThan(first.result.actions[0]?.sourceSpan.start ?? 0);
+    expect(first.result.questions[0]?.text).toContain('?');
+    expect(first).toMatchObject({ provider: 'mock', promptVersion: 'mock-extraction-v1' });
   });
 
   it('varies output by preset', async () => {
@@ -37,7 +38,7 @@ describe('mockExtractionProvider', () => {
     const general = await mockExtractionProvider.extract({ ideaId: 'idea-1', transcript: base, context: { preset: 'general-thought' } });
     const work = await mockExtractionProvider.extract({ ideaId: 'idea-1', transcript: base, context: { preset: 'work-reminder' } });
 
-    expect(general.summary).not.toBe(work.summary);
-    expect(work.actions[0]?.priority).toBe('high');
+    expect(general.result.summary).not.toBe(work.result.summary);
+    expect(work.result.actions[0]?.priority).toBe('high');
   });
 });

@@ -1,9 +1,12 @@
-# Vercel transcription environment
+# Vercel AI provider environment
 
-Nugget's real transcription path is server-only. The browser sends audio to
-`/api/transcribe` only after explicit consent, and the route reads provider
-credentials from Vercel environment variables. Provider keys must never be placed
-in client code, IndexedDB, localStorage, screenshots, commits, or chat logs.
+Nugget's cloud AI paths are server-only and consent-gated:
+
+- `/api/transcribe` sends audio to the configured transcription provider.
+- `/api/extract` sends transcript text to the configured LLM provider.
+
+Provider keys must never be placed in client code, IndexedDB, localStorage,
+screenshots, commits, or chat logs.
 
 ## Check current project env
 
@@ -11,7 +14,7 @@ in client code, IndexedDB, localStorage, screenshots, commits, or chat logs.
 vercel env ls
 ```
 
-## Required API key
+## Transcription env
 
 Preferred:
 
@@ -21,7 +24,7 @@ vercel env add NUGGET_TRANSCRIPTION_API_KEY preview
 vercel env add NUGGET_TRANSCRIPTION_API_KEY development
 ```
 
-Compatible fallback if the project already uses OpenAI naming:
+Compatible fallback:
 
 ```bash
 vercel env add OPENAI_API_KEY production
@@ -29,7 +32,7 @@ vercel env add OPENAI_API_KEY preview
 vercel env add OPENAI_API_KEY development
 ```
 
-## Optional provider settings
+Optional transcription settings:
 
 | Purpose | Preferred | Fallback | Default |
 | --- | --- | --- | --- |
@@ -37,6 +40,32 @@ vercel env add OPENAI_API_KEY development
 | Model | `NUGGET_TRANSCRIPTION_MODEL` | `OPENAI_TRANSCRIPTION_MODEL` | `whisper-1` |
 | Timeout | `NUGGET_TRANSCRIPTION_TIMEOUT_MS` | — | `60000` |
 | Max upload bytes | `NUGGET_TRANSCRIPTION_MAX_BYTES` | — | `26214400` |
+
+## LLM extraction env
+
+Preferred:
+
+```bash
+vercel env add NUGGET_LLM_API_KEY production
+vercel env add NUGGET_LLM_API_KEY preview
+vercel env add NUGGET_LLM_API_KEY development
+```
+
+Compatible fallbacks, in order:
+
+```text
+OPENAI_API_KEY
+NUGGET_TRANSCRIPTION_API_KEY
+```
+
+Optional LLM settings:
+
+| Purpose | Preferred | Fallback | Default |
+| --- | --- | --- | --- |
+| Base URL | `NUGGET_LLM_BASE_URL` | `OPENAI_BASE_URL` | `https://api.openai.com/v1` |
+| Model | `NUGGET_LLM_MODEL` | `OPENAI_MODEL` | `gpt-4o-mini` |
+| Timeout | `NUGGET_LLM_TIMEOUT_MS` | — | `45000` |
+| Max transcript chars | `NUGGET_LLM_MAX_INPUT_CHARS` | — | `24000` |
 
 ## Pull env locally for manual smoke tests
 

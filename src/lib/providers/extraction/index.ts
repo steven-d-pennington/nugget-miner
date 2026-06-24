@@ -1,3 +1,4 @@
+import { cloudExtractionProvider } from './cloudProvider';
 import { mockExtractionProvider } from './mockProvider';
 import type { ExtractionProvider } from './types';
 
@@ -16,6 +17,8 @@ export function listExtractionProviders() {
 }
 
 registerExtractionProvider(mockExtractionProvider);
+registerExtractionProvider(cloudExtractionProvider);
 
+export { cloudExtractionProvider, createCloudExtractionProvider } from './cloudProvider';
 export { mockExtractionProvider } from './mockProvider';
-export type { ExtractionContext, ExtractionProvider, ExtractionProviderInput } from './types';
+export type { ExtractionContext, ExtractionProvider, ExtractionProviderInput, ExtractionProviderOutput } from './types';
