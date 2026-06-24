@@ -18,6 +18,6 @@ describe('HomeScreen', () => {
 
     expect(await screen.findByRole('button', { name: 'Record' })).toBeInTheDocument();
     expect(screen.getAllByText(/local-only/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Mock transcription runs locally/i)).toBeInTheDocument();
+    expect(screen.getByText(/Mock transcription stays local/i)).toBeInTheDocument();
   });
 });

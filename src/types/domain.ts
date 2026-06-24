@@ -43,6 +43,7 @@ export interface Transcript {
   language?: string;
   confidence?: number;
   provider: string;
+  model?: string;
   jobId?: string;
   edited: boolean;
   createdAt: number;
@@ -63,4 +64,5 @@ export interface TranscriptResult {
   language?: string;
   confidence?: number;
   provider: string;
+  model?: string;
 }
