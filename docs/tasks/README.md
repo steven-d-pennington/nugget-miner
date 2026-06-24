@@ -1,44 +1,69 @@
 # Nugget — Task Documents
 
-These task documents decompose the [Nugget PRD](../../Nugget_PRD.md) into
-individual, actionable work items. The breakdown follows the PRD's **Epic
-Backlog** (PRD §19), with each task cross-referencing the relevant functional
-requirements (§9), non-functional requirements (§10), data model (§11),
-delivery milestones (§18), and MVP acceptance criteria (§17).
+Executable decomposition of the [Nugget PRD](../../Nugget_PRD.md) into product
+foundation docs plus per-epic, agent-actionable task files.
 
-## How to use
+## Read this first
 
-Each task doc is self-contained and aimed at a coding agent or contributor. It
-lists scope, the PRD requirements it satisfies, acceptance criteria,
-implementation notes, a Definition of Done, and dependencies on other epics.
+Before picking up any task, read the product foundation docs — every task assumes
+them:
 
-## Index
+1. [`product/00-product-spec.md`](../product/00-product-spec.md) — resolved
+   product decisions (PRD §22) + feature catalog (F-1…F-10).
+2. [`product/01-architecture.md`](../product/01-architecture.md) — stack, folder
+   structure, service/provider contracts, conventions.
+3. [`product/02-data-model.md`](../product/02-data-model.md) — Dexie schema,
+   types, indexes, relationships, migrations.
+4. [`product/03-ux-guidelines.md`](../product/03-ux-guidelines.md) — IA, screens,
+   states, copy, accessibility.
 
-| Task | Epic | Theme | Priority | Milestone |
-| --- | --- | --- | --- | --- |
-| [EPIC-01](./EPIC-01-pwa-foundation.md) | PWA foundation | Installable shell, routing, offline, theme | P0 | M1 |
-| [EPIC-02](./EPIC-02-local-data-layer.md) | Local data layer | Dexie schema, repositories, migrations, seed/reset | P0 | M1 |
-| [EPIC-03](./EPIC-03-recorder.md) | Recorder | Mic permission, record/stop/save/delete, level meter, playback | P0 | M2 |
-| [EPIC-04](./EPIC-04-idea-library.md) | Idea library | Inbox/list, detail, edit, archive/delete, tags/projects | P0 | M2–M3 |
-| [EPIC-05](./EPIC-05-processing-queue.md) | Processing queue | Job model, statuses, retry/cancel, mock wiring | P0 | M3 |
-| [EPIC-06](./EPIC-06-transcription.md) | Transcription | Provider contract, mock output, editable transcript | P0 | M3, M5 |
-| [EPIC-07](./EPIC-07-extraction.md) | Extraction | Provider contract, schema validation, mock, review UI | P0 | M3, M5 |
-| [EPIC-08](./EPIC-08-actions.md) | Actions | Action CRUD, filters, status workflow, source links | P0 | M3 |
-| [EPIC-09](./EPIC-09-search-export.md) | Search / export | Local search, Markdown/JSON export, import | P0 | M4 |
-| [EPIC-10](./EPIC-10-privacy-settings.md) | Privacy / settings | Consent gates, privacy status, retention, reset, vault | P0 | M1, M5 |
-| [EPIC-11](./EPIC-11-quality.md) | Quality | Unit/integration/a11y/offline/privacy tests, QA matrix | P0 | M4 + continuous |
+## How tasks are structured
 
-## Milestone roadmap (PRD §18)
+Each epic is a folder with a `README.md` (goal, DoD, task table, sequencing) and
+`TASK-XX-YY-*.md` files. Every task is self-contained: **objective, dependencies,
+implementation steps, files to create/modify, contracts touched, testable
+acceptance criteria, test requirements, and out-of-scope.** An agent should be
+able to complete a task end-to-end from the task + the four product docs without
+product clarification.
 
-- **M1 — App shell & storage foundation:** EPIC-01, EPIC-02, parts of EPIC-10.
-- **M2 — Recording MVP:** EPIC-03, parts of EPIC-04.
-- **M3 — Mock processing & review:** EPIC-05, EPIC-06, EPIC-07, EPIC-08.
-- **M4 — Search, export & polish:** EPIC-09, EPIC-11.
-- **M5 — Real provider integration beta:** EPIC-06/EPIC-07 real adapters, EPIC-10 consent/rate limits.
+Task IDs: `TASK-<epic>-<seq>`. Priorities: P0 (MVP), P1 (MVP/beta), P2 (later).
 
-## Priority legend (PRD §9)
+## Epics
 
-- **P0** — required for MVP.
-- **P1** — important, target within MVP/beta.
-- **P2** — later phase / post-V1.
+| Epic | Theme | Milestone | Tasks |
+| --- | --- | --- | --- |
+| [EPIC-01](./EPIC-01-pwa-foundation/) | PWA foundation | M1 | 6 |
+| [EPIC-02](./EPIC-02-local-data-layer/) | Local data layer | M1 | 8 |
+| [EPIC-03](./EPIC-03-recorder/) | Recorder | M2 | 7 |
+| [EPIC-04](./EPIC-04-idea-library/) | Idea library | M2–M3 | 7 |
+| [EPIC-05](./EPIC-05-processing-queue/) | Processing queue | M3 | 5 |
+| [EPIC-06](./EPIC-06-transcription/) | Transcription | M3 / M5 | 6 |
+| [EPIC-07](./EPIC-07-extraction/) | Extraction | M3 / M5 | 7 |
+| [EPIC-08](./EPIC-08-actions/) | Actions | M3 | 5 |
+| [EPIC-09](./EPIC-09-search-export/) | Search & export | M4 | 7 |
+| [EPIC-10](./EPIC-10-privacy-settings/) | Privacy & settings | M1 / M5 | 8 |
+| [EPIC-11](./EPIC-11-quality/) | Quality | M4 + continuous | 7 |
+
+## Build order (milestones, PRD §18)
+
+- **M1 — App shell & storage:** EPIC-01, EPIC-02, EPIC-10 (10-01/10-02).
+- **M2 — Recording MVP:** EPIC-03, EPIC-04 (list/detail).
+- **M3 — Mock processing & review:** EPIC-05, EPIC-06 (mock), EPIC-07 (mock), EPIC-08.
+- **M4 — Search, export & polish:** EPIC-09, EPIC-11 suites.
+- **M5 — Real providers (beta):** EPIC-06/07 cloud adapters, EPIC-10 (10-07 guards).
+
+## Critical dependency spine
+
+```
+EPIC-01 ─▶ EPIC-02 ─▶ EPIC-03 ─▶ EPIC-04
+                 └▶ EPIC-05 ─▶ EPIC-06 ─▶ EPIC-07 ─▶ EPIC-08
+                 └▶ EPIC-09        EPIC-10 (consent gates 05/06/07 cloud)
+EPIC-11 spans all.
+```
+
+## Acceptance-criteria coverage (PRD §17)
+
+AC-001/002 → EPIC-03 · AC-003 → EPIC-04 · AC-004 → EPIC-10 · AC-005 → EPIC-05 ·
+AC-006 → EPIC-06 · AC-007 → EPIC-07/08 · AC-008/009 → EPIC-09 · AC-010 →
+EPIC-04/02. Verification owned by [EPIC-11](./EPIC-11-quality/).
 </content>
