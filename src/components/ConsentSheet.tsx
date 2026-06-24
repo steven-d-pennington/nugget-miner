@@ -22,14 +22,14 @@ export function ConsentSheet({ open, dataLabel, providerLabel, purpose, busy = f
         role="dialog"
       >
         <p className="mb-2 inline-flex rounded-full border border-accent/40 px-3 py-1 text-sm text-accent">Cloud processing consent</p>
-        <h2 id="consent-title" className="text-2xl font-semibold">Send audio for transcription?</h2>
+        <h2 id="consent-title" className="text-2xl font-semibold">Send for cloud processing?</h2>
         <div className="mt-4 space-y-3 text-muted">
           <p>
             Nugget will send this <strong className="text-text">{dataLabel}</strong> to{' '}
             <strong className="text-text">{providerLabel}</strong> to {purpose}.
           </p>
-          <p>Cancel sends nothing. The transcript returned by the provider is stored only in this browser&apos;s local IndexedDB.</p>
-          <p>Nugget does not put provider keys in the browser and does not persist audio on the server route.</p>
+          <p>Cancel sends nothing. The result returned by the provider is stored only in this browser&apos;s local IndexedDB.</p>
+          <p>Nugget does not put provider keys in the browser and does not persist request payloads on server routes.</p>
         </div>
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button className="rounded-full border border-white/20 px-5 py-3 font-semibold disabled:opacity-50" disabled={busy} onClick={onCancel} type="button">

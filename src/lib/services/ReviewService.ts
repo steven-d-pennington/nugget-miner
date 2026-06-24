@@ -1,5 +1,6 @@
 import { ProviderError } from '@/lib/errors';
-import { mockExtractionPromptVersion, mockExtractionProvider } from '@/lib/providers/extraction/mockProvider';
+import { cloudExtractionProvider } from '@/lib/providers/extraction/cloudProvider';
+import { mockExtractionProvider } from '@/lib/providers/extraction/mockProvider';
 import { actionItemRepository, extractionRunRepository, ideaRepository, nuggetRepository, questionRepository, transcriptRepository } from '@/lib/repositories';
 import { parseExtractionResult } from '@/lib/validation/extractionResult';
 import type { ActionItem, ExtractionPreset, ExtractionRun, Nugget, Question } from '@/types';
@@ -11,44 +12,83 @@ export interface ReviewSnapshot {
   actions: ReturnType<typeof parseExtractionResult>['actions'];
 }
 
-export interface RunMockExtractionInput {
+export interface RunExtractionInput {
   ideaId: string;
   preset?: ExtractionPreset;
+}
+
+export interface RunCloudExtractionInput extends RunExtractionInput {
+  requestConsent: () => Promise<boolean>;
 }
 
 function defaultPreset(preset?: ExtractionPreset): ExtractionPreset {
   return preset ?? 'general-thought';
 }
 
+async function persistExtractionOutput(
+  ideaId: string,
+  transcriptId: string,
+  preset: ExtractionPreset,
+  output: Awaited<ReturnType<typeof mockExtractionProvider.extract>>,
+): Promise<ReviewSnapshot> {
+  const run = await extractionRunRepository.create({
+    ideaId,
+    transcriptId,
+    provider: output.provider,
+    preset,
+    promptVersion: output.promptVersion,
+    result: output.result,
+  });
+  const [nuggets, questions] = await Promise.all([
+    nuggetRepository.createMany(ideaId, run.id, output.result.nuggets),
+    questionRepository.createMany(ideaId, run.id, output.result.questions),
+  ]);
+  await ideaRepository.updateStatus(ideaId, 'reviewed');
+  return { run, nuggets, questions, actions: output.result.actions };
+}
+
+async function getTranscriptOrThrow(ideaId: string) {
+  const transcript = await transcriptRepository.getByIdeaId(ideaId);
+  if (!transcript) {
+    throw new ProviderError('A transcript is required before extraction.');
+  }
+  return transcript;
+}
+
 export const ReviewService = {
-  async runMockExtraction({ ideaId, preset }: RunMockExtractionInput): Promise<ReviewSnapshot> {
-    const transcript = await transcriptRepository.getByIdeaId(ideaId);
-    if (!transcript) {
-      throw new ProviderError('A transcript is required before extraction.');
-    }
+  async runMockExtraction({ ideaId, preset }: RunExtractionInput): Promise<ReviewSnapshot> {
+    const resolvedPreset = defaultPreset(preset);
+    const transcript = await getTranscriptOrThrow(ideaId);
 
     await ideaRepository.updateStatus(ideaId, 'extracting');
 
     try {
-      const result = await mockExtractionProvider.extract({
+      const output = await mockExtractionProvider.extract({
         ideaId,
         transcript,
-        context: { preset: defaultPreset(preset) },
+        context: { preset: resolvedPreset },
       });
-      const run = await extractionRunRepository.create({
+      return await persistExtractionOutput(ideaId, transcript.id, resolvedPreset, output);
+    } catch (error) {
+      await ideaRepository.updateStatus(ideaId, 'failed');
+      throw error;
+    }
+  },
+
+  async runCloudExtraction({ ideaId, preset, requestConsent }: RunCloudExtractionInput): Promise<ReviewSnapshot> {
+    const resolvedPreset = defaultPreset(preset);
+    const transcript = await getTranscriptOrThrow(ideaId);
+
+    await ideaRepository.updateStatus(ideaId, 'extracting');
+
+    try {
+      const output = await cloudExtractionProvider.extract({
         ideaId,
-        transcriptId: transcript.id,
-        provider: mockExtractionProvider.id,
-        preset: defaultPreset(preset),
-        promptVersion: mockExtractionPromptVersion,
-        result,
+        transcript,
+        context: { preset: resolvedPreset },
+        requestConsent,
       });
-      const [nuggets, questions] = await Promise.all([
-        nuggetRepository.createMany(ideaId, run.id, result.nuggets),
-        questionRepository.createMany(ideaId, run.id, result.questions),
-      ]);
-      await ideaRepository.updateStatus(ideaId, 'reviewed');
-      return { run, nuggets, questions, actions: result.actions };
+      return await persistExtractionOutput(ideaId, transcript.id, resolvedPreset, output);
     } catch (error) {
       await ideaRepository.updateStatus(ideaId, 'failed');
       throw error;

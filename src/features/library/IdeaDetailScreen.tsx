@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { AudioPlayer } from '@/components/AudioPlayer';
+import { ConsentSheet } from '@/components/ConsentSheet';
 import { ideaRepository, recordingRepository, transcriptRepository } from '@/lib/repositories';
 import { ReviewService } from '@/lib/services/ReviewService';
 import type { Idea, Recording, Transcript } from '@/types';
@@ -31,6 +32,7 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
   const [loading, setLoading] = useState(true);
   const [saved, setSaved] = useState(false);
   const [extracting, setExtracting] = useState(false);
+  const [cloudConsentOpen, setCloudConsentOpen] = useState(false);
   const [extractionError, setExtractionError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -58,7 +60,7 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
     window.setTimeout(() => setSaved(false), 1600);
   }
 
-  async function extractNuggets() {
+  async function extractMockNuggets() {
     setExtracting(true);
     setExtractionError(null);
     try {
@@ -67,6 +69,30 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
       router.push(`/review/${ideaId}`);
     } catch (error) {
       setExtractionError(error instanceof Error ? error.message : 'Extraction failed.');
+    } finally {
+      setExtracting(false);
+    }
+  }
+
+  function requestCloudExtraction() {
+    setExtractionError(null);
+    setCloudConsentOpen(true);
+  }
+
+  async function confirmCloudExtraction() {
+    setCloudConsentOpen(false);
+    setExtracting(true);
+    setExtractionError(null);
+    try {
+      await transcriptRepository.updateText(ideaId, draftText);
+      await ReviewService.runCloudExtraction({
+        ideaId,
+        preset: 'general-thought',
+        requestConsent: async () => true,
+      });
+      router.push(`/review/${ideaId}`);
+    } catch (error) {
+      setExtractionError(error instanceof Error ? error.message : 'Cloud extraction failed.');
     } finally {
       setExtracting(false);
     }
@@ -116,7 +142,7 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
       <section className="rounded-[var(--radius)] border border-white/10 bg-surface p-6" aria-labelledby="transcript-heading">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h2 id="transcript-heading" className="text-xl font-semibold">Transcript</h2>
-          <span className="w-fit rounded-full border border-accent/40 px-3 py-1 text-sm text-accent">On this device (mock)</span>
+          <span className="w-fit rounded-full border border-accent/40 px-3 py-1 text-sm text-accent">On this device</span>
         </div>
         {transcript ? (
           <>
@@ -126,12 +152,15 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
               value={draftText}
               onChange={(event) => setDraftText(event.target.value)}
             />
-            <div className="mt-4 flex items-center gap-3">
+            <div className="mt-4 flex flex-wrap items-center gap-3">
               <button className="rounded-full bg-accent px-5 py-3 font-semibold text-black" onClick={saveTranscript} type="button">
                 Save transcript edit
               </button>
-              <button className="rounded-full bg-success px-5 py-3 font-semibold text-black disabled:opacity-50" disabled={extracting} onClick={extractNuggets} type="button">
+              <button className="rounded-full bg-success px-5 py-3 font-semibold text-black disabled:opacity-50" disabled={extracting} onClick={extractMockNuggets} type="button">
                 {extracting ? 'Extracting…' : 'Extract Nuggets'}
+              </button>
+              <button className="rounded-full border border-success/50 px-5 py-3 font-semibold text-success disabled:opacity-50" disabled={extracting} onClick={requestCloudExtraction} type="button">
+                Extract with LLM
               </button>
               {saved ? <span className="text-sm text-success">Saved</span> : null}
             </div>
@@ -144,6 +173,15 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
           </div>
         )}
       </section>
+      <ConsentSheet
+        open={cloudConsentOpen}
+        dataLabel="transcript text"
+        providerLabel="OpenAI-compatible LLM extraction"
+        purpose="extract nuggets, actions, and questions"
+        busy={extracting}
+        onCancel={() => setCloudConsentOpen(false)}
+        onConfirm={confirmCloudExtraction}
+      />
     </main>
   );
 }
