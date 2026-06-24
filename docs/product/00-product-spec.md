@@ -155,5 +155,7 @@ consent. Core flows pass manual QA on iPhone Safari/PWA and one desktop browser.
   indexes, relationships, migration strategy.
 - [`03-ux-guidelines.md`](./03-ux-guidelines.md) — design tokens, navigation,
   component/state/empty/error conventions, accessibility, copy.
+- [`04-llm-layer.md`](./04-llm-layer.md) — server-only LLM/model calls, prompt
+  versioning, structured JSON handling, and provider-error normalization.
 - [`../tasks/`](../tasks/README.md) — per-epic folders of executable task docs.
 </content>

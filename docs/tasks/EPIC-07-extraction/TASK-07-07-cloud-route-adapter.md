@@ -1,7 +1,7 @@
 # TASK-07-07 — `/api/extract` route + cloud adapter (M5)
 
-> Epic: EPIC-07 · Priority: P1 (M5) · Est: M · Depends on: 07-01, EPIC-10
-> PRD: §13, §15, NFR-002 · Docs: [architecture §5–6](../../product/01-architecture.md)
+> Epic: EPIC-07 · Priority: P1 (M5) · Est: M · Depends on: 07-01, 07-08, EPIC-10
+> PRD: §13, §15, NFR-002 · Docs: [architecture §5–6](../../product/01-architecture.md), [LLM layer](../../product/04-llm-layer.md)
 
 ## Objective
 

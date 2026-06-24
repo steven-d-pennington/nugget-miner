@@ -56,6 +56,7 @@ src/
     repositories/           # One repository per aggregate (ideaRepository, etc.)
     services/               # RecorderService, ProcessingQueue, ReviewService, ExportService, SearchService
     providers/              # transcription/ and extraction/ adapters (mock + real)
+    llm/                    # Server-only model client, prompt registry, structured JSON helpers
     validation/             # Zod schemas (extractionResult, importPayload, ...)
     privacy/                # consent + privacy-mode helpers
   types/                    # Domain types (Idea, Recording, Transcript, ...)
@@ -72,8 +73,9 @@ src/
 3. **Repositories are the only code that imports the Dexie instance.**
 4. **Providers are reached only through their interface** (`TranscriptionProvider`,
    `ExtractionProvider`) — never imported concretely by UI.
-5. **API routes are thin**: validate input (size/type/Zod), call provider, sanitize
-   errors, return typed JSON. No persistence (PRD §13/§15).
+5. **API routes are thin**: validate input (size/type/Zod), call provider or the
+   server-only LLM layer, sanitize errors, return typed JSON. No persistence
+   (PRD §13/§15).
 
 ## 3. Core service contracts
 

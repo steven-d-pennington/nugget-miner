@@ -27,9 +27,10 @@ that turns suggestions into accepted, source-linked records.
 | [TASK-07-04](./TASK-07-04-review-service.md) | ReviewService (raw → pending → accepted) | 07-03 |
 | [TASK-07-05](./TASK-07-05-review-ui.md) | Nugget Review UI (accept/edit/reject/regenerate) | 07-04, EPIC-04 |
 | [TASK-07-06](./TASK-07-06-presets.md) | Extraction presets (P1) | 07-02 |
-| [TASK-07-07](./TASK-07-07-cloud-route-adapter.md) | `/api/extract` + cloud adapter (M5) | 07-01, EPIC-10 |
+| [TASK-07-07](./TASK-07-07-cloud-route-adapter.md) | `/api/extract` + cloud adapter (M5) | 07-01, 07-08, EPIC-10 |
+| [TASK-07-08](./TASK-07-08-llm-layer.md) | Server-only LLM prompt/model layer | 07-01 |
 
 ## Sequencing
 
-07-01 → 07-02 → 07-03 → 07-04 → 07-05; 07-06 (P1) and 07-07 (M5) after 07-02/01.
+07-01 → 07-02 → 07-03 → 07-04 → 07-05; 07-06 (P1) after 07-02; 07-08 after 07-01; 07-07 (M5) after 07-08 + EPIC-10.
 </content>

@@ -10,6 +10,7 @@ Planning and implementation docs derived from the
   - [`01-architecture.md`](./product/01-architecture.md) — stack, structure, contracts, conventions
   - [`02-data-model.md`](./product/02-data-model.md) — Dexie schema, types, migrations
   - [`03-ux-guidelines.md`](./product/03-ux-guidelines.md) — IA, screens, states, a11y, copy
+  - [`04-llm-layer.md`](./product/04-llm-layer.md) — server-only model client, prompt registry, structured JSON handling
 - **[`tasks/`](./tasks/README.md)** — per-epic folders of executable, agent-ready
   task documents (EPIC-01 … EPIC-11).
 - `design/` — deep-dive design notes created by specific tasks (e.g. encrypted vault).

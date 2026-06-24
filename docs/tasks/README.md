@@ -16,6 +16,8 @@ them:
    types, indexes, relationships, migrations.
 4. [`product/03-ux-guidelines.md`](../product/03-ux-guidelines.md) — IA, screens,
    states, copy, accessibility.
+5. [`product/04-llm-layer.md`](../product/04-llm-layer.md) — server-only LLM
+   model client, prompt versioning, and structured JSON conventions.
 
 ## How tasks are structured
 
@@ -23,7 +25,7 @@ Each epic is a folder with a `README.md` (goal, DoD, task table, sequencing) and
 `TASK-XX-YY-*.md` files. Every task is self-contained: **objective, dependencies,
 implementation steps, files to create/modify, contracts touched, testable
 acceptance criteria, test requirements, and out-of-scope.** An agent should be
-able to complete a task end-to-end from the task + the four product docs without
+able to complete a task end-to-end from the task + the product docs without
 product clarification.
 
 Task IDs: `TASK-<epic>-<seq>`. Priorities: P0 (MVP), P1 (MVP/beta), P2 (later).
@@ -38,7 +40,7 @@ Task IDs: `TASK-<epic>-<seq>`. Priorities: P0 (MVP), P1 (MVP/beta), P2 (later).
 | [EPIC-04](./EPIC-04-idea-library/) | Idea library | M2–M3 | 7 |
 | [EPIC-05](./EPIC-05-processing-queue/) | Processing queue | M3 | 5 |
 | [EPIC-06](./EPIC-06-transcription/) | Transcription | M3 / M5 | 6 |
-| [EPIC-07](./EPIC-07-extraction/) | Extraction | M3 / M5 | 7 |
+| [EPIC-07](./EPIC-07-extraction/) | Extraction | M3 / M5 | 8 |
 | [EPIC-08](./EPIC-08-actions/) | Actions | M3 | 5 |
 | [EPIC-09](./EPIC-09-search-export/) | Search & export | M4 | 7 |
 | [EPIC-10](./EPIC-10-privacy-settings/) | Privacy & settings | M1 / M5 | 8 |
