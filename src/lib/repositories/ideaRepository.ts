@@ -57,4 +57,10 @@ export const ideaRepository = {
   async updateStatus(id: string, status: IdeaStatus): Promise<void> {
     await db.ideas.update(id, { status, updatedAt: now() });
   },
+
+  async incrementActionCount(id: string): Promise<void> {
+    const idea = await this.getById(id);
+    if (!idea) return;
+    await db.ideas.update(id, { actionCount: idea.actionCount + 1, updatedAt: now() });
+  },
 };

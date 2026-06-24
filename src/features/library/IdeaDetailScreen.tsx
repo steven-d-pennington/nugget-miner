@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { AudioPlayer } from '@/components/AudioPlayer';
 import { ideaRepository, recordingRepository, transcriptRepository } from '@/lib/repositories';
+import { ReviewService } from '@/lib/services/ReviewService';
 import type { Idea, Recording, Transcript } from '@/types';
 
 function formatDuration(durationMs: number) {
@@ -21,12 +23,15 @@ function formatDate(timestamp: number) {
 }
 
 export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
+  const router = useRouter();
   const [idea, setIdea] = useState<Idea | null>(null);
   const [recording, setRecording] = useState<Recording | undefined>();
   const [transcript, setTranscript] = useState<Transcript | undefined>();
   const [draftText, setDraftText] = useState('');
   const [loading, setLoading] = useState(true);
   const [saved, setSaved] = useState(false);
+  const [extracting, setExtracting] = useState(false);
+  const [extractionError, setExtractionError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -51,6 +56,20 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
     setSaved(true);
     await load();
     window.setTimeout(() => setSaved(false), 1600);
+  }
+
+  async function extractNuggets() {
+    setExtracting(true);
+    setExtractionError(null);
+    try {
+      await transcriptRepository.updateText(ideaId, draftText);
+      await ReviewService.runMockExtraction({ ideaId, preset: 'general-thought' });
+      router.push(`/review/${ideaId}`);
+    } catch (error) {
+      setExtractionError(error instanceof Error ? error.message : 'Extraction failed.');
+    } finally {
+      setExtracting(false);
+    }
   }
 
   if (loading) {
@@ -111,8 +130,12 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
               <button className="rounded-full bg-accent px-5 py-3 font-semibold text-black" onClick={saveTranscript} type="button">
                 Save transcript edit
               </button>
+              <button className="rounded-full bg-success px-5 py-3 font-semibold text-black disabled:opacity-50" disabled={extracting} onClick={extractNuggets} type="button">
+                {extracting ? 'Extracting…' : 'Extract Nuggets'}
+              </button>
               {saved ? <span className="text-sm text-success">Saved</span> : null}
             </div>
+            {extractionError ? <p className="mt-3 rounded-xl border border-danger/40 bg-danger/10 p-3 text-sm text-danger">{extractionError}</p> : null}
             <p className="mt-3 text-sm text-muted">Provider: {transcript.provider}{transcript.model ? ` · Model: ${transcript.model}` : ''}{transcript.edited ? ' · edited' : ''}</p>
           </>
         ) : (
