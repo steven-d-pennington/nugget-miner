@@ -15,6 +15,7 @@ export const transcriptRepository = {
         language: result.language,
         confidence: result.confidence,
         provider: result.provider,
+        model: result.model,
         edited: existing?.edited ?? false,
         createdAt: existing?.createdAt ?? timestamp,
         updatedAt: timestamp,

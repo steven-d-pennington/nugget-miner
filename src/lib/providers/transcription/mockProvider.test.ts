@@ -15,7 +15,12 @@ describe('mockTranscriptionProvider', () => {
       createdAt: 1,
     };
 
-    const result = await mockTranscriptionProvider.transcribe({ ideaId: 'idea-1', recording });
+    const result = await mockTranscriptionProvider.transcribe({
+      ideaId: 'idea-1',
+      recordingId: recording.id,
+      audioBlob: recording.blob,
+      recording,
+    });
 
     expect(result.provider).toBe('mock');
     expect(result.text).toContain('Mock transcript');

@@ -113,7 +113,7 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
               </button>
               {saved ? <span className="text-sm text-success">Saved</span> : null}
             </div>
-            <p className="mt-3 text-sm text-muted">Provider: {transcript.provider}{transcript.edited ? ' · edited' : ''}</p>
+            <p className="mt-3 text-sm text-muted">Provider: {transcript.provider}{transcript.model ? ` · Model: ${transcript.model}` : ''}{transcript.edited ? ' · edited' : ''}</p>
           </>
         ) : (
           <div className="mt-4 rounded-2xl border border-dashed border-white/20 p-6 text-muted">

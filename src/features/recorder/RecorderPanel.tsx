@@ -1,9 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { ConsentSheet } from '@/components/ConsentSheet';
 import { useRecorder } from '@/hooks/useRecorder';
-import { saveRecording } from './saveRecording';
+import { cloudTranscriptionProvider, type PublicTranscriptionConfig } from '@/lib/providers/transcription/cloudProvider';
+import { saveRecording, type TranscriptionMode } from './saveRecording';
 
 function formatDuration(durationMs: number) {
   const seconds = Math.max(0, Math.round(durationMs / 1000));
@@ -12,18 +14,44 @@ function formatDuration(durationMs: number) {
   return `${minutes}:${remainder.toString().padStart(2, '0')}`;
 }
 
+function missingConfigMessage(config: PublicTranscriptionConfig | null) {
+  const missing = config?.missing?.length ? config.missing.join(', ') : 'apiKey';
+  return `Real transcription is not configured on the server yet. Missing: ${missing}. Add NUGGET_TRANSCRIPTION_API_KEY or OPENAI_API_KEY in Vercel.`;
+}
+
 export function RecorderPanel({ onSaved }: { onSaved?: () => void }) {
   const router = useRouter();
   const recorder = useRecorder();
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [consentOpen, setConsentOpen] = useState(false);
+  const [cloudConfig, setCloudConfig] = useState<PublicTranscriptionConfig | null>(null);
+  const [cloudConfigLoading, setCloudConfigLoading] = useState(true);
 
-  async function persist(transcribe: boolean) {
+  useEffect(() => {
+    let active = true;
+    cloudTranscriptionProvider
+      .getConfig()
+      .then((config) => {
+        if (active) setCloudConfig(config);
+      })
+      .catch(() => {
+        if (active) setCloudConfig({ available: false, missing: ['apiKey'] });
+      })
+      .finally(() => {
+        if (active) setCloudConfigLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  async function persist(transcriptionMode: TranscriptionMode) {
     if (!recorder.draft) return;
     setSaving(true);
     setSaveError(null);
     try {
-      const { idea } = await saveRecording({ draft: recorder.draft, transcribe });
+      const { idea } = await saveRecording({ draft: recorder.draft, transcriptionMode });
       onSaved?.();
       router.push(`/idea/${idea.id}`);
     } catch (caught) {
@@ -33,16 +61,31 @@ export function RecorderPanel({ onSaved }: { onSaved?: () => void }) {
     }
   }
 
+  function requestRealTranscription() {
+    if (!cloudConfig?.available) {
+      setSaveError(missingConfigMessage(cloudConfig));
+      return;
+    }
+    setSaveError(null);
+    setConsentOpen(true);
+  }
+
+  async function confirmRealTranscription() {
+    setConsentOpen(false);
+    await persist('cloud');
+  }
+
   const isRecording = recorder.state === 'recording';
   const canStart = (recorder.state === 'idle' || recorder.state === 'error') && !recorder.draft;
+  const cloudAvailable = cloudConfig?.available === true;
 
   return (
     <section className="rounded-[var(--radius)] border border-white/10 bg-surface p-5 shadow-2xl shadow-black/20" aria-labelledby="record-heading">
       <div className="flex flex-col gap-4">
         <div>
-          <p className="mb-2 inline-flex rounded-full border border-accent/40 px-3 py-1 text-sm text-accent">Local-only prototype</p>
+          <p className="mb-2 inline-flex rounded-full border border-accent/40 px-3 py-1 text-sm text-accent">Local-first prototype</p>
           <h2 id="record-heading" className="text-2xl font-semibold">Record a thought</h2>
-          <p className="mt-2 text-muted">Stored on this device. Mock transcription runs locally and never calls a cloud service.</p>
+          <p className="mt-2 text-muted">Stored on this device. Mock transcription stays local; real transcription asks consent before sending audio to the configured provider.</p>
         </div>
 
         <div className="rounded-2xl bg-[var(--surface-2)] p-4" aria-live="polite">
@@ -61,6 +104,9 @@ export function RecorderPanel({ onSaved }: { onSaved?: () => void }) {
 
         {recorder.error ? <p className="rounded-xl border border-danger/40 bg-danger/10 p-3 text-sm text-danger">{recorder.error}</p> : null}
         {saveError ? <p className="rounded-xl border border-danger/40 bg-danger/10 p-3 text-sm text-danger">{saveError}</p> : null}
+        {recorder.draft && !cloudConfigLoading && !cloudAvailable ? (
+          <p className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-muted">{missingConfigMessage(cloudConfig)}</p>
+        ) : null}
 
         <div className="flex flex-wrap gap-3">
           {canStart ? (
@@ -75,10 +121,18 @@ export function RecorderPanel({ onSaved }: { onSaved?: () => void }) {
           ) : null}
           {recorder.draft ? (
             <>
-              <button className="rounded-full bg-accent px-6 py-3 font-semibold text-black disabled:opacity-50" disabled={saving} onClick={() => persist(true)} type="button">
+              <button className="rounded-full bg-accent px-6 py-3 font-semibold text-black disabled:opacity-50" disabled={saving} onClick={() => persist('mock')} type="button">
                 Save & Mock Transcribe
               </button>
-              <button className="rounded-full border border-white/20 px-6 py-3 font-semibold disabled:opacity-50" disabled={saving} onClick={() => persist(false)} type="button">
+              <button
+                className="rounded-full bg-success px-6 py-3 font-semibold text-black disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={saving || cloudConfigLoading || !cloudAvailable}
+                onClick={requestRealTranscription}
+                type="button"
+              >
+                Save & Real Transcribe
+              </button>
+              <button className="rounded-full border border-white/20 px-6 py-3 font-semibold disabled:opacity-50" disabled={saving} onClick={() => persist('none')} type="button">
                 Save Only
               </button>
               <button className="rounded-full border border-danger/50 px-6 py-3 font-semibold text-danger disabled:opacity-50" disabled={saving} onClick={recorder.discard} type="button">
@@ -88,6 +142,15 @@ export function RecorderPanel({ onSaved }: { onSaved?: () => void }) {
           ) : null}
         </div>
       </div>
+      <ConsentSheet
+        open={consentOpen}
+        dataLabel="audio recording"
+        providerLabel={cloudConfig?.providerLabel ?? 'configured transcription provider'}
+        purpose="generate a transcript"
+        busy={saving}
+        onCancel={() => setConsentOpen(false)}
+        onConfirm={confirmRealTranscription}
+      />
     </section>
   );
 }
