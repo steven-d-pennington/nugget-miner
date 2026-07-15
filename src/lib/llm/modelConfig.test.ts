@@ -26,6 +26,10 @@ describe('resolveLlmConfig', () => {
   it('falls back to existing OpenAI-compatible keys and reports missing apiKey', () => {
     const fallbackKey = ['transcription', 'key'].join('-');
     expect(resolveLlmConfig({ NUGGET_TRANSCRIPTION_API_KEY: fallbackKey }).apiKey).toBe(fallbackKey);
-    expect(resolveLlmConfig({}).missing).toEqual(['apiKey']);
+    expect(resolveLlmConfig({})).toMatchObject({
+      missing: ['apiKey'],
+      model: 'gpt-5.6',
+      timeoutMs: 90_000,
+    });
   });
 });

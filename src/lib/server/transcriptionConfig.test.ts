@@ -9,7 +9,7 @@ describe('resolveTranscriptionConfig', () => {
     expect(config.missing).toEqual(['apiKey']);
     expect(config.apiKey).toBeUndefined();
     expect(config.baseUrl).toBe('https://api.openai.com/v1');
-    expect(config.model).toBe('whisper-1');
+    expect(config.model).toBe('gpt-4o-mini-transcribe');
     expect(config.timeoutMs).toBe(60_000);
     expect(config.maxBytes).toBe(26_214_400);
   });

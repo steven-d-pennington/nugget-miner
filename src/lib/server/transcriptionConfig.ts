@@ -12,7 +12,7 @@ export interface TranscriptionConfig {
 type EnvLike = Partial<Record<string, string | undefined>>;
 
 const DEFAULT_BASE_URL = 'https://api.openai.com/v1';
-const DEFAULT_MODEL = 'whisper-1';
+const DEFAULT_MODEL = 'gpt-4o-mini-transcribe';
 const DEFAULT_TIMEOUT_MS = 60_000;
 const DEFAULT_MAX_BYTES = 26_214_400;
 
