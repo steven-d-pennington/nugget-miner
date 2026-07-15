@@ -36,9 +36,13 @@ export function HomeScreen() {
             <p className="text-sm uppercase tracking-[0.3em] text-accent">Nugget</p>
             <h1 className="mt-2 text-4xl font-bold tracking-tight">Capture first. Organize later.</h1>
           </div>
-          <span className="w-fit rounded-full border border-success/40 px-3 py-1 text-sm text-success">Local-only</span>
+          <span className="w-fit rounded-full border border-success/40 px-3 py-1 text-sm text-success">
+            Local storage
+          </span>
         </div>
-        <p className="max-w-2xl text-muted">Record a thought. Nugget will save the audio locally and create a deterministic mock transcript so the first vertical slice is usable without cloud processing.</p>
+        <p className="max-w-2xl text-muted">
+          Recordings and saved ideas stay in this browser. When you choose cloud processing, audio or transcript text is sent securely to the configured provider.
+        </p>
       </header>
 
       <RecorderPanel onSaved={loadIdeas} />

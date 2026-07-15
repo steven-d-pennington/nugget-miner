@@ -13,11 +13,13 @@ vi.mock('next/navigation', () => ({
 }));
 
 describe('HomeScreen', () => {
-  it('renders local-only record affordance', async () => {
+  it('describes local storage and cloud processing accurately', async () => {
     render(<HomeScreen />);
 
     expect(await screen.findByRole('button', { name: 'Record' })).toBeInTheDocument();
-    expect(screen.getAllByText(/local-only/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Mock transcription stays local/i)).toBeInTheDocument();
+    expect(screen.getByText('Local storage')).toBeInTheDocument();
+    expect(screen.getByText(/when you choose cloud processing/i)).toBeInTheDocument();
+    expect(screen.queryByText('Local-only')).not.toBeInTheDocument();
+    expect(screen.queryByText(/everything stays on your device/i)).not.toBeInTheDocument();
   });
 });

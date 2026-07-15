@@ -51,6 +51,10 @@ describe('RecorderPanel real transcription affordance', () => {
   it('shows mock and real transcription actions for a stopped draft', async () => {
     render(<RecorderPanel />);
 
+    expect(screen.getByText('Saved locally first')).toBeInTheDocument();
+    expect(screen.getByText(/configured cloud provider/i)).toBeInTheDocument();
+    expect(screen.queryByText('Local-only')).not.toBeInTheDocument();
+    expect(screen.queryByText(/everything stays on your device/i)).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /save & mock transcribe/i })).toBeInTheDocument();
     expect(await screen.findByRole('button', { name: /save & real transcribe/i })).toBeInTheDocument();
   });

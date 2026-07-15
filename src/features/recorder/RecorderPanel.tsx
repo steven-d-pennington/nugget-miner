@@ -83,9 +83,13 @@ export function RecorderPanel({ onSaved }: { onSaved?: () => void }) {
     <section className="rounded-[var(--radius)] border border-white/10 bg-surface p-5 shadow-2xl shadow-black/20" aria-labelledby="record-heading">
       <div className="flex flex-col gap-4">
         <div>
-          <p className="mb-2 inline-flex rounded-full border border-accent/40 px-3 py-1 text-sm text-accent">Local-first prototype</p>
+          <p className="mb-2 inline-flex rounded-full border border-accent/40 px-3 py-1 text-sm text-accent">
+            Saved locally first
+          </p>
           <h2 id="record-heading" className="text-2xl font-semibold">Record a thought</h2>
-          <p className="mt-2 text-muted">Stored on this device. Mock transcription stays local; real transcription asks consent before sending audio to the configured provider.</p>
+          <p className="mt-2 text-muted">
+            Your recording is saved in this browser before processing. Real transcription sends audio to the configured cloud provider after consent.
+          </p>
         </div>
 
         <div className="rounded-2xl bg-[var(--surface-2)] p-4" aria-live="polite">
