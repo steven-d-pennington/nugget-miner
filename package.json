@@ -5,6 +5,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:e2e": "node scripts/generate-test-tone.mjs && playwright test",
+    "test:e2e:ui": "node scripts/generate-test-tone.mjs && playwright test --ui",
     "eval:live": "vitest run --config vitest.live.config.ts",
     "check": "npm run typecheck && npm run lint && npm test && npm run build"
   },
@@ -19,6 +21,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "@next/eslint-plugin-next": "^16.2.9",
+    "@playwright/test": "1.61.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
     "@types/node": "^24.10.1",
