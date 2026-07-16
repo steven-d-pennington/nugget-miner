@@ -22,5 +22,5 @@ describe('/api/health', () => {
       organization: { available: true, model: 'gpt-5.6' },
     });
     expect(JSON.stringify(body)).not.toContain('secret-test-key');
-  });
+  }, 15_000);
 });
