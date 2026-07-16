@@ -8,13 +8,13 @@ import {
   type CanonicalFixture,
   type ScoredEvalCase,
 } from './scoring';
+import { LIVE_FIXTURE_DEADLINE_MS, resolveAuthorizedLiveConfig } from './liveConfig';
 import { sha256Text } from '@/lib/crypto/contentHash';
 import { DEFAULT_CATEGORIES } from '@/lib/db/defaultCategories';
 import {
   createOpenAIModelClient,
   getOrganizationPrompt,
   getSegmentationPrompt,
-  resolveLlmConfig,
 } from '@/lib/llm';
 import { ORGANIZATION_PROMPT_VERSION } from '@/lib/llm/organizationPrompt';
 import { SEGMENTATION_PROMPT_VERSION } from '@/lib/llm/segmentationPrompt';
@@ -30,35 +30,9 @@ import {
   segmentationResultSchema,
 } from '@/lib/validation/segmentationResult';
 
-const OFFICIAL_OPENAI_BASE_URL = 'https://api.openai.com/v1';
-const REQUIRED_MODEL = 'gpt-5.6';
-const REQUIRED_REASONING_EFFORT = 'medium';
 const EVAL_SAFETY_IDENTIFIER = '00000000-0000-4000-8000-000000000007';
 const REPORT_PATH = path.join(process.cwd(), 'docs', 'evals', 'latest.json');
 const canonicalFixtures = canonicalFixturesJson as CanonicalFixture[];
-
-function resolveAuthorizedLiveConfig() {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error(
-      'OPENAI_API_KEY is required for the live evaluation. Set it only in the current shell or local secret manager.',
-    );
-  }
-
-  const config = resolveLlmConfig();
-  if (config.baseUrl !== OFFICIAL_OPENAI_BASE_URL) {
-    throw new Error(`Live evaluation requires the official OpenAI base URL: ${OFFICIAL_OPENAI_BASE_URL}.`);
-  }
-  if (config.model !== REQUIRED_MODEL) {
-    throw new Error(`Live evaluation requires model ${REQUIRED_MODEL}.`);
-  }
-  if (config.reasoningEffort !== REQUIRED_REASONING_EFFORT) {
-    throw new Error(`Live evaluation requires ${REQUIRED_REASONING_EFFORT} reasoning effort.`);
-  }
-  if (!config.available || !config.apiKey) {
-    throw new Error('The production LLM configuration did not resolve an API key.');
-  }
-  return config;
-}
 
 describe.sequential('live GPT-5.6 canonical extraction evaluation', () => {
   let config!: ReturnType<typeof resolveAuthorizedLiveConfig>;
@@ -77,7 +51,7 @@ describe.sequential('live GPT-5.6 canonical extraction evaluation', () => {
   beforeAll(() => {
     config = resolveAuthorizedLiveConfig();
     client = createOpenAIModelClient({
-      apiKey: config.apiKey!,
+      apiKey: config.apiKey,
       baseUrl: config.baseUrl,
       model: config.model,
       timeoutMs: config.timeoutMs,
@@ -87,50 +61,58 @@ describe.sequential('live GPT-5.6 canonical extraction evaluation', () => {
 
   for (const fixture of canonicalFixtures) {
     it(`extracts and organizes ${fixture.id}`, async () => {
-      const transcriptHash = await sha256Text(fixture.transcript);
-      const segmentPrompt = getSegmentationPrompt({
-        transcriptHash,
-        transcriptText: fixture.transcript,
-      });
-      const segmentResponse = await client.generateStructured({
-        schema: segmentationResultSchema,
-        schemaName: 'SegmentationResult',
-        promptVersion: segmentPrompt.promptVersion,
-        system: segmentPrompt.system,
-        user: segmentPrompt.user,
-        safetyIdentifier: EVAL_SAFETY_IDENTIFIER,
-        maxOutputTokens: 1800,
-      });
-      const segmentation = normalizeSegmentationSpans(
-        fixture.transcript,
-        parseSegmentationResult(segmentResponse.parsed),
-      );
+      const abortController = new AbortController();
+      const deadline = setTimeout(() => abortController.abort(), LIVE_FIXTURE_DEADLINE_MS);
+      try {
+        const transcriptHash = await sha256Text(fixture.transcript);
+        const segmentPrompt = getSegmentationPrompt({
+          transcriptHash,
+          transcriptText: fixture.transcript,
+        });
+        const segmentResponse = await client.generateStructured({
+          schema: segmentationResultSchema,
+          schemaName: 'SegmentationResult',
+          promptVersion: segmentPrompt.promptVersion,
+          system: segmentPrompt.system,
+          user: segmentPrompt.user,
+          safetyIdentifier: EVAL_SAFETY_IDENTIFIER,
+          maxOutputTokens: 1800,
+          signal: abortController.signal,
+        });
+        const segmentation = normalizeSegmentationSpans(
+          fixture.transcript,
+          parseSegmentationResult(segmentResponse.parsed),
+        );
 
-      const organizePrompt = getOrganizationPrompt({
-        candidates: segmentation.ideas,
-        categories: DEFAULT_CATEGORIES,
-      });
-      const organizationResponse = await client.generateStructured({
-        schema: organizationResultSchema,
-        schemaName: 'OrganizationResult',
-        promptVersion: organizePrompt.promptVersion,
-        system: organizePrompt.system,
-        user: organizePrompt.user,
-        safetyIdentifier: EVAL_SAFETY_IDENTIFIER,
-        maxOutputTokens: 4000,
-      });
-      const organization = parseOrganizationResult(organizationResponse.parsed);
-      validateOrganizationGrounding(segmentation, organization);
+        const organizePrompt = getOrganizationPrompt({
+          candidates: segmentation.ideas,
+          categories: DEFAULT_CATEGORIES,
+        });
+        const organizationResponse = await client.generateStructured({
+          schema: organizationResultSchema,
+          schemaName: 'OrganizationResult',
+          promptVersion: organizePrompt.promptVersion,
+          system: organizePrompt.system,
+          user: organizePrompt.user,
+          safetyIdentifier: EVAL_SAFETY_IDENTIFIER,
+          maxOutputTokens: 4000,
+          signal: abortController.signal,
+        });
+        const organization = parseOrganizationResult(organizationResponse.parsed);
+        validateOrganizationGrounding(segmentation, organization);
 
-      cases.push({ fixture, segmentation, organization });
-      modelResults.push({
-        fixtureId: fixture.id,
-        transcriptHash,
-        segmentationResponseId: segmentResponse.responseId,
-        organizationResponseId: organizationResponse.responseId,
-        segmentation,
-        organization,
-      });
+        cases.push({ fixture, segmentation, organization });
+        modelResults.push({
+          fixtureId: fixture.id,
+          transcriptHash,
+          segmentationResponseId: segmentResponse.responseId,
+          organizationResponseId: organizationResponse.responseId,
+          segmentation,
+          organization,
+        });
+      } finally {
+        clearTimeout(deadline);
+      }
     }, 180_000);
   }
 

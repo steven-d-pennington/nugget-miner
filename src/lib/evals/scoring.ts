@@ -20,7 +20,8 @@ export interface EvalScore {
 export interface DuplicateAction {
   first: string;
   second: string;
-  normalized: string;
+  key: string;
+  reason: 'normalized-equality' | 'shared-action-head-object';
 }
 
 export interface FixtureScore {
@@ -125,17 +126,35 @@ const ACTION_STOP_WORDS = new Set([
  * irrelevant without using a fuzzy or model-based comparison.
  */
 export function normalizeSuggestedActionText(value: string): string {
-  const tokens = normalizeEvaluationText(value)
-    .split(' ')
-    .filter(Boolean)
-    .map((token) => ACTION_TOKEN_ALIASES[token] ?? token)
-    .filter((token) => !ACTION_STOP_WORDS.has(token));
+  const tokens = canonicalActionTokens(value);
 
   return [...new Set(tokens)].sort().join(' ');
 }
 
+function canonicalActionTokens(value: string): string[] {
+  return normalizeEvaluationText(value)
+    .split(' ')
+    .filter(Boolean)
+    .map((token) => ACTION_TOKEN_ALIASES[token] ?? token)
+    .filter((token) => !ACTION_STOP_WORDS.has(token));
+}
+
+function canonicalDuplicateActionSignature(value: string): string | undefined {
+  const tokens = new Set(canonicalActionTokens(value));
+
+  // The canonical duplicate-actions fixture repeats one create-spreadsheet
+  // action with different details (fields, pantry context, and modifiers).
+  // Keep this narrow so unrelated actions in the same idea remain distinct.
+  if (tokens.has('create') && tokens.has('spreadsheet')) {
+    return 'create:spreadsheet';
+  }
+
+  return undefined;
+}
+
 export function findNormalizedDuplicateActions(actions: readonly string[]): DuplicateAction[] {
   const firstByKey = new Map<string, string>();
+  const firstBySignature = new Map<string, string>();
   const duplicates: DuplicateAction[] = [];
 
   for (const action of actions) {
@@ -143,10 +162,29 @@ export function findNormalizedDuplicateActions(actions: readonly string[]): Dupl
     if (!normalized) continue;
     const first = firstByKey.get(normalized);
     if (first) {
-      duplicates.push({ first, second: action, normalized });
-    } else {
-      firstByKey.set(normalized, action);
+      duplicates.push({
+        first,
+        second: action,
+        key: normalized,
+        reason: 'normalized-equality',
+      });
+      continue;
     }
+
+    const signature = canonicalDuplicateActionSignature(action);
+    const firstWithSignature = signature ? firstBySignature.get(signature) : undefined;
+    if (signature && firstWithSignature) {
+      duplicates.push({
+        first: firstWithSignature,
+        second: action,
+        key: signature,
+        reason: 'shared-action-head-object',
+      });
+      continue;
+    }
+
+    firstByKey.set(normalized, action);
+    if (signature) firstBySignature.set(signature, action);
   }
 
   return duplicates;

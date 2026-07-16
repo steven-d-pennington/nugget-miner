@@ -260,7 +260,12 @@ describe('canonical fixture scoring', () => {
     expect(normalizeSuggestedActionText(first)).toBe('create pantry spreadsheet');
     expect(normalizeSuggestedActionText(second)).toBe('create pantry spreadsheet');
     expect(findNormalizedDuplicateActions([first, second])).toEqual([
-      { first, second, normalized: 'create pantry spreadsheet' },
+      {
+        first,
+        second,
+        key: 'create pantry spreadsheet',
+        reason: 'normalized-equality',
+      },
     ]);
 
     const result = scoreFixture(
@@ -279,6 +284,48 @@ describe('canonical fixture scoring', () => {
 
     expect(result.duplicateSuggestedActions).toHaveLength(1);
     expect(result.specialRequirementsPassed).toBe(false);
+  });
+
+  it('uses a scoped action-head/object signature for modifiers and the three canonical pantry phrasings', () => {
+    const actions = [
+      'Make a spreadsheet with the item, quantity, and expiration date.',
+      'Start a sheet listing those pantry fields.',
+      'Create the pantry spreadsheet.',
+    ];
+
+    expect(findNormalizedDuplicateActions(['Create a pantry spreadsheet.', 'Create a simple pantry spreadsheet.']))
+      .toEqual([
+        {
+          first: 'Create a pantry spreadsheet.',
+          second: 'Create a simple pantry spreadsheet.',
+          key: 'create:spreadsheet',
+          reason: 'shared-action-head-object',
+        },
+      ]);
+    expect(findNormalizedDuplicateActions(actions)).toEqual([
+      {
+        first: actions[0],
+        second: actions[1],
+        key: 'create:spreadsheet',
+        reason: 'shared-action-head-object',
+      },
+      {
+        first: actions[0],
+        second: actions[2],
+        key: 'create:spreadsheet',
+        reason: 'shared-action-head-object',
+      },
+    ]);
+  });
+
+  it('preserves genuinely different suggested actions', () => {
+    expect(
+      findNormalizedDuplicateActions([
+        'Create the pantry spreadsheet.',
+        'Measure the pantry shelves.',
+        'Review expiration dates every Friday.',
+      ]),
+    ).toEqual([]);
   });
 
   it('aggregates fixture-level counts while retaining diagnostic results', () => {
