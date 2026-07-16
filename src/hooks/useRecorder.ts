@@ -12,6 +12,7 @@ export function useRecorder() {
   const [draft, setDraft] = useState<RecordingDraft | null>(null);
   const [error, setError] = useState<string | null>(null);
   const startedAtRef = useRef<number | null>(null);
+  const startAttemptRef = useRef(0);
 
   if (!serviceRef.current && typeof window !== 'undefined') {
     serviceRef.current = new BrowserRecorderService();
@@ -33,6 +34,7 @@ export function useRecorder() {
 
   useEffect(() => {
     return () => {
+      startAttemptRef.current += 1;
       serviceRef.current?.cancel();
     };
   }, []);
@@ -40,15 +42,18 @@ export function useRecorder() {
   const start = useCallback(async () => {
     const service = serviceRef.current;
     if (!service) return;
+    const attempt = ++startAttemptRef.current;
     setError(null);
     setDraft(null);
     setState('requesting-permission');
     try {
       await service.start();
+      if (attempt !== startAttemptRef.current || service.state !== 'recording') return;
       startedAtRef.current = performance.now();
       setElapsedMs(0);
       setState(service.state);
     } catch (caught) {
+      if (attempt !== startAttemptRef.current) return;
       setError(caught instanceof Error ? caught.message : 'Recording failed.');
       setState('error');
     }
@@ -72,6 +77,7 @@ export function useRecorder() {
   }, []);
 
   const discard = useCallback(() => {
+    startAttemptRef.current += 1;
     serviceRef.current?.cancel();
     setDraft(null);
     setElapsedMs(0);

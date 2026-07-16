@@ -22,10 +22,10 @@ function storageMessage(error: unknown) {
 }
 
 export interface RecorderPanelProps {
-  onRecordingChange?: (active: boolean) => void;
+  onCaptureLockChange?: (locked: boolean) => void;
 }
 
-export function RecorderPanel({ onRecordingChange }: RecorderPanelProps) {
+export function RecorderPanel({ onCaptureLockChange }: RecorderPanelProps) {
   const router = useRouter();
   const recorder = useRecorder();
   const [saving, setSaving] = useState(false);
@@ -33,22 +33,23 @@ export function RecorderPanel({ onRecordingChange }: RecorderPanelProps) {
   const [followupError, setFollowupError] = useState<string | null>(null);
   const savingRef = useRef(false);
   const isRecording = recorder.state === 'recording' || recorder.state === 'stopping';
+  const captureLocked = recorder.state === 'requesting-permission' || isRecording || saving || Boolean(recorder.draft);
 
   useWakeLock(recorder.state === 'recording');
 
   useEffect(() => {
-    onRecordingChange?.(isRecording);
-  }, [isRecording, onRecordingChange]);
+    onCaptureLockChange?.(captureLocked);
+  }, [captureLocked, onCaptureLockChange]);
 
   useEffect(() => {
-    if (!isRecording && !saving && !recorder.draft) return;
+    if (!captureLocked) return;
     const protectUnsavedWork = (event: BeforeUnloadEvent) => {
       event.preventDefault();
       event.returnValue = '';
     };
     window.addEventListener('beforeunload', protectUnsavedWork);
     return () => window.removeEventListener('beforeunload', protectUnsavedWork);
-  }, [isRecording, recorder.draft, saving]);
+  }, [captureLocked]);
 
   async function persistDraft(draft: RecordingDraft) {
     if (savingRef.current) return;
@@ -106,6 +107,17 @@ export function RecorderPanel({ onRecordingChange }: RecorderPanelProps) {
   }
 
   const canStart = (recorder.state === 'idle' || recorder.state === 'error') && !recorder.draft;
+
+  if (recorder.state === 'requesting-permission') {
+    return (
+      <section aria-labelledby="permission-heading" aria-live="polite" className="permission-state">
+        <p className="capture-hero__eyebrow">Microphone</p>
+        <h1 id="permission-heading">Requesting microphone access…</h1>
+        <p>Choose Allow in your browser to begin recording. Nothing is saved until recording starts.</p>
+        <button className="button-quiet" onClick={recorder.discard} type="button">Cancel</button>
+      </section>
+    );
+  }
 
   if (isRecording) {
     return (

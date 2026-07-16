@@ -8,11 +8,14 @@ const mocks = vi.hoisted(() => ({
   updateSettings: vi.fn(),
 }));
 
-vi.mock('@/components/AppShell', () => ({ AppShell: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/' }));
+vi.mock('@/lib/services/ProcessingService', () => ({
+  ProcessingService: { resumePending: vi.fn().mockResolvedValue(undefined) },
+}));
 vi.mock('./TextCaptureForm', () => ({ TextCaptureForm: () => <button type="button">Paste a ramble</button> }));
 vi.mock('./RecorderPanel', () => ({
-  RecorderPanel: ({ onRecordingChange }: { onRecordingChange: (active: boolean) => void }) => (
-    <button onClick={() => onRecordingChange(true)} type="button">Record</button>
+  RecorderPanel: ({ onCaptureLockChange }: { onCaptureLockChange: (active: boolean) => void }) => (
+    <button onClick={() => onCaptureLockChange(true)} type="button">Record</button>
   ),
 }));
 vi.mock('@/lib/repositories', () => ({
@@ -72,13 +75,36 @@ describe('HomeScreen capture hierarchy', () => {
   it('hides every secondary home surface while recording', async () => {
     render(<HomeScreen />);
     await screen.findByRole('heading', { name: 'Organize captures automatically' });
+    expect(screen.getByRole('link', { name: 'Nugget home' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Open settings' })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Primary' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Record' }));
 
+    expect(screen.queryByRole('link', { name: 'Nugget home' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Open settings' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Primary' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Paste a ramble' })).not.toBeInTheDocument();
     expect(screen.queryByText(/ready to review/)).not.toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Recent captures' })).not.toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Organize captures automatically' })).not.toBeInTheDocument();
+  });
+
+  it('labels a manual pasted transcript as saved rather than processing', async () => {
+    mocks.listRecent.mockResolvedValue([{
+      id: 'manual-text',
+      source: 'text',
+      processingState: 'transcript_ready',
+      processingPreference: 'manual',
+      createdAt: 1,
+    }]);
+    render(<HomeScreen />);
+
+    expect(await screen.findByRole('link', { name: /Pasted ramble.*Saved/ })).toHaveAttribute(
+      'href',
+      '/capture/manual-text',
+    );
+    expect(screen.queryByText('Processing')).not.toBeInTheDocument();
   });
 
   it('counts ready and partially confirmed captures and routes every recent item to /capture', async () => {

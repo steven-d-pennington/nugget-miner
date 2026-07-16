@@ -8,6 +8,7 @@ export interface AppShellProps {
   title?: string;
   backHref?: string;
   children: ReactNode;
+  showHeader?: boolean;
   showNavigation?: boolean;
 }
 
@@ -32,12 +33,13 @@ export function AppShell({
   title,
   backHref,
   children,
+  showHeader = true,
   showNavigation = true,
 }: AppShellProps) {
   return (
     <div className="app-shell">
       <ProcessingQueueRunner />
-      <header className="app-shell__header">
+      {showHeader ? <header className="app-shell__header">
         <div className="app-shell__header-inner">
           {backHref ? (
             <Link aria-label="Back" className="app-shell__icon-link" href={backHref}>
@@ -57,7 +59,7 @@ export function AppShell({
             <SettingsIcon />
           </Link>
         </div>
-      </header>
+      </header> : null}
 
       <main className="app-shell__main">{children}</main>
       {showNavigation ? <BottomNav /> : null}

@@ -64,6 +64,19 @@ describe('AppShell', () => {
     expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/ideas');
   });
 
+  it('can hide all interactive chrome while capture work is locked', () => {
+    render(
+      <AppShell showHeader={false} showNavigation={false}>
+        Requesting microphone access…
+      </AppShell>,
+    );
+
+    expect(screen.queryByRole('link', { name: 'Nugget home' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Open settings' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Primary' })).not.toBeInTheDocument();
+    expect(screen.getByRole('main')).toHaveTextContent('Requesting microphone access…');
+  });
+
   it('resumes pending work on mount, online, and visibility returning to visible', async () => {
     render(<AppShell>Capture</AppShell>);
     await waitFor(() => expect(resumePending).toHaveBeenCalledTimes(1));

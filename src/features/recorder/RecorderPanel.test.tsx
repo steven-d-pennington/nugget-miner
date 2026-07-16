@@ -36,7 +36,7 @@ vi.mock('@/lib/services/ProcessingService', () => ({
   ProcessingService: { process: (...args: unknown[]) => mocks.process(...args) },
 }));
 
-function setRecorder(state: 'idle' | 'recording' = 'idle') {
+function setRecorder(state: 'idle' | 'requesting-permission' | 'recording' = 'idle') {
   Object.assign(mocks.recorder, {
     state,
     elapsedMs: state === 'recording' ? 62_000 : 0,
@@ -92,6 +92,20 @@ describe('RecorderPanel mobile capture', () => {
     expect(screen.getByText('Saved on this device when you stop')).toBeInTheDocument();
     expect(screen.queryByText(/transcript/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/idea/i)).not.toBeInTheDocument();
+  });
+
+  it('locks capture while permission is pending and offers an owned cancellation path', async () => {
+    setRecorder('requesting-permission');
+    const onCaptureLockChange = vi.fn();
+    render(<RecorderPanel onCaptureLockChange={onCaptureLockChange} />);
+
+    expect(screen.getByRole('heading', { name: 'Requesting microphone access…' })).toBeInTheDocument();
+    expect(screen.getByText(/Choose Allow in your browser/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Record' })).not.toBeInTheDocument();
+    await waitFor(() => expect(onCaptureLockChange).toHaveBeenLastCalledWith(true));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(mocks.discard).toHaveBeenCalledTimes(1);
   });
 
   it('waits for durable storage before clearing, routing, or processing', async () => {

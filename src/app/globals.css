@@ -380,6 +380,29 @@ time {
   text-align: center;
 }
 
+.permission-state {
+  display: flex;
+  min-height: calc(100dvh - 6rem);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.permission-state h1 {
+  margin: 0.75rem 0 0;
+  font-size: clamp(2rem, 9vw, 3.25rem);
+  letter-spacing: -0.05em;
+  line-height: 1.05;
+}
+
+.permission-state p:not(.capture-hero__eyebrow) {
+  max-width: 28rem;
+  margin: 1rem 0 1.5rem;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
 .recording-state__timer {
   margin-top: 1rem;
   font-size: clamp(3.75rem, 18vw, 6.5rem);

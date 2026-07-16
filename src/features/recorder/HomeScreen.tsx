@@ -26,10 +26,11 @@ function statusLabel(capture: CaptureSession) {
       return 'Needs attention';
     case 'queued':
     case 'transcribing':
-    case 'transcript_ready':
     case 'segmenting':
     case 'organizing':
       return 'Processing';
+    case 'transcript_ready':
+      return capture.processingPreference === 'manual' ? 'Saved' : 'Processing';
     case 'confirmed':
       return 'Reviewed';
     default:
@@ -40,7 +41,7 @@ function statusLabel(capture: CaptureSession) {
 export function HomeScreen() {
   const [captures, setCaptures] = useState<CaptureSession[]>([]);
   const [settings, setSettings] = useState<AppSettings | null>(null);
-  const [recordingActive, setRecordingActive] = useState(false);
+  const [captureLocked, setCaptureLocked] = useState(false);
   const [preferenceError, setPreferenceError] = useState<string | null>(null);
   const [invitationDismissed, setInvitationDismissed] = useState(false);
 
@@ -79,11 +80,11 @@ export function HomeScreen() {
   }
 
   return (
-    <AppShell showNavigation={!recordingActive}>
+    <AppShell showHeader={!captureLocked} showNavigation={!captureLocked}>
       <div className="capture-home">
-        <RecorderPanel onRecordingChange={setRecordingActive} />
+        <RecorderPanel onCaptureLockChange={setCaptureLocked} />
 
-        {!recordingActive ? (
+        {!captureLocked ? (
           <>
             <Link
               aria-label={`${reviewReadyCount} ${reviewReadyCount === 1 ? 'capture' : 'captures'} ready to review`}
