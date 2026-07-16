@@ -108,6 +108,19 @@ describe('SettingsScreen', () => {
     expect(screen.getByText('Sample ideas are already loaded')).toBeInTheDocument();
   });
 
+  it('keeps the sample button label accurate while another local action is busy', async () => {
+    let finishExport: (() => void) | undefined;
+    buildFullExport.mockReturnValueOnce(new Promise((resolve) => { finishExport = () => resolve({ schemaVersion: 'nugget-full-export-v1', exportedAt: '2026-07-16T12:00:00.000Z' }); }));
+    render(<SettingsScreen />);
+
+    await screen.findByRole('button', { name: 'Load sample library' });
+    fireEvent.click(screen.getByRole('button', { name: 'Export all local data' }));
+    expect(screen.getByRole('button', { name: 'Load sample library' })).toBeDisabled();
+
+    finishExport?.();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Load sample library' })).toBeEnabled());
+  });
+
   it('requires exact ERASE plus a second destructive action', async () => {
     render(<SettingsScreen navigateToCapture={navigate} />);
     const input = screen.getByLabelText('Type ERASE exactly to continue');

@@ -60,6 +60,7 @@ export function SettingsScreen({
   const [eraseText, setEraseText] = useState('');
   const [eraseArmed, setEraseArmed] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [sampleLoading, setSampleLoading] = useState(false);
   const [storage, setStorage] = useState<StorageHealth>();
   const [storageBusy, setStorageBusy] = useState(false);
   const [message, setMessage] = useState<string>();
@@ -156,6 +157,7 @@ export function SettingsScreen({
 
   async function loadSampleLibrary() {
     setBusy(true);
+    setSampleLoading(true);
     setError(undefined);
     try {
       const result = await DemoDataService.seed();
@@ -164,6 +166,7 @@ export function SettingsScreen({
     } catch (cause) {
       showError(cause, () => void loadSampleLibrary());
     } finally {
+      setSampleLoading(false);
       setBusy(false);
     }
   }
@@ -270,7 +273,7 @@ export function SettingsScreen({
           <h2 className="mb-0 mt-2 text-xl font-bold text-[#101D36]" id="sample-library-heading">Sample library</h2>
           <p className="mb-0 mt-2 leading-6 text-[#6E6B67]">Adds three clearly labeled sample ideas to this browser so you can explore search, categories, actions, and export. It does not call GPT-5.6 and does not replace the live capture demo.</p>
           <button className="mt-4 min-h-12 rounded-full border border-[#E5A11A] px-5 font-extrabold text-[#101D36]" disabled={busy} onClick={() => void loadSampleLibrary()} type="button">
-            {busy ? 'Loading sample library…' : 'Load sample library'}
+            {sampleLoading ? 'Loading sample library…' : 'Load sample library'}
           </button>
         </section>
 

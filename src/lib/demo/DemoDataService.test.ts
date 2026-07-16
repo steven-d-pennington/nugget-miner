@@ -124,6 +124,30 @@ describe('DemoDataService.seed', () => {
     expect(await db.ideas.count()).toBe(4);
   });
 
+  it('reuses an existing normalized tag without changing the user tag row', async () => {
+    const existingCommunity = {
+      id: 'tag-user-community',
+      name: 'Community',
+      normalizedName: 'community',
+      createdAt: 42,
+    };
+    await db.tags.add(existingCommunity);
+
+    await expect(DemoDataService.seed()).resolves.toEqual({ created: true, captureId: 'demo-capture' });
+
+    const rows = await demoRows();
+    const toolSharingIdea = rows.ideas.find((idea) => idea.id === 'demo-idea-tool-sharing');
+    const allTags = await db.tags.toArray();
+    expect(await db.tags.get(existingCommunity.id)).toEqual(existingCommunity);
+    expect(await db.tags.where('normalizedName').equals('community').count()).toBe(1);
+    expect(new Set(allTags.map((tag) => tag.normalizedName)).size).toBe(allTags.length);
+    expect(toolSharingIdea?.tagIds).toContain(existingCommunity.id);
+    expect(toolSharingIdea?.tagIds).not.toContain('demo-tag-community');
+    expect(rows.tags).toHaveLength(5);
+    expect(rows.ideas).toHaveLength(3);
+    expect(rows.actions).toHaveLength(2);
+  });
+
   it('rolls back all sample rows when a seed write fails', async () => {
     const failure = new Error('sample ideas could not be written');
     vi.spyOn(db.ideas, 'bulkPut').mockRejectedValueOnce(failure);
