@@ -1,10 +1,13 @@
+import { Suspense } from 'react';
 import { AppShell } from '@/components/AppShell';
-import { ConfirmedIdeasPreview } from '@/features/library/ConfirmedIdeasPreview';
+import { IdeaLibraryScreen } from '@/features/library/IdeaLibraryScreen';
 
 export default function IdeasPage() {
   return (
     <AppShell title="Ideas">
-      <ConfirmedIdeasPreview />
+      <Suspense fallback={<p aria-live="polite">Loading your ideas…</p>}>
+        <IdeaLibraryScreen />
+      </Suspense>
     </AppShell>
   );
 }
