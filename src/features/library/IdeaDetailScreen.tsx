@@ -120,11 +120,25 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
+  const repositoryIdeaId = useMemo(() => {
+    try {
+      return decodeURIComponent(ideaId);
+    } catch {
+      return null;
+    }
+  }, [ideaId]);
+
   const load = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
     try {
-      const idea = await ideaRepository.getById(ideaId);
+      if (repositoryIdeaId === null) {
+        setBundle(null);
+        setForm(null);
+        return;
+      }
+
+      const idea = await ideaRepository.getById(repositoryIdeaId);
       if (!idea || (idea.status !== 'confirmed' && idea.status !== 'archived')) {
         setBundle(null);
         setForm(null);
@@ -162,7 +176,7 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
     } finally {
       setLoading(false);
     }
-  }, [ideaId]);
+  }, [repositoryIdeaId]);
 
   useEffect(() => {
     void load();
