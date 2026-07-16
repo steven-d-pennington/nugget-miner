@@ -38,13 +38,13 @@ export function TagEditor({ value, suggestions, onChange, disabled = false, erro
       setInputError(`Tags must be ${MAX_TAG_LENGTH} characters or fewer.`);
       return;
     }
-    if (value.length >= MAX_TAGS) {
-      setInputError(`Use up to ${MAX_TAGS} tags.`);
-      return;
-    }
     if (selected.has(normalized)) {
       setInput('');
       setInputError(null);
+      return;
+    }
+    if (value.length >= MAX_TAGS) {
+      setInputError(`Use up to ${MAX_TAGS} tags.`);
       return;
     }
     onChange([...value, name]);

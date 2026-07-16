@@ -213,6 +213,12 @@ describe('IdeaCandidateForm controlled draft', () => {
     }
     expect(readDraft().tagNames).toHaveLength(6);
 
+    fireEvent.change(input, { target: { value: 'COMMUNITY' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(readDraft().tagNames).toHaveLength(6);
+    expect(input).toHaveValue('');
+    expect(screen.queryByText('Use up to 6 tags.')).not.toBeInTheDocument();
+
     fireEvent.change(input, { target: { value: 'seventh tag' } });
     fireEvent.keyDown(input, { key: 'Enter' });
     expect(screen.getByText('Use up to 6 tags.')).toBeInTheDocument();
