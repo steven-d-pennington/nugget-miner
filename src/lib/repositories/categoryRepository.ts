@@ -51,6 +51,15 @@ export const categoryRepository = {
     return db.categories.orderBy('sortOrder').toArray();
   },
 
+  async countIdeasByCategory(): Promise<Map<string, number>> {
+    const ideas = await db.ideas.toArray();
+    const counts = new Map<string, number>();
+    for (const idea of ideas) {
+      counts.set(idea.categoryId, (counts.get(idea.categoryId) ?? 0) + 1);
+    }
+    return counts;
+  },
+
   async create(input: CreateCategoryInput): Promise<Category> {
     const { name, normalizedName } = validatedName(input.name);
     const description = validatedDescription(input.description);

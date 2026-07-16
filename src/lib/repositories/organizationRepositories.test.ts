@@ -67,6 +67,40 @@ describe('categoryRepository', () => {
     await expect(db.ideas.get(idea.id)).resolves.toMatchObject({ categoryId: DEFAULT_CATEGORY_IDS.misc });
     await expect(db.categories.get(custom.id)).resolves.toBeUndefined();
   });
+
+  it('counts every idea affected by category reassignment regardless of status', async () => {
+    await categoryRepository.ensureDefaults();
+    const timestamp = Date.now();
+    const baseIdea: Idea = {
+      id: 'idea-draft',
+      captureSessionId: 'capture-1',
+      status: 'draft',
+      title: 'Draft idea',
+      summary: { id: 'summary-draft', text: 'A draft idea.', basis: 'inferred', sourceSpanIds: [] },
+      goals: [],
+      blockers: [],
+      questions: [],
+      suggestedActions: [],
+      research: { needed: false, suggestedQueries: [], suggestedResourceTypes: [] },
+      categoryId: DEFAULT_CATEGORY_IDS.personal,
+      tagIds: [],
+      sourceSpans: [],
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    };
+    await db.ideas.bulkAdd([
+      baseIdea,
+      { ...baseIdea, id: 'idea-confirmed', status: 'confirmed', title: 'Confirmed idea' },
+      { ...baseIdea, id: 'idea-archived', status: 'archived', title: 'Archived idea' },
+      { ...baseIdea, id: 'idea-work', categoryId: DEFAULT_CATEGORY_IDS.work, title: 'Work idea' },
+    ]);
+
+    const counts = await categoryRepository.countIdeasByCategory();
+
+    expect(counts.get(DEFAULT_CATEGORY_IDS.personal)).toBe(3);
+    expect(counts.get(DEFAULT_CATEGORY_IDS.work)).toBe(1);
+    expect(counts.get(DEFAULT_CATEGORY_IDS.misc)).toBeUndefined();
+  });
 });
 
 describe('tagRepository', () => {
