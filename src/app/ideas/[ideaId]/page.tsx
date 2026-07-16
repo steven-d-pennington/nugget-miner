@@ -9,4 +9,3 @@ export default async function IdeaPage({ params }: { params: Promise<{ ideaId: s
     </AppShell>
   );
 }
-
