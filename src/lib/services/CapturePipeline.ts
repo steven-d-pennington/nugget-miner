@@ -234,7 +234,10 @@ async function materializeDraftIdeas(input: {
   for (const { candidate, segmented } of prepared) {
     const tags = await tagRepository.findOrCreate(candidate.tags);
     ideas.push({
-      id: crypto.randomUUID(),
+      // Provider candidate IDs are unique within a persisted organization run.
+      // Keeping this identity stable lets materialization recover without
+      // duplicating (or overwriting) an already-confirmed candidate.
+      id: `idea:${organizationRun.id}:${candidate.candidateId}`,
       captureSessionId: capture.id,
       extractionRunId: organizationRun.id,
       status: 'draft',

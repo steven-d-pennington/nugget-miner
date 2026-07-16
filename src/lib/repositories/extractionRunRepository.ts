@@ -54,24 +54,34 @@ export const extractionRunRepository = {
   },
 
   async complete(id: string, rawJson: string, latencyMs: number): Promise<void> {
-    await db.extractionRuns.update(id, {
-      rawJson,
-      latencyMs,
-      status: 'succeeded',
-      completedAt: Date.now(),
-      errorCode: undefined,
-    });
+    try {
+      await db.extractionRuns.update(id, {
+        rawJson,
+        latencyMs,
+        status: 'succeeded',
+        completedAt: Date.now(),
+        errorCode: undefined,
+      });
+    } catch (error) {
+      if (error instanceof StorageError) throw error;
+      throw new StorageError(error instanceof Error ? error.message : undefined);
+    }
   },
 
   async fail(id: string, errorCode: string, rawJson?: string): Promise<void> {
-    const existing = await db.extractionRuns.get(id);
-    if (!existing) return;
-    await db.extractionRuns.update(id, {
-      errorCode,
-      status: 'failed',
-      completedAt: Date.now(),
-      rawJson: existing.rawJson || rawJson || '',
-    });
+    try {
+      const existing = await db.extractionRuns.get(id);
+      if (!existing) return;
+      await db.extractionRuns.update(id, {
+        errorCode,
+        status: 'failed',
+        completedAt: Date.now(),
+        rawJson: existing.rawJson || rawJson || '',
+      });
+    } catch (error) {
+      if (error instanceof StorageError) throw error;
+      throw new StorageError(error instanceof Error ? error.message : undefined);
+    }
   },
 
   async getById(id: string): Promise<ExtractionRun | undefined> {

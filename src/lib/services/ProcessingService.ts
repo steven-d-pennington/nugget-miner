@@ -10,8 +10,31 @@ export interface ProcessCaptureOptions {
   signal?: AbortSignal;
 }
 
-export function createProcessingService(pipeline: CapturePipeline) {
-  const inFlight = new Map<string, Promise<void>>();
+const sameRealmInFlight = new Map<string, Promise<void>>();
+
+export interface ProcessingServiceCoordination {
+  /**
+   * Defaults to a module-shared map. Tests may provide an isolated map to
+   * model a second browser realm, where Web Locks becomes the coordinator.
+   */
+  inFlight?: Map<string, Promise<void>>;
+}
+
+async function runWithCaptureLock(captureSessionId: string, task: () => Promise<void>) {
+  const locks = typeof navigator === 'undefined' ? undefined : navigator.locks;
+  if (!locks) return task();
+  return locks.request(
+    `nugget:capture-processing:${captureSessionId}`,
+    { mode: 'exclusive' },
+    task,
+  );
+}
+
+export function createProcessingService(
+  pipeline: CapturePipeline,
+  coordination: ProcessingServiceCoordination = {},
+) {
+  const inFlight = coordination.inFlight ?? sameRealmInFlight;
 
   async function process(captureSessionId: string, options: ProcessCaptureOptions = {}) {
     const existing = inFlight.get(captureSessionId);
@@ -19,8 +42,12 @@ export function createProcessingService(pipeline: CapturePipeline) {
     // but it must never create overlapping writes/model calls for one capture.
     if (existing) return existing;
 
-    const work = pipeline.run(captureSessionId, options.signal).finally(() => {
-      if (inFlight.get(captureSessionId) === work) inFlight.delete(captureSessionId);
+    const work = runWithCaptureLock(captureSessionId, () =>
+      pipeline.run(captureSessionId, options.signal),
+    ).finally(() => {
+      if (inFlight.get(captureSessionId) === work) {
+        inFlight.delete(captureSessionId);
+      }
     });
     inFlight.set(captureSessionId, work);
     return work;

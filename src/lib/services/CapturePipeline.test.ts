@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { resetClientDatabaseForTests } from '@/lib/db';
+import { db, resetClientDatabaseForTests } from '@/lib/db';
 import { DEFAULT_CATEGORY_IDS } from '@/lib/db/defaultCategories';
 import { ProviderError } from '@/lib/errors';
 import { mockOrganizationProvider } from '@/lib/providers/extraction/mockProvider';
@@ -201,12 +201,22 @@ describe('CapturePipeline', () => {
     await pipeline.run(capture.id);
     const [draft] = await ideaRepository.listDraftsByCapture(capture.id);
     expect(draft).toBeDefined();
-    await ideaRepository.confirm(draft!.id, confirmationInput(draft!));
+    await ideaRepository.confirm(draft!.id, {
+      ...confirmationInput(draft!),
+      title: 'My edited family archive title',
+    });
 
     await pipeline.run(capture.id);
 
     const ideas = await ideaRepository.listByCapture(capture.id);
-    expect(ideas.find((idea) => idea.id === draft!.id)).toMatchObject({ status: 'confirmed' });
+    expect(ideas).toEqual([
+      expect.objectContaining({
+        id: draft!.id,
+        status: 'confirmed',
+        title: 'My edited family archive title',
+      }),
+    ]);
+    await expect(ideaRepository.listDraftsByCapture(capture.id)).resolves.toHaveLength(0);
   });
 
   it('changes only organization reuse when category classifier context changes', async () => {
@@ -265,6 +275,44 @@ describe('CapturePipeline', () => {
     await pipeline.run(capture.id);
 
     expect(base.segment).toHaveBeenCalledTimes(1);
+    expect(base.organize).toHaveBeenCalledTimes(1);
+    await expect(ideaRepository.listDraftsByCapture(capture.id)).resolves.toHaveLength(1);
+  });
+
+  it('classifies a run-completion storage failure as persistence and retries safely', async () => {
+    const { capture } = await textCapture('Build a neighborhood resource list.');
+    const base = instrumentedOrganizer();
+    const pipeline = createCapturePipeline({ organizationProvider: base.provider });
+    const update = vi
+      .spyOn(db.extractionRuns, 'update')
+      .mockRejectedValueOnce(new Error('IndexedDB completion write failed'));
+
+    await expect(pipeline.run(capture.id)).rejects.toThrow('IndexedDB completion write failed');
+    await expect(captureRepository.getById(capture.id)).resolves.toMatchObject({
+      processingState: 'failed',
+      recoverableStage: 'persistence',
+      lastError: { stage: 'persistence', code: 'persistence_failed', retryable: true },
+    });
+    const [failedRun] = await extractionRunRepository.listByCapture(capture.id);
+    expect(failedRun).toMatchObject({
+      stage: 'segmenting',
+      status: 'failed',
+      errorCode: 'persistence_failed',
+      attempt: 1,
+    });
+    expect(() => JSON.parse(failedRun!.rawJson)).not.toThrow();
+
+    update.mockRestore();
+    await pipeline.run(capture.id);
+
+    const segmentationRuns = (await extractionRunRepository.listByCapture(capture.id)).filter(
+      (run) => run.stage === 'segmenting',
+    );
+    expect(segmentationRuns).toMatchObject([
+      { status: 'failed', errorCode: 'persistence_failed', attempt: 1 },
+      { status: 'succeeded', attempt: 2 },
+    ]);
+    expect(base.segment).toHaveBeenCalledTimes(2);
     expect(base.organize).toHaveBeenCalledTimes(1);
     await expect(ideaRepository.listDraftsByCapture(capture.id)).resolves.toHaveLength(1);
   });

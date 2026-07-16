@@ -1,7 +1,7 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { db, resetClientDatabaseForTests } from '@/lib/db';
 import { DEFAULT_CATEGORY_IDS } from '@/lib/db/defaultCategories';
-import { ValidationError } from '@/lib/errors';
+import { StorageError, ValidationError } from '@/lib/errors';
 import {
   captureRepository,
   extractionRunRepository,
@@ -20,6 +20,7 @@ const draft: RecordingDraft = {
 };
 
 afterEach(async () => {
+  vi.restoreAllMocks();
   await resetClientDatabaseForTests();
 });
 
@@ -222,6 +223,26 @@ describe('extraction run repository', () => {
 
     expect(second.id).toBe(first.id);
     await expect(extractionRunRepository.listByCapture(capture.id)).resolves.toHaveLength(1);
+  });
+
+  it('normalizes run completion storage failures', async () => {
+    const { input } = await runInput();
+    const run = await extractionRunRepository.start(input);
+    vi.spyOn(db.extractionRuns, 'update').mockRejectedValueOnce(new Error('write unavailable'));
+
+    await expect(
+      extractionRunRepository.complete(run.id, '{"ideas":[]}', 25),
+    ).rejects.toBeInstanceOf(StorageError);
+  });
+
+  it('normalizes run failure-bookkeeping storage failures', async () => {
+    const { input } = await runInput();
+    const run = await extractionRunRepository.start(input);
+    vi.spyOn(db.extractionRuns, 'update').mockRejectedValueOnce(new Error('write unavailable'));
+
+    await expect(
+      extractionRunRepository.fail(run.id, 'provider_failed', '{"partial":true}'),
+    ).rejects.toBeInstanceOf(StorageError);
   });
 
   it('allocates the next unique attempt after a failed run without overwriting its raw output', async () => {

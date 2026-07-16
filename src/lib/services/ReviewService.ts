@@ -67,8 +67,10 @@ export function createReviewService(processingService: ReviewProcessingService =
         ? capture.activeExtractionRunId
         : currentOrganizationRuns.at(-1)?.id;
       const ideas = preferredRunId
-        ? allIdeas.filter((idea) => idea.extractionRunId === preferredRunId)
-        : allIdeas;
+        ? allIdeas.filter(
+            (idea) => idea.status === 'draft' && idea.extractionRunId === preferredRunId,
+          )
+        : [];
       const tagIds = [...new Set(ideas.flatMap((idea) => idea.tagIds))];
       const tags = await tagRepository.getByIds(tagIds);
       return { capture, transcript, ideas, categories, tags };

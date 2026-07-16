@@ -77,13 +77,14 @@ export const ideaRepository = {
   ): Promise<void> {
     try {
       await db.transaction('rw', db.ideas, db.extractionRuns, async () => {
-        const [drafts, runs] = await Promise.all([
+        const [drafts, runs, incomingRows] = await Promise.all([
           db.ideas
             .where('captureSessionId')
             .equals(captureSessionId)
             .filter((idea) => idea.status === 'draft')
             .toArray(),
           db.extractionRuns.where('captureSessionId').equals(captureSessionId).toArray(),
+          db.ideas.bulkGet(ideas.map((idea) => idea.id)),
         ]);
         const matchingRunIds = new Set(
           runs.filter((run) => run.transcriptHash === transcriptHash).map((run) => run.id),
@@ -91,9 +92,15 @@ export const ideaRepository = {
         const replacedIds = drafts
           .filter((idea) => idea.extractionRunId && matchingRunIds.has(idea.extractionRunId))
           .map((idea) => idea.id);
+        const preservedIds = new Set(
+          incomingRows
+            .filter((idea): idea is Idea => idea !== undefined && idea.status !== 'draft')
+            .map((idea) => idea.id),
+        );
+        const draftsToAdd = ideas.filter((idea) => !preservedIds.has(idea.id));
 
         if (replacedIds.length > 0) await db.ideas.bulkDelete(replacedIds);
-        if (ideas.length > 0) await db.ideas.bulkAdd(ideas);
+        if (draftsToAdd.length > 0) await db.ideas.bulkAdd(draftsToAdd);
       });
     } catch (error) {
       throw new StorageError(error instanceof Error ? error.message : undefined);

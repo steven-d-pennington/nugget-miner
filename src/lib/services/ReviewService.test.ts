@@ -231,6 +231,50 @@ describe('ReviewService canonical review operations', () => {
     expect(snapshot.ideas.every((idea) => idea.extractionRunId === snapshot.capture.activeExtractionRunId)).toBe(true);
   });
 
+  it('returns no stale ideas when the current transcript has not been organized', async () => {
+    const { capture } = await seedTranscriptCapture('Plan a personal reading tracker.');
+    await createMockCapturePipeline().run(capture.id);
+    await transcriptRepository.updateText(capture.id, 'Plan a personal reading tracker with school notes.');
+
+    const snapshot = await ReviewService.load(capture.id);
+
+    expect(snapshot.transcript.text).toContain('school notes');
+    expect(snapshot.ideas).toEqual([]);
+  });
+
+  it('reloads only the remaining drafts after one idea is confirmed', async () => {
+    const { capture } = await seedTranscriptCapture(
+      'Plan a family archive.\n\nCreate a work handoff checklist.',
+    );
+    await createMockCapturePipeline().run(capture.id);
+    const initial = await ReviewService.load(capture.id);
+    expect(initial.ideas).toHaveLength(2);
+    const [confirmedCandidate, remainingCandidate] = initial.ideas;
+
+    await ReviewService.confirm(
+      confirmedCandidate!.id,
+      {
+        title: confirmedCandidate!.title,
+        summary: confirmedCandidate!.summary,
+        purpose: confirmedCandidate!.purpose,
+        goals: confirmedCandidate!.goals,
+        problem: confirmedCandidate!.problem,
+        blockers: confirmedCandidate!.blockers,
+        questions: confirmedCandidate!.questions,
+        suggestedActions: confirmedCandidate!.suggestedActions,
+        research: confirmedCandidate!.research,
+        categoryId: confirmedCandidate!.categoryId,
+        tagIds: confirmedCandidate!.tagIds,
+      },
+      [],
+    );
+
+    const reloaded = await ReviewService.load(capture.id);
+    expect(reloaded.capture.processingState).toBe('partially_confirmed');
+    expect(reloaded.ideas.map((idea) => idea.id)).toEqual([remainingCandidate!.id]);
+    expect(reloaded.ideas.every((idea) => idea.status === 'draft')).toBe(true);
+  });
+
   it('confirms only named action suggestions and creates one action across repeated confirmation', async () => {
     const { capture } = await seedTranscriptCapture('Plan a work handoff checklist.');
     await createMockCapturePipeline().run(capture.id);
