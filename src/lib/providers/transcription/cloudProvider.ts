@@ -64,7 +64,7 @@ export function createCloudTranscriptionProvider(options: CloudTranscriptionProv
         type: input.audioBlob.type || 'audio/webm',
       });
       form.set('file', file);
-      form.set('ideaId', input.ideaId);
+      form.set('captureSessionId', input.captureSessionId);
       form.set('recordingId', input.recordingId);
 
       const response = await fetcher(endpoint, {

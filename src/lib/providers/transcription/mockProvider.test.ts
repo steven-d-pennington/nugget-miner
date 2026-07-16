@@ -16,7 +16,7 @@ describe('mockTranscriptionProvider', () => {
     };
 
     const result = await mockTranscriptionProvider.transcribe({
-      ideaId: 'idea-1',
+      captureSessionId: 'capture-1',
       recordingId: recording.id,
       audioBlob: recording.blob,
       recording,

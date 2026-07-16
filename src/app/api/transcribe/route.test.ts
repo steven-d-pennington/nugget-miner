@@ -11,7 +11,7 @@ afterEach(() => {
 function formRequest(file: File) {
   const form = new FormData();
   form.set('file', file);
-  form.set('ideaId', 'idea-1');
+  form.set('captureSessionId', 'capture-1');
   form.set('recordingId', 'recording-1');
   return new Request('http://localhost/api/transcribe', { method: 'POST', body: form });
 }
@@ -64,5 +64,8 @@ describe('/api/transcribe', () => {
 
     expect(response.status).toBe(200);
     expect(json).toMatchObject({ text: 'Real transcript', provider: 'cloud', language: 'en', model: 'whisper-test' });
+    const providerBody = (vi.mocked(globalThis.fetch).mock.calls[0]?.[1] as RequestInit | undefined)?.body as FormData;
+    expect(providerBody.has('captureSessionId')).toBe(false);
+    expect(providerBody.has('recordingId')).toBe(false);
   });
 });
