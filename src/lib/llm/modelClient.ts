@@ -1,95 +1,87 @@
-import { LlmProviderError } from './errors';
-import { extractJsonObject } from './structuredOutput';
+import OpenAI from 'openai';
+import { zodTextFormat } from 'openai/helpers/zod';
+import { ZodError } from 'zod';
+import type { z } from 'zod';
+import { LlmProviderError, LlmValidationError } from './errors';
+import type { ReasoningEffort } from './modelConfig';
 
-export interface LlmJsonRequest {
+export interface StructuredRequest<T extends z.ZodType> {
+  schema: T;
+  schemaName: string;
   promptVersion: string;
   system: string;
   user: string;
-  schemaName: string;
-  temperature?: number;
-  maxOutputTokens?: number;
+  safetyIdentifier: string;
+  maxOutputTokens: number;
   signal?: AbortSignal;
 }
 
-export interface LlmJsonResponse {
-  rawText: string;
-  json: unknown;
-  provider: string;
+export interface StructuredResponse<T> {
+  parsed: T;
+  provider: 'openai';
   model: string;
+  responseId: string;
   promptVersion: string;
 }
 
-export interface OpenAICompatibleModelClientConfig {
-  apiKey?: string;
+export interface OpenAIModelClientConfig {
+  apiKey: string;
   baseUrl: string;
   model: string;
   timeoutMs: number;
+  reasoningEffort: ReasoningEffort;
 }
 
 export interface ModelClient {
-  generateJson(request: LlmJsonRequest): Promise<LlmJsonResponse>;
+  generateStructured<T extends z.ZodType>(request: StructuredRequest<T>): Promise<StructuredResponse<z.infer<T>>>;
 }
 
-function completionUrl(baseUrl: string) {
-  return `${baseUrl.replace(/\/+$/, '')}/chat/completions`;
-}
+export function createOpenAIModelClient(config: OpenAIModelClientConfig): ModelClient {
+  const client = new OpenAI({
+    apiKey: config.apiKey,
+    baseURL: config.baseUrl,
+    timeout: config.timeoutMs,
+    maxRetries: 1,
+  });
 
-function responseText(payload: unknown): string {
-  if (!payload || typeof payload !== 'object') throw new LlmProviderError('LLM provider returned an invalid response.');
-  const choices = (payload as { choices?: unknown }).choices;
-  if (!Array.isArray(choices)) throw new LlmProviderError('LLM provider returned no choices.');
-  const first = choices[0] as { message?: { content?: unknown } } | undefined;
-  const content = first?.message?.content;
-  if (typeof content !== 'string' || !content.trim()) throw new LlmProviderError('LLM provider returned empty content.');
-  return content;
-}
-
-export function createOpenAICompatibleModelClient(config: OpenAICompatibleModelClientConfig): ModelClient {
   return {
-    async generateJson(request) {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), config.timeoutMs);
-      request.signal?.addEventListener('abort', () => controller.abort(), { once: true });
-
-      const headers = new Headers({ 'content-type': 'application/json' });
-      headers.set('authorization', ['Bearer', config.apiKey].join(' '));
-
+    async generateStructured(request) {
       try {
-        const response = await fetch(completionUrl(config.baseUrl), {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
+        const response = await client.responses.parse(
+          {
             model: config.model,
-            temperature: request.temperature ?? 0.2,
-            max_tokens: request.maxOutputTokens ?? 1800,
-            response_format: { type: 'json_object' },
-            messages: [
+            reasoning: { effort: config.reasoningEffort },
+            input: [
               { role: 'system', content: request.system },
               { role: 'user', content: request.user },
             ],
-          }),
-          signal: controller.signal,
-        });
+            text: { format: zodTextFormat(request.schema, request.schemaName) },
+            max_output_tokens: request.maxOutputTokens,
+            safety_identifier: request.safetyIdentifier,
+            store: false,
+          },
+          { signal: request.signal },
+        );
 
-        if (!response.ok) {
-          throw new LlmProviderError('LLM provider request failed.');
+        if (response.output_parsed == null) {
+          throw new LlmValidationError('The model returned no structured output.');
         }
 
-        const payload = (await response.json()) as unknown;
-        const rawText = responseText(payload);
+        const parsed = response.output_parsed as z.infer<typeof request.schema>;
+
         return {
-          rawText,
-          json: extractJsonObject(rawText),
-          provider: 'openai-compatible',
+          parsed,
+          provider: 'openai',
           model: config.model,
+          responseId: response.id,
           promptVersion: request.promptVersion,
         };
       } catch (error) {
-        if (error instanceof LlmProviderError) throw error;
-        if (error instanceof Error && error.name === 'LlmValidationError') throw error;
+        if (error instanceof LlmValidationError) throw error;
+        if (error instanceof ZodError) {
+          throw new LlmValidationError('The model returned invalid structured output.');
+        }
         throw new LlmProviderError('LLM provider request failed.');
-      } finally {
-        clearTimeout(timeout);
       }
     },
   };

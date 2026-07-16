@@ -1,44 +1,128 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { LlmProviderError } from './errors';
-import { createOpenAICompatibleModelClient } from './modelClient';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { z } from 'zod';
+import { createOpenAIModelClient } from './modelClient';
+
+const openAIMocks = vi.hoisted(() => ({
+  constructor: vi.fn(),
+  parse: vi.fn(),
+}));
+
+vi.mock('openai', () => ({
+  default: class MockOpenAI {
+    responses = { parse: openAIMocks.parse };
+
+    constructor(options: unknown) {
+      openAIMocks.constructor(options);
+    }
+  },
+}));
 
 const key = ['unit', 'test', 'key'].join('-');
+const resultSchema = z.object({ summary: z.string() }).strict();
 
 function clientConfig() {
-  const config: Record<string, string | number> = {
+  return {
+    apiKey: key,
     baseUrl: 'https://api.example.com/v1',
-    model: 'gpt-test',
+    model: 'gpt-5.6',
     timeoutMs: 5000,
+    reasoningEffort: 'medium' as const,
   };
-  config['api' + 'Key'] = key;
-  return config as unknown as Parameters<typeof createOpenAICompatibleModelClient>[0];
 }
+
+function request(signal?: AbortSignal) {
+  return {
+    schema: resultSchema,
+    schemaName: 'ExtractionResult',
+    promptVersion: 'pv1',
+    system: 'system instructions',
+    user: 'untrusted transcript data',
+    safetyIdentifier: 'test-client',
+    maxOutputTokens: 1800,
+    signal,
+  };
+}
+
+beforeEach(() => {
+  openAIMocks.constructor.mockClear();
+  openAIMocks.parse.mockReset();
+});
 
 afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('createOpenAICompatibleModelClient', () => {
-  it('posts chat completion requests and parses JSON content', async () => {
-    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(
-        JSON.stringify({ choices: [{ message: { content: '{"summary":"ok","nuggets":[],"actions":[],"questions":[],"tags":[],"warnings":[]}' } }] }),
-        { status: 200, headers: { 'content-type': 'application/json' } },
-      ),
+describe('createOpenAIModelClient', () => {
+  it('uses Responses structured output and returns trace metadata', async () => {
+    const controller = new AbortController();
+    openAIMocks.parse.mockResolvedValue({ id: 'resp_123', output_parsed: { summary: 'ok' } });
+    const client = createOpenAIModelClient(clientConfig());
+
+    const response = await client.generateStructured(request(controller.signal));
+
+    expect(openAIMocks.constructor).toHaveBeenCalledWith({
+      apiKey: key,
+      baseURL: 'https://api.example.com/v1',
+      timeout: 5000,
+      maxRetries: 1,
+    });
+    expect(openAIMocks.parse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: 'gpt-5.6',
+        reasoning: { effort: 'medium' },
+        input: [
+          { role: 'system', content: 'system instructions' },
+          { role: 'user', content: 'untrusted transcript data' },
+        ],
+        max_output_tokens: 1800,
+        safety_identifier: 'test-client',
+        store: false,
+        text: { format: expect.anything() },
+      }),
+      { signal: controller.signal },
     );
-    const client = createOpenAICompatibleModelClient(clientConfig());
-
-    const response = await client.generateJson({ promptVersion: 'pv1', system: 'system', user: 'user', schemaName: 'ExtractionResult' });
-
-    expect(fetchMock).toHaveBeenCalledWith('https://api.example.com/v1/chat/completions', expect.objectContaining({ method: 'POST' }));
-    expect(JSON.stringify(fetchMock.mock.calls[0]?.[1])).not.toContain(key);
-    expect(response).toMatchObject({ json: { summary: 'ok' }, model: 'gpt-test', promptVersion: 'pv1' });
+    expect(response).toEqual({
+      parsed: { summary: 'ok' },
+      provider: 'openai',
+      model: 'gpt-5.6',
+      responseId: 'resp_123',
+      promptVersion: 'pv1',
+    });
   });
 
-  it('maps provider failures to sanitized errors', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ error: { message: 'secret provider detail' } }), { status: 500 }));
-    const client = createOpenAICompatibleModelClient(clientConfig());
+  it('rejects empty parsed output as a validation error', async () => {
+    openAIMocks.parse.mockResolvedValue({ id: 'resp_empty', output_parsed: null });
+    const client = createOpenAIModelClient(clientConfig());
 
-    await expect(client.generateJson({ promptVersion: 'pv1', system: 'system', user: 'user', schemaName: 'ExtractionResult' })).rejects.toThrow(LlmProviderError);
+    await expect(client.generateStructured(request())).rejects.toMatchObject({
+      name: 'LlmValidationError',
+      message: 'The model returned no structured output.',
+    });
+  });
+
+  it('maps Zod parse failures to a sanitized validation error', async () => {
+    openAIMocks.parse.mockRejectedValue(new z.ZodError([]));
+    const client = createOpenAIModelClient(clientConfig());
+
+    await expect(client.generateStructured(request())).rejects.toEqual(
+      expect.objectContaining({
+        name: 'LlmValidationError',
+        message: 'The model returned invalid structured output.',
+      }),
+    );
+  });
+
+  it('maps SDK failures to a sanitized provider error', async () => {
+    openAIMocks.parse.mockRejectedValue(new Error('secret provider body and request content'));
+    const client = createOpenAIModelClient(clientConfig());
+
+    const promise = client.generateStructured(request());
+    await expect(promise).rejects.toEqual(
+      expect.objectContaining({
+        name: 'LlmProviderError',
+        message: 'LLM provider request failed.',
+      }),
+    );
+    await expect(promise).rejects.not.toThrow('secret provider body');
   });
 });

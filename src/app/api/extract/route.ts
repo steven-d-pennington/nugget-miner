@@ -1,10 +1,50 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { ValidationError } from '@/lib/errors';
-import { LlmProviderError, LlmValidationError, createOpenAICompatibleModelClient, getExtractionPrompt, publicLlmConfig, resolveLlmConfig } from '@/lib/llm';
-import { parseExtractionResult } from '@/lib/validation/extractionResult';
+import { LlmProviderError, LlmValidationError, createOpenAIModelClient, getExtractionPrompt, publicLlmConfig, resolveLlmConfig } from '@/lib/llm';
+import { extractionResultSchema, parseExtractionResult } from '@/lib/validation/extractionResult';
 import type { ExtractionPreset } from '@/types';
 
 const allowedPresets = new Set<ExtractionPreset>(['general-thought', 'product-idea', 'work-reminder', 'story-idea']);
+
+// Temporary Task 3 compatibility wire schema. Task 5 replaces this legacy route
+// with the two-stage schemas. Responses structured output requires every field,
+// so the legacy optional detail fields are nullable on the wire and normalized
+// before the existing extraction validator produces the legacy response shape.
+const legacyExtractionWireSchema = extractionResultSchema
+  .extend({
+    nuggets: z.array(
+      extractionResultSchema.shape.nuggets.element.extend({
+        detail: z.string().trim().nullable(),
+      }),
+    ),
+    actions: z.array(
+      extractionResultSchema.shape.actions.element.extend({
+        description: z.string().trim().nullable(),
+      }),
+    ),
+    tags: z.array(z.string().trim().min(1)),
+    warnings: z.array(z.string().trim().min(1)),
+  })
+  .strict();
+
+function normalizeLegacyExtractionWire(result: z.infer<typeof legacyExtractionWireSchema>) {
+  return {
+    ...result,
+    nuggets: result.nuggets.map(({ detail, ...nugget }) => (detail === null ? nugget : { ...nugget, detail })),
+    actions: result.actions.map(({ description, ...action }) =>
+      description === null ? action : { ...action, description },
+    ),
+  };
+}
+
+function parseLegacyExtractionWire(input: unknown) {
+  const parsed = legacyExtractionWireSchema.safeParse(input);
+  if (!parsed.success) {
+    throw new ValidationError('Legacy extraction wire result failed schema validation.');
+  }
+  return normalizeLegacyExtractionWire(parsed.data);
+}
 
 function errorResponse(status: number, code: string, message: string) {
   return NextResponse.json({ error: { code, message } }, { status });
@@ -30,7 +70,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const config = resolveLlmConfig();
-  if (!config.available) {
+  if (!config.available || !config.apiKey) {
     return errorResponse(503, 'provider_unconfigured', 'LLM extraction provider is not configured.');
   }
 
@@ -60,16 +100,25 @@ export async function POST(request: Request) {
     title: typeof body.title === 'string' ? body.title : undefined,
     transcriptText: body.transcript.text,
   });
-  const client = createOpenAICompatibleModelClient(config);
+  const client = createOpenAIModelClient({
+    apiKey: config.apiKey,
+    baseUrl: config.baseUrl,
+    model: config.model,
+    timeoutMs: config.timeoutMs,
+    reasoningEffort: config.reasoningEffort,
+  });
 
   try {
-    const response = await client.generateJson({
+    const response = await client.generateStructured({
+      schema: legacyExtractionWireSchema,
       promptVersion: prompt.promptVersion,
       system: prompt.system,
       user: prompt.user,
       schemaName: 'ExtractionResult',
+      safetyIdentifier: body.ideaId,
+      maxOutputTokens: 1800,
     });
-    const result = parseExtractionResult(response.json);
+    const result = parseExtractionResult(parseLegacyExtractionWire(response.parsed));
     return NextResponse.json({
       result,
       provider: 'cloud',

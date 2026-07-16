@@ -1,5 +1,15 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GET, POST } from './route';
+
+const openAIMocks = vi.hoisted(() => ({
+  parse: vi.fn(),
+}));
+
+vi.mock('openai', () => ({
+  default: class MockOpenAI {
+    responses = { parse: openAIMocks.parse };
+  },
+}));
 
 const validExtraction = {
   summary: 'Real structured summary',
@@ -9,6 +19,10 @@ const validExtraction = {
   tags: ['real'],
   warnings: [],
 };
+
+beforeEach(() => {
+  openAIMocks.parse.mockReset();
+});
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -33,41 +47,76 @@ describe('/api/extract', () => {
   });
 
   it('returns 503 before provider call when env is missing', async () => {
-    const fetchMock = vi.spyOn(globalThis, 'fetch');
-
     const response = await POST(jsonRequest({ ideaId: 'idea-1', transcript: { id: 't1', text: 'Transcript text' }, preset: 'general-thought' }));
     const json = await response.json();
 
     expect(response.status).toBe(503);
     expect(json.error.code).toBe('provider_unconfigured');
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(openAIMocks.parse).not.toHaveBeenCalled();
   });
 
-  it('validates model JSON before returning it', async () => {
+  it('validates structured model output before returning the legacy response', async () => {
     vi.stubEnv('NUGGET_LLM_API_KEY', 'secret-key');
     vi.stubEnv('NUGGET_LLM_MODEL', 'gpt-test');
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(validExtraction) } }] }), { status: 200 }),
-    );
+    openAIMocks.parse.mockResolvedValue({ id: 'resp_legacy', output_parsed: validExtraction });
 
     const response = await POST(jsonRequest({ ideaId: 'idea-1', transcript: { id: 't1', text: 'Transcript text' }, preset: 'product-idea' }));
     const json = await response.json();
 
     expect(response.status).toBe(200);
     expect(json).toMatchObject({ provider: 'cloud', model: 'gpt-test', promptVersion: 'extract-product-idea-v1', result: { summary: 'Real structured summary' } });
+    expect(openAIMocks.parse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: 'gpt-test',
+        safety_identifier: 'idea-1',
+        store: false,
+        text: { format: expect.anything() },
+      }),
+      expect.any(Object),
+    );
   });
 
-  it('rejects malformed model output with a sanitized error', async () => {
+  it('normalizes nullable structured fields to the legacy optional response shape', async () => {
     vi.stubEnv('NUGGET_LLM_API_KEY', 'secret-key');
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify({ choices: [{ message: { content: '{"summary":"bad"}' } }] }), { status: 200 }),
-    );
+    openAIMocks.parse.mockResolvedValue({
+      id: 'resp_nullable',
+      output_parsed: {
+        ...validExtraction,
+        nuggets: [{ ...validExtraction.nuggets[0], detail: null }],
+        actions: [{ ...validExtraction.actions[0], description: null }],
+      },
+    });
+
+    const response = await POST(jsonRequest({ ideaId: 'idea-1', transcript: { id: 't1', text: 'Transcript text' }, preset: 'general-thought' }));
+    const json = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(json.result.nuggets[0]).not.toHaveProperty('detail');
+    expect(json.result.actions[0]).not.toHaveProperty('description');
+  });
+
+  it('rejects malformed structured output with a sanitized error', async () => {
+    vi.stubEnv('NUGGET_LLM_API_KEY', 'secret-key');
+    openAIMocks.parse.mockResolvedValue({ id: 'resp_bad', output_parsed: { summary: 'bad' } });
 
     const response = await POST(jsonRequest({ ideaId: 'idea-1', transcript: { id: 't1', text: 'Transcript text' }, preset: 'general-thought' }));
     const json = await response.json();
 
     expect(response.status).toBe(502);
     expect(json.error.code).toBe('invalid_model_output');
+    expect(JSON.stringify(json)).not.toContain('Transcript text');
+  });
+
+  it('maps provider failures to the legacy sanitized error', async () => {
+    vi.stubEnv('NUGGET_LLM_API_KEY', 'secret-key');
+    openAIMocks.parse.mockRejectedValue(new Error('secret provider body'));
+
+    const response = await POST(jsonRequest({ ideaId: 'idea-1', transcript: { id: 't1', text: 'Transcript text' }, preset: 'general-thought' }));
+    const json = await response.json();
+
+    expect(response.status).toBe(502);
+    expect(json.error).toEqual({ code: 'provider_error', message: 'The LLM provider request failed.' });
+    expect(JSON.stringify(json)).not.toContain('secret provider body');
     expect(JSON.stringify(json)).not.toContain('Transcript text');
   });
 });
