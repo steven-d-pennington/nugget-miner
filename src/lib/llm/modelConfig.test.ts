@@ -8,15 +8,22 @@ describe('resolveLlmConfig', () => {
       NUGGET_LLM_API_KEY: configuredKey,
       NUGGET_LLM_BASE_URL: 'https://models.example.com/v1/',
       NUGGET_LLM_MODEL: 'gpt-test',
+      NUGGET_LLM_REASONING_EFFORT: 'high',
       OPENAI_API_KEY: 'fallback-key',
     });
 
-    expect(config).toMatchObject({ available: true, baseUrl: 'https://models.example.com/v1', model: 'gpt-test' });
+    expect(config).toMatchObject({
+      available: true,
+      baseUrl: 'https://models.example.com/v1',
+      model: 'gpt-test',
+      reasoningEffort: 'high',
+    });
     expect(config.apiKey).toBe(configuredKey);
     expect(publicLlmConfig(config)).toEqual({
       available: true,
       missing: [],
       model: 'gpt-test',
+      reasoningEffort: 'high',
       maxInputChars: 24000,
       providerLabel: 'OpenAI-compatible LLM extraction',
     });
@@ -29,7 +36,37 @@ describe('resolveLlmConfig', () => {
     expect(resolveLlmConfig({})).toMatchObject({
       missing: ['apiKey'],
       model: 'gpt-5.6',
+      reasoningEffort: 'medium',
       timeoutMs: 90_000,
     });
+  });
+
+  it('uses the GPT-5.6 medium-reasoning production defaults', () => {
+    expect(resolveLlmConfig({ OPENAI_API_KEY: 'key' })).toMatchObject({
+      model: 'gpt-5.6',
+      reasoningEffort: 'medium',
+      timeoutMs: 90_000,
+    });
+  });
+
+  it('accepts supported reasoning effort values from the Nugget setting', () => {
+    expect(
+      resolveLlmConfig({
+        OPENAI_API_KEY: 'key',
+        NUGGET_LLM_REASONING_EFFORT: 'high',
+      }).reasoningEffort,
+    ).toBe('high');
+  });
+
+  it('falls back to medium for invalid or unrelated reasoning settings', () => {
+    expect(
+      resolveLlmConfig({
+        OPENAI_API_KEY: 'key',
+        NUGGET_LLM_REASONING_EFFORT: 'invalid',
+      }).reasoningEffort,
+    ).toBe('medium');
+    expect(resolveLlmConfig({ OPENAI_API_KEY: 'key', OPENAI_REASONING_EFFORT: 'high' }).reasoningEffort).toBe(
+      'medium',
+    );
   });
 });
