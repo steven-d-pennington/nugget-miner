@@ -1,7 +1,8 @@
 # Sprint 4 organization verification checklist
 
 **Run date:** 2026-07-16
-**Target:** `https://nugget-miner-2wsnidz9f-steven-penningtons-projects.vercel.app` (READY)
+**Primary organization target:** `https://nugget-miner-2wsnidz9f-steven-penningtons-projects.vercel.app` (READY)
+**Detail-fix verification target:** `https://nugget-miner-git-codex-mvp-o-672f19-steven-penningtons-projects.vercel.app` at `fcc0c21` (READY)
 **Viewport:** 390 x 844 mobile
 **Run model evidence:** execution metadata identified `gpt-5.6-terra` with `xhigh` reasoning; the deployed Settings screen reported `gpt-5.6-terra (available)` for organization.
 
@@ -9,12 +10,12 @@
 
 | Check | Result | Evidence |
 |---|---|---|
-| `npm test` | PASS | 49 files, 349 tests passed. The sandbox initially returned Vitest `spawn EPERM`; the same command passed outside the sandbox. |
+| `npm test` | PASS | 50 files, 352 tests passed after the detail-route regression was added. The sandbox initially returned Vitest `spawn EPERM`; the same command passed outside the sandbox. |
 | `npm run typecheck` | PASS | `tsc --noEmit` passed. |
 | `npm run lint` | PASS | `eslint .` passed. |
 | `npm run build` | PASS | Next.js 16.2.9 production build passed. The sandbox could not fetch Google Fonts; the allowed outside-sandbox rerun passed. |
 | `git diff --check` | PASS | No whitespace errors before documentation edits. |
-| `npm run check` | PASS | Typecheck, lint, 49 test files / 349 tests, and the production build all passed outside the sandbox. |
+| `npm run check` | PASS | Typecheck, lint, 50 test files / 352 tests, and the production build passed in Sol's independent post-commit verification. |
 
 ## Live READY-deployment QA
 
@@ -33,7 +34,11 @@ All text was deliberately non-private and entered through the typed-capture UI; 
 | No-results reset | PASS | `not-a-real-qa-term` showed the no-results state; its in-panel Clear filters control restored all 11 ideas. |
 | Action complete/reopen/edit | PASS | The Personal action moved to Completed, reopened, and saved the QA edit `— QA`. |
 | Action removal | BLOCKED | The app opened its native confirmation dialog. The browser automation surface timed out while accepting it, so the QA School action remained present and no removal is claimed. |
-| Idea archive/restore, edit/refresh, detail source state, individual Markdown/JSON exports | BLOCKED | Every clicked `/ideas/<idea-id>` link on the READY deployment rendered `Idea not found`, including after reload. Detail-only controls were therefore not reachable. |
+| Idea detail route | PASS AFTER FIX | The `fcc0c21` READY branch preview opened a real persisted `idea:<uuid>:idea-1` record. The regression proves both production ID shapes and safe malformed-encoding behavior. |
+| Idea archive/restore | PASS | The real idea archived, showed `Idea archived`, exposed `Restore idea`, and restored successfully. |
+| Idea edit/save | PASS | The title saved with a temporary `— verified` suffix, the success notice appeared, and the original title was restored and saved. |
+| Detail source state | PASS | The detail rendered the collapsed `View source excerpt` control and the saved structured record. This typed capture had no audio, so no audio playback is claimed. |
+| Individual Markdown/JSON exports | PASS TRIGGER | Both export buttons completed without leaving or erroring on the detail page. Download bytes were not exposed by the browser bridge, so payload-level manual inspection is not claimed beyond automated tests. |
 | Full local export | PARTIAL | Settings displayed `Your local Nugget export was downloaded.` The full automated suite includes export tests, but the browser bridge did not expose the downloaded JSON bytes for a manual audio/client-ID payload inspection. |
 | Erase guard | PASS | Entering wrong confirmation text `erase` left Continue to erase disabled; erase was not attempted. |
 | Privacy/model disclosure | PASS | Settings stated that audio is sent securely for transcription, transcript text for GPT-5.6 organization, and saved recordings/ideas are not cloud-synced; consent showed granted. |
@@ -46,9 +51,9 @@ All text was deliberately non-private and entered through the typed-capture UI; 
 |---|---|---|
 | [Library mobile](../hackathon/evidence/sprint-4/library-mobile.png) | `757FC05A55DC19F1A5CDEA3A12D68A3D053B168A9B297A4019C5F2DD176F59FC` | Mobile library with real Work, School, and Personal ideas. |
 | [Actions mobile](../hackathon/evidence/sprint-4/actions-mobile.png) | `942234FCC99CD9B882E3AEF19F8E2184F85FDCE46C0E5B425F17A81C309D4AD5` | Completed/open action partition immediately after the completion transition. |
-| Idea detail mobile | Not produced | READY deployment detail links rendered `Idea not found`. |
-| Category description mobile | Not produced | The custom category was created and visible in DOM evidence, but browser control froze before the file could be captured. |
+| [Idea detail mobile](../hackathon/evidence/sprint-4/detail-mobile.png) | `A064D9CA4C5479C16AC146B1BBD7E31D0BC0C39BF2A33DD5803017FFF6C70E79` | The repaired live detail route with title, grounded summary, collapsed source, category, and tags. |
+| [Category description mobile](../hackathon/evidence/sprint-4/category-description-mobile.png) | `864C358C6897AD1ABCBD3DDAA9D73CD45BB5D85920DCAA0145EF0F96A8B309C8` | The editable classifier contract and Work category description with examples/boundaries guidance. |
 
 ## Honest exit status
 
-Sprint 4's automated gate, live Work/School/Personal organization, major library retrieval paths, action state/edit flows, privacy wording, and erase guard passed. The Sprint exit gate is **not complete**: the deployed detail-route failure and the browser automation deadlock at the native removal confirmation block archive/restore, idea editing/export, detail/source verification, category reassignment deletion, custom-category live proof, and two required screenshots.
+Sprint 4's automated gate, live Work/School/Personal organization, major library retrieval paths, repaired idea detail/edit/archive/export flow, four screenshots, action state/edit flows, privacy wording, and erase guard passed. The Sprint exit gate remains **incomplete**: native action-removal confirmation was not completed manually; safe category reassignment/deletion was not exercised; the custom category was created but its effect on a new live classification was not proven; and downloaded export bytes were unavailable for separate manual payload inspection. No additional live GPT call was made because the UI does not expose enough usage data to estimate the remaining budget safely.
