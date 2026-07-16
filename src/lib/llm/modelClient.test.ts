@@ -64,7 +64,7 @@ describe('createOpenAIModelClient', () => {
       apiKey: key,
       baseURL: 'https://api.example.com/v1',
       timeout: 5000,
-      maxRetries: 1,
+      maxRetries: 0,
     });
     expect(openAIMocks.parse).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -121,8 +121,40 @@ describe('createOpenAIModelClient', () => {
       expect.objectContaining({
         name: 'LlmProviderError',
         message: 'LLM provider request failed.',
+        retryable: false,
       }),
     );
     await expect(promise).rejects.not.toThrow('secret provider body');
+  });
+
+  it.each([
+    ['APIConnectionError', undefined],
+    ['APIConnectionTimeoutError', undefined],
+    ['Error', 408],
+    ['Error', 409],
+    ['Error', 429],
+    ['Error', 500],
+    ['Error', 599],
+  ])('marks transient SDK metadata retryable without exposing the upstream body (%s, %s)', async (name, status) => {
+    const upstream = Object.assign(new Error('secret provider body and request content'), { name, status });
+    openAIMocks.parse.mockRejectedValue(upstream);
+    const client = createOpenAIModelClient(clientConfig());
+
+    await expect(client.generateStructured(request())).rejects.toEqual(
+      expect.objectContaining({
+        name: 'LlmProviderError',
+        message: 'LLM provider request failed.',
+        retryable: true,
+      }),
+    );
+  });
+
+  it.each([400, 401, 403, 404, 499])('keeps permanent status %s non-retryable', async (status) => {
+    openAIMocks.parse.mockRejectedValue(Object.assign(new Error('secret provider body'), { status }));
+    const client = createOpenAIModelClient(clientConfig());
+
+    await expect(client.generateStructured(request())).rejects.toEqual(
+      expect.objectContaining({ retryable: false }),
+    );
   });
 });

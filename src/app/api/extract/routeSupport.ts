@@ -23,8 +23,14 @@ export async function runValidatedStructured<TParsed, TResult>(
       return { result: validate(response.parsed), response };
     } catch (error) {
       const invalidOutput = error instanceof LlmValidationError || error instanceof ValidationError;
-      if (!invalidOutput) throw error;
-      if (attempt === 1) throw new InvalidModelOutputError();
+      if (invalidOutput) {
+        if (attempt === 0) continue;
+        throw new InvalidModelOutputError();
+      }
+      if (error instanceof LlmProviderError && error.retryable && attempt === 0) {
+        continue;
+      }
+      throw error;
     }
   }
 

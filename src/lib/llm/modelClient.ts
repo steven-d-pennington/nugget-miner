@@ -36,12 +36,24 @@ export interface ModelClient {
   generateStructured<T extends z.ZodType>(request: StructuredRequest<T>): Promise<StructuredResponse<z.infer<T>>>;
 }
 
+function isRetryableProviderFailure(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null) return false;
+
+  const status = 'status' in error && typeof error.status === 'number' ? error.status : undefined;
+  if (status === 408 || status === 409 || status === 429 || (status !== undefined && status >= 500 && status <= 599)) {
+    return true;
+  }
+
+  const name = 'name' in error && typeof error.name === 'string' ? error.name : '';
+  return /connection|timeout/i.test(name);
+}
+
 export function createOpenAIModelClient(config: OpenAIModelClientConfig): ModelClient {
   const client = new OpenAI({
     apiKey: config.apiKey,
     baseURL: config.baseUrl,
     timeout: config.timeoutMs,
-    maxRetries: 1,
+    maxRetries: 0,
   });
 
   return {
@@ -81,7 +93,7 @@ export function createOpenAIModelClient(config: OpenAIModelClientConfig): ModelC
         if (error instanceof ZodError) {
           throw new LlmValidationError('The model returned invalid structured output.');
         }
-        throw new LlmProviderError('LLM provider request failed.');
+        throw new LlmProviderError('LLM provider request failed.', isRetryableProviderFailure(error));
       }
     },
   };

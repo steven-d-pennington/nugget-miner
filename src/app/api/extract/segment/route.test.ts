@@ -212,4 +212,32 @@ describe('POST /api/extract/segment', () => {
     expect(serialized).not.toContain(transcriptText);
     expect(openAIMocks.parse).toHaveBeenCalledTimes(1);
   });
+
+  it('uses the one shared retry for a transient provider failure, then returns success', async () => {
+    openAIMocks.parse
+      .mockRejectedValueOnce(Object.assign(new Error(`transient secret: ${transcriptText}`), { status: 503 }))
+      .mockResolvedValueOnce({ id: 'resp_after_transient', output_parsed: validSegmentation() });
+
+    const response = await POST(jsonRequest(validBody()));
+    const json = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(json.responseId).toBe('resp_after_transient');
+    expect(JSON.stringify(json)).not.toContain('transient secret');
+    expect(openAIMocks.parse).toHaveBeenCalledTimes(2);
+  });
+
+  it('never makes a third call when a transient failure is followed by invalid output', async () => {
+    openAIMocks.parse
+      .mockRejectedValueOnce(Object.assign(new Error('temporary upstream body'), { name: 'APIConnectionError' }))
+      .mockResolvedValueOnce({ id: 'resp_invalid', output_parsed: { ideas: [{ transcript: transcriptText }] } });
+
+    const response = await POST(jsonRequest(validBody()));
+    const serialized = JSON.stringify(await response.json());
+
+    expect(response.status).toBe(502);
+    expect(serialized).toContain('invalid_model_output');
+    expect(serialized).not.toContain(transcriptText);
+    expect(openAIMocks.parse).toHaveBeenCalledTimes(2);
+  });
 });
