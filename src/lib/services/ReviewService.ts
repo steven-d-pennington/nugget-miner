@@ -1,4 +1,5 @@
 import { ProviderError } from '@/lib/errors';
+import { db } from '@/lib/db';
 import { cloudExtractionProvider } from '@/lib/providers/extraction/cloudProvider';
 import { mockExtractionProvider } from '@/lib/providers/extraction/mockProvider';
 import type { ExtractionProviderOutput } from '@/lib/providers/extraction/types';
@@ -81,27 +82,43 @@ export function createReviewService(processingService: ReviewProcessingService =
       input: ConfirmIdeaInput,
       acceptedActionSuggestionIds: string[],
     ): Promise<Idea> {
-      const idea = await ideaRepository.getById(ideaId);
-      if (!idea) throw new ProviderError('Idea not found.');
-      const originalSuggestionIds = new Set(idea.suggestedActions.map((suggestion) => suggestion.id));
-      const submittedSuggestions = new Map(input.suggestedActions.map((suggestion) => [suggestion.id, suggestion]));
-      const acceptedIds = [...new Set(acceptedActionSuggestionIds)];
-      for (const suggestionId of acceptedIds) {
-        if (!originalSuggestionIds.has(suggestionId) || !submittedSuggestions.has(suggestionId)) {
-          throw new ProviderError('Accepted action suggestion was not part of this idea.');
-        }
-      }
+      return db.transaction(
+        'rw',
+        db.ideas,
+        db.categories,
+        db.captureSessions,
+        db.actionItems,
+        async () => {
+          const idea = await ideaRepository.getById(ideaId);
+          if (!idea) throw new ProviderError('Idea not found.');
+          const originalSuggestionIds = new Set(
+            idea.suggestedActions.map((suggestion) => suggestion.id),
+          );
+          const submittedSuggestions = new Map(
+            input.suggestedActions.map((suggestion) => [suggestion.id, suggestion]),
+          );
+          const acceptedIds = [...new Set(acceptedActionSuggestionIds)];
+          for (const suggestionId of acceptedIds) {
+            if (
+              !originalSuggestionIds.has(suggestionId) ||
+              !submittedSuggestions.has(suggestionId)
+            ) {
+              throw new ProviderError('Accepted action suggestion was not part of this idea.');
+            }
+          }
 
-      const confirmed = await ideaRepository.confirm(ideaId, input);
-      for (const suggestionId of acceptedIds) {
-        const suggestion = submittedSuggestions.get(suggestionId)!;
-        await actionItemRepository.acceptSuggestion({
-          ideaId,
-          sourceSuggestionId: suggestionId,
-          text: suggestion.text,
-        });
-      }
-      return confirmed;
+          const confirmed = await ideaRepository.confirm(ideaId, input);
+          for (const suggestionId of acceptedIds) {
+            const suggestion = submittedSuggestions.get(suggestionId)!;
+            await actionItemRepository.acceptSuggestion({
+              ideaId,
+              sourceSuggestionId: suggestionId,
+              text: suggestion.text,
+            });
+          }
+          return confirmed;
+        }
+      );
     },
 
     async discard(ideaId: string): Promise<void> {

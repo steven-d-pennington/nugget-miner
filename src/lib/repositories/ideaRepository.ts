@@ -146,10 +146,33 @@ export const ideaRepository = {
   },
 
   async discardDraft(id: string): Promise<void> {
-    const idea = await db.ideas.get(id);
-    if (!idea) return;
-    if (idea.status !== 'draft') throw new ValidationError('Only draft ideas may be discarded.');
-    await db.ideas.delete(id);
+    await db.transaction('rw', db.ideas, db.captureSessions, async () => {
+      const idea = await db.ideas.get(id);
+      if (!idea) return;
+      if (idea.status !== 'draft') {
+        throw new ValidationError('Only draft ideas may be discarded.');
+      }
+
+      await db.ideas.delete(id);
+      const siblings = await db.ideas
+        .where('captureSessionId')
+        .equals(idea.captureSessionId)
+        .toArray();
+      const hasDrafts = siblings.some((candidate) => candidate.status === 'draft');
+      const hasConfirmed = siblings.some((candidate) => candidate.status === 'confirmed');
+      const processingState = hasDrafts
+        ? hasConfirmed
+          ? 'partially_confirmed'
+          : 'ready_for_review'
+        : 'confirmed';
+      const updated = await db.captureSessions.update(idea.captureSessionId, {
+        processingState,
+        updatedAt: Date.now(),
+      });
+      if (updated !== 1) {
+        throw new ValidationError('Parent capture not found.');
+      }
+    });
   },
 
   async archive(id: string): Promise<void> {

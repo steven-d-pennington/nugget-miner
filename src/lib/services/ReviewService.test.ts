@@ -11,6 +11,7 @@ import {
 } from '@/lib/repositories';
 import { createMockCapturePipeline } from './CapturePipeline';
 import { createReviewService, ReviewService } from './ReviewService';
+import type { GroundedText, Idea } from '@/types';
 
 const cloudResult = {
   summary: 'Cloud summary',
@@ -37,6 +38,22 @@ async function seedTranscriptCapture(
   const transcript = await transcriptRepository.createVersion(capture.id, { text, provider: 'typed' });
   await captureRepository.transition(capture.id, 'transcript_ready', { transcriptId: transcript.id });
   return { capture, transcript };
+}
+
+function confirmInput(idea: Idea) {
+  return {
+    title: idea.title,
+    summary: idea.summary,
+    purpose: idea.purpose,
+    goals: idea.goals,
+    problem: idea.problem,
+    blockers: idea.blockers,
+    questions: idea.questions,
+    suggestedActions: idea.suggestedActions,
+    research: idea.research,
+    categoryId: idea.categoryId,
+    tagIds: idea.tagIds,
+  };
 }
 
 describe('ReviewService compatibility bridge', () => {
@@ -280,19 +297,7 @@ describe('ReviewService canonical review operations', () => {
     await createMockCapturePipeline().run(capture.id);
     const [draft] = await ideaRepository.listDraftsByCapture(capture.id);
     expect(draft?.suggestedActions[0]).toBeDefined();
-    const input = {
-      title: draft!.title,
-      summary: draft!.summary,
-      purpose: draft!.purpose,
-      goals: draft!.goals,
-      problem: draft!.problem,
-      blockers: draft!.blockers,
-      questions: draft!.questions,
-      suggestedActions: draft!.suggestedActions,
-      research: draft!.research,
-      categoryId: draft!.categoryId,
-      tagIds: draft!.tagIds,
-    };
+    const input = confirmInput(draft!);
     const suggestionId = draft!.suggestedActions[0]!.id;
 
     await expect(ReviewService.confirm(draft!.id, input, ['invented-action-id'])).rejects.toThrow(
@@ -305,6 +310,47 @@ describe('ReviewService canonical review operations', () => {
       expect.objectContaining({ sourceSuggestionId: suggestionId, text: draft!.suggestedActions[0]!.text }),
     ]);
     await expect(ideaRepository.getById(draft!.id)).resolves.toMatchObject({ status: 'confirmed' });
+  });
+
+  it('rolls back idea, capture, and newly accepted actions when a later action fails', async () => {
+    const { capture } = await seedTranscriptCapture('Plan a work handoff and send two follow-up notes.');
+    await createMockCapturePipeline().run(capture.id);
+    const [originalDraft] = await ideaRepository.listDraftsByCapture(capture.id);
+    const secondAction: GroundedText = {
+      id: 'second-action',
+      text: 'Send the second follow-up note.',
+      basis: 'suggested',
+      sourceSpanIds: [],
+    };
+    const draft = {
+      ...originalDraft!,
+      suggestedActions: [...originalDraft!.suggestedActions, secondAction],
+    };
+    await db.ideas.put(draft);
+    const preExisting = await actionItemRepository.acceptSuggestion({
+      ideaId: draft.id,
+      sourceSuggestionId: 'pre-existing',
+      text: 'Already accepted',
+    });
+    const originalAccept = actionItemRepository.acceptSuggestion.bind(actionItemRepository);
+    const acceptSpy = vi.spyOn(actionItemRepository, 'acceptSuggestion');
+    acceptSpy
+      .mockImplementationOnce(originalAccept)
+      .mockRejectedValueOnce(new Error('second action write failed'));
+
+    await expect(
+      ReviewService.confirm(
+        draft.id,
+        confirmInput(draft),
+        draft.suggestedActions.map((suggestion) => suggestion.id),
+      ),
+    ).rejects.toThrow('second action write failed');
+
+    await expect(ideaRepository.getById(draft.id)).resolves.toMatchObject({ status: 'draft' });
+    await expect(captureRepository.getById(capture.id)).resolves.toMatchObject({
+      processingState: 'ready_for_review',
+    });
+    await expect(actionItemRepository.listByIdea(draft.id)).resolves.toEqual([preExisting]);
   });
 
   it('discards drafts only and delegates reprocessing through the duplicate-safe processing service', async () => {
@@ -321,5 +367,58 @@ describe('ReviewService canonical review operations', () => {
 
     await service.discard(draft!.id);
     await expect(ideaRepository.getById(draft!.id)).resolves.toBeUndefined();
+  });
+
+  it('keeps a capture ready when one of two drafts is discarded', async () => {
+    const { capture } = await seedTranscriptCapture('Plan a family archive.\n\nCreate a work checklist.');
+    await createMockCapturePipeline().run(capture.id);
+    const drafts = await ideaRepository.listDraftsByCapture(capture.id);
+    expect(drafts).toHaveLength(2);
+
+    await ReviewService.discard(drafts[0]!.id);
+
+    await expect(ideaRepository.listDraftsByCapture(capture.id)).resolves.toHaveLength(1);
+    await expect(captureRepository.getById(capture.id)).resolves.toMatchObject({
+      processingState: 'ready_for_review',
+    });
+  });
+
+  it('marks a capture confirmed after confirming one draft and discarding the last draft', async () => {
+    const { capture } = await seedTranscriptCapture('Plan a family archive.\n\nCreate a work checklist.');
+    await createMockCapturePipeline().run(capture.id);
+    const drafts = await ideaRepository.listDraftsByCapture(capture.id);
+
+    await ReviewService.confirm(drafts[0]!.id, confirmInput(drafts[0]!), []);
+    await ReviewService.discard(drafts[1]!.id);
+
+    await expect(captureRepository.getById(capture.id)).resolves.toMatchObject({
+      processingState: 'confirmed',
+    });
+  });
+
+  it('rolls back an orphan draft deletion when its parent capture cannot be updated', async () => {
+    const timestamp = Date.now();
+    const orphan: Idea = {
+      id: 'orphan-draft',
+      captureSessionId: 'missing-capture',
+      status: 'draft',
+      title: 'Orphan idea',
+      summary: { id: 'orphan-summary', text: 'Keep this draft.', basis: 'inferred', sourceSpanIds: [] },
+      goals: [],
+      blockers: [],
+      questions: [],
+      suggestedActions: [],
+      research: { needed: false, suggestedQueries: [], suggestedResourceTypes: [] },
+      categoryId: 'category-misc',
+      tagIds: [],
+      sourceSpans: [],
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    };
+    await db.ideas.add(orphan);
+
+    await expect(ReviewService.discard(orphan.id)).rejects.toThrow('Parent capture not found.');
+
+    await expect(ideaRepository.getById(orphan.id)).resolves.toEqual(orphan);
   });
 });
