@@ -1,105 +1,112 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { db, resetClientDatabaseForTests } from '@/lib/db';
-import { settingsRepository } from '@/lib/repositories';
-import { CaptureService } from '@/lib/services/CaptureService';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TextCaptureForm } from './TextCaptureForm';
 
-afterEach(async () => {
-  vi.restoreAllMocks();
-  await resetClientDatabaseForTests();
+const mocks = vi.hoisted(() => ({
+  push: vi.fn(),
+  getSettings: vi.fn(),
+  saveText: vi.fn(),
+  process: vi.fn(),
+}));
+
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: mocks.push }) }));
+vi.mock('@/lib/repositories', () => ({
+  settingsRepository: { get: (...args: unknown[]) => mocks.getSettings(...args) },
+}));
+vi.mock('@/lib/services/CaptureService', () => ({
+  CaptureService: { saveText: (...args: unknown[]) => mocks.saveText(...args) },
+}));
+vi.mock('@/lib/services/ProcessingService', () => ({
+  ProcessingService: { process: (...args: unknown[]) => mocks.process(...args) },
+}));
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((resolvePromise) => {
+    resolve = resolvePromise;
+  });
+  return { promise, resolve };
+}
+
+function enterRamble(text = 'Plan a neighborhood tool-sharing library.') {
+  fireEvent.click(screen.getByRole('button', { name: 'Paste a ramble' }));
+  fireEvent.change(screen.getByLabelText('Ramble text'), { target: { value: text } });
+  fireEvent.click(screen.getByRole('button', { name: 'Save ramble' }));
+}
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  mocks.getSettings.mockResolvedValue({ automaticProcessing: false, cloudProcessingConsent: 'unknown' });
+  mocks.saveText.mockResolvedValue({ capture: { id: 'text-capture-1' } });
+  mocks.process.mockResolvedValue(undefined);
 });
 
 describe('TextCaptureForm', () => {
-  it('starts collapsed and exposes the secondary text input on request', () => {
-    render(<TextCaptureForm onSaved={vi.fn()} />);
-
+  it('starts collapsed and keeps pasted capture secondary', () => {
+    render(<TextCaptureForm />);
     const toggle = screen.getByRole('button', { name: 'Paste a ramble' });
+
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByLabelText('Ramble text')).not.toBeInTheDocument();
-
     fireEvent.click(toggle);
-
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByLabelText('Ramble text')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Save and organize' })).toHaveClass('text-accent-foreground');
   });
 
-  it('persists a real capture and transcript with the stored processing preference', async () => {
-    await settingsRepository.update({ automaticProcessing: true });
-    const onSaved = vi.fn();
-    render(<TextCaptureForm onSaved={onSaved} />);
+  it('waits for durable text persistence before routing or processing', async () => {
+    mocks.getSettings.mockResolvedValue({ automaticProcessing: true, cloudProcessingConsent: 'granted' });
+    const save = deferred<{ capture: { id: string } }>();
+    mocks.saveText.mockReturnValue(save.promise);
+    render(<TextCaptureForm />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Paste a ramble' }));
-    const textarea = screen.getByLabelText('Ramble text');
-    fireEvent.change(textarea, { target: { value: 'Plan a neighborhood tool-sharing library.' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save and organize' }));
-
-    await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
-    expect(await db.captureSessions.count()).toBe(1);
-    expect(await db.transcripts.count()).toBe(1);
-    await expect(db.captureSessions.toCollection().first()).resolves.toMatchObject({
-      source: 'text',
-      processingPreference: 'automatic',
-      processingState: 'queued',
-    });
-    await expect(db.transcripts.toCollection().first()).resolves.toMatchObject({
+    enterRamble();
+    await waitFor(() => expect(mocks.saveText).toHaveBeenCalledWith({
       text: 'Plan a neighborhood tool-sharing library.',
-      source: 'typed',
-    });
-    expect(textarea).toHaveValue('');
+      processingPreference: 'automatic',
+    }));
+    expect(mocks.push).not.toHaveBeenCalled();
+    expect(mocks.process).not.toHaveBeenCalled();
+
+    save.resolve({ capture: { id: 'text-capture-1' } });
+    await waitFor(() => expect(mocks.push).toHaveBeenCalledWith('/capture/text-capture-1'));
+    expect(mocks.process).toHaveBeenCalledWith('text-capture-1');
+    expect(mocks.push.mock.invocationCallOrder[0]).toBeLessThan(mocks.process.mock.invocationCallOrder[0]!);
   });
 
-  it('shows validation feedback inline without creating or clearing a capture', async () => {
-    render(<TextCaptureForm onSaved={vi.fn()} />);
+  it('preserves the typed ramble when durable persistence fails', async () => {
+    mocks.saveText.mockRejectedValueOnce(new DOMException('Storage quota exceeded.', 'QuotaExceededError'));
+    render(<TextCaptureForm />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Paste a ramble' }));
-    const textarea = screen.getByLabelText('Ramble text');
-    fireEvent.change(textarea, { target: { value: ' a ' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save and organize' }));
-
-    expect(await screen.findByRole('alert')).toHaveTextContent('Enter at least three non-whitespace characters.');
-    expect(textarea).toHaveValue(' a ');
-    expect(await db.captureSessions.count()).toBe(0);
-    expect(await db.transcripts.count()).toBe(0);
-  });
-
-  it('preserves the ramble when durable persistence fails', async () => {
-    vi.spyOn(db.transcripts, 'add').mockRejectedValueOnce(
-      new DOMException('Storage quota exceeded.', 'QuotaExceededError'),
-    );
-    render(<TextCaptureForm onSaved={vi.fn()} />);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Paste a ramble' }));
-    const textarea = screen.getByLabelText('Ramble text');
-    const ramble = 'Keep this typed thought available so I can try saving it again.';
-    fireEvent.change(textarea, { target: { value: ramble } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save and organize' }));
+    enterRamble('Keep this thought available for another save attempt.');
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Your text is still here.');
-    expect(textarea).toHaveValue(ramble);
-    expect(await db.captureSessions.count()).toBe(0);
-    expect(await db.transcripts.count()).toBe(0);
+    expect(screen.getByLabelText('Ramble text')).toHaveValue('Keep this thought available for another save attempt.');
+    expect(mocks.push).not.toHaveBeenCalled();
+    expect(mocks.process).not.toHaveBeenCalled();
   });
 
-  it('clears a durably saved ramble and reports follow-up navigation separately', async () => {
-    const saveText = vi.spyOn(CaptureService, 'saveText');
-    const onSaved = vi.fn().mockRejectedValueOnce(new Error('Recent captures could not refresh.'));
-    render(<TextCaptureForm onSaved={onSaved} />);
+  it.each(['unknown', 'denied'] as const)('does not process text without granted consent (%s)', async (consent) => {
+    mocks.getSettings.mockResolvedValue({ automaticProcessing: true, cloudProcessingConsent: consent });
+    render(<TextCaptureForm />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Paste a ramble' }));
-    const textarea = screen.getByLabelText('Ramble text');
-    fireEvent.change(textarea, { target: { value: 'This thought must not be saved twice.' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save and organize' }));
+    enterRamble();
 
-    const alert = await screen.findByRole('alert');
-    expect(saveText).toHaveBeenCalledTimes(1);
-    expect(onSaved).toHaveBeenCalledTimes(1);
-    expect(textarea).toHaveValue('');
-    expect(alert).toHaveTextContent(/saved locally/i);
-    expect(alert).toHaveTextContent(/next screen/i);
-    expect(alert).not.toHaveTextContent('Your text is still here.');
-    expect(await db.captureSessions.count()).toBe(1);
-    expect(await db.transcripts.count()).toBe(1);
+    await waitFor(() => expect(mocks.push).toHaveBeenCalledWith('/capture/text-capture-1'));
+    expect(mocks.saveText).toHaveBeenCalledWith({
+      text: 'Plan a neighborhood tool-sharing library.',
+      processingPreference: 'manual',
+    });
+    expect(mocks.process).not.toHaveBeenCalled();
+  });
+
+  it('handles rejected fire-and-forget text processing after navigation', async () => {
+    mocks.getSettings.mockResolvedValue({ automaticProcessing: true, cloudProcessingConsent: 'granted' });
+    mocks.process.mockRejectedValue(new Error('offline'));
+    render(<TextCaptureForm />);
+
+    enterRamble();
+
+    await waitFor(() => expect(mocks.process).toHaveBeenCalledWith('text-capture-1'));
+    expect(mocks.push).toHaveBeenCalledWith('/capture/text-capture-1');
   });
 });

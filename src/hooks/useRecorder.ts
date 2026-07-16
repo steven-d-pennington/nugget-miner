@@ -80,5 +80,11 @@ export function useRecorder() {
     setState('idle');
   }, []);
 
-  return { state, elapsedMs, level, draft, error, start, stop, discard };
+  const clearSavedDraft = useCallback(() => {
+    setDraft(null);
+    setElapsedMs(0);
+    setLevel(0);
+  }, []);
+
+  return { state, elapsedMs, level, draft, error, start, stop, discard, clearSavedDraft };
 }
