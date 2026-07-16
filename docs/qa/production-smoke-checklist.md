@@ -36,23 +36,24 @@ The following results were verified with authorized access to the protected prev
 | Manifest | Deployed manifest is `standalone`, `portrait-primary`, and has the Nugget icon |
 | Service worker | Excludes `/api/*` and non-GET requests |
 
-### Safe reproducible Vercel curl commands
+### Safe reproducible authenticated Vercel CLI commands
 
-Use an authorized Vercel Deployment Protection Automation Bypass secret only from the current shell. The commands below keep the secret out of URLs, source files, and command output; do not paste its value into this checklist, a log, or chat.
+Use the authenticated Vercel CLI path that verified this protected preview. `npx vercel curl` automatically handles deployment protection for the logged-in Vercel CLI account. These commands do not introduce or print protection-bypass secrets, tokens, or environment values.
 
 ```powershell
 $previewUrl = 'https://nugget-miner-ig8utfq43-steven-penningtons-projects.vercel.app'
-if ([string]::IsNullOrWhiteSpace($env:VERCEL_AUTOMATION_BYPASS_SECRET)) {
-  throw 'Set VERCEL_AUTOMATION_BYPASS_SECRET in the current shell before running authenticated smoke checks.'
-}
+$health = npx vercel curl /api/health --deployment $previewUrl
+$health
 
-$bypassHeader = "x-vercel-protection-bypass: $env:VERCEL_AUTOMATION_BYPASS_SECRET"
-curl.exe --fail --silent --show-error --header $bypassHeader "$previewUrl/api/health"
-curl.exe --fail --silent --show-error --header $bypassHeader "$previewUrl/" |
-  Select-String -SimpleMatch 'Nugget Quick capture'
-curl.exe --fail --silent --show-error --head --header $bypassHeader "$previewUrl/"
-curl.exe --fail --silent --show-error --header $bypassHeader "$previewUrl/manifest.webmanifest"
-curl.exe --fail --silent --show-error --header $bypassHeader "$previewUrl/sw.js"
+$root = npx vercel curl / --deployment $previewUrl
+if ($root -notmatch 'Nugget') { throw 'Authenticated root did not contain Nugget.' }
+if ($root -notmatch 'Quick capture') { throw 'Authenticated root did not contain Quick capture.' }
+
+npx vercel curl / --deployment $previewUrl -- --head
+$manifest = npx vercel curl /manifest.webmanifest --deployment $previewUrl
+$manifest
+$serviceWorker = npx vercel curl /sw.js --deployment $previewUrl
+$serviceWorker
 ```
 
 `vercel env ls` is the presence-only check for environment entries. Do not run `vercel env pull` as part of this smoke checklist and do not inspect, print, or commit environment values.
