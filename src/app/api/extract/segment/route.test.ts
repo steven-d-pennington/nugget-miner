@@ -123,6 +123,27 @@ describe('POST /api/extract/segment', () => {
     expect(openAIMocks.parse).not.toHaveBeenCalled();
   });
 
+  it('rejects an invalid ID before counting thirty valid requests from the same client', async () => {
+    const sharedSafetyIdentifier = '00000000-0000-4000-8000-000000000030';
+    openAIMocks.parse.mockResolvedValue({ id: 'resp_segment_limit', output_parsed: validSegmentation() });
+
+    const invalid = await POST(jsonRequest({ ...validBody(), captureSessionId: 'capture-1', safetyIdentifier: sharedSafetyIdentifier }));
+    expect(invalid.status).toBe(400);
+
+    for (let index = 0; index < 30; index += 1) {
+      await expect(POST(jsonRequest({ ...validBody(), safetyIdentifier: sharedSafetyIdentifier }))).resolves.toMatchObject({ status: 200 });
+    }
+
+    const limited = await POST(jsonRequest({ ...validBody(), safetyIdentifier: sharedSafetyIdentifier }));
+    expect(limited.status).toBe(429);
+    expect(limited.headers.get('Retry-After')).toMatch(/^\d+$/);
+    expect(limited.headers.get('X-RateLimit-Remaining')).toBe('0');
+    await expect(limited.json()).resolves.toEqual({
+      error: { code: 'rate_limited', message: 'Too many processing requests. Try again in a few minutes.' },
+    });
+    expect(openAIMocks.parse).toHaveBeenCalledTimes(30);
+  });
+
   it('retries ambiguous span output once and returns the valid retry', async () => {
     const repeatedText = 'repeat repeat';
     const ambiguous = {

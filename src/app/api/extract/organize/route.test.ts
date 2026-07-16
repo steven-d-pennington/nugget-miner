@@ -137,20 +137,56 @@ describe('POST /api/extract/organize', () => {
     ['missing fallback', [categories[0]!]],
     ['multiple fallbacks', [categories[1]!, { ...categories[1]!, id: 'category-other' }]],
     ['duplicate IDs', [categories[0]!, { ...categories[1]!, id: categories[0]!.id }]],
-    [
-      'more than twenty categories',
+      [
+        'more than twenty categories',
       Array.from({ length: 21 }, (_, index) => ({
         id: `category-${index}`,
         name: `Category ${index}`,
         description: `Description ${index}`,
         isFallback: index === 20,
-      })),
-    ],
+        })),
+      ],
+      ['description over eight hundred characters', [{ ...categories[0]!, description: 'x'.repeat(801) }, categories[1]!]],
   ])('rejects %s before an SDK call', async (_label, invalidCategories) => {
     const response = await POST(jsonRequest({ ...validBody(), categories: invalidCategories }));
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toMatchObject({ error: { code: 'invalid_request' } });
     expect(openAIMocks.parse).not.toHaveBeenCalled();
+  });
+
+  it('rejects source quotes beyond the configured transcript limit before an SDK call', async () => {
+    vi.stubEnv('NUGGET_LLM_MAX_INPUT_CHARS', '8');
+    const body = validBody();
+    body.segmentation.ideas[0]!.sourceSpans[0] = { id: 'span-too-large', startChar: 0, endChar: 9, quote: '123456789' };
+
+    const response = await POST(jsonRequest(body));
+
+    expect(response.status).toBe(413);
+    await expect(response.json()).resolves.toEqual({
+      error: { code: 'source_quote_too_large', message: 'A source quote is too large for organization.' },
+    });
+    expect(openAIMocks.parse).not.toHaveBeenCalled();
+  });
+
+  it('limits the thirty-first valid organization request without leaking the request identity', async () => {
+    const sharedSafetyIdentifier = '10000000-0000-4000-8000-000000000030';
+    openAIMocks.parse.mockResolvedValue({ id: 'resp_organize_limit', output_parsed: validOrganization() });
+
+    for (let index = 0; index < 30; index += 1) {
+      await expect(POST(jsonRequest({ ...validBody(), safetyIdentifier: sharedSafetyIdentifier }))).resolves.toMatchObject({ status: 200 });
+    }
+
+    const response = await POST(jsonRequest({ ...validBody(), safetyIdentifier: sharedSafetyIdentifier }));
+
+    expect(response.status).toBe(429);
+    expect(response.headers.get('Retry-After')).toMatch(/^\d+$/);
+    expect(response.headers.get('X-RateLimit-Remaining')).toBe('0');
+    const body = await response.json();
+    expect(body).toEqual({
+      error: { code: 'rate_limited', message: 'Too many processing requests. Try again in a few minutes.' },
+    });
+    expect(JSON.stringify(body)).not.toContain(sharedSafetyIdentifier);
+    expect(openAIMocks.parse).toHaveBeenCalledTimes(30);
   });
 
   it('retries an unknown category once and returns the valid retry', async () => {

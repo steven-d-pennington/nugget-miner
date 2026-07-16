@@ -1,7 +1,12 @@
 import { publicTranscriptionConfig, resolveTranscriptionConfig } from '@/lib/server/transcriptionConfig';
 import { TranscriptionProviderError, transcribeWithOpenAICompatibleProvider } from '@/lib/server/transcriptionClient';
+import { consumeRateLimit, rateLimitHeaders } from '@/lib/server/rateLimit';
+import { requestIdentity } from '@/lib/server/requestIdentity';
 
-const allowedMimeTypes = new Set(['audio/webm', 'audio/webm;codecs=opus', 'audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/x-wav']);
+const allowedMimeTypes = new Set(['audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/x-wav']);
+const webmMimeType = /^audio\/webm(?:\s*;\s*codecs\s*=\s*(?:opus|"opus"))?\s*$/i;
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1_000;
+const TRANSCRIPTION_RATE_LIMIT = 10;
 
 function json(data: unknown, init?: ResponseInit) {
   return Response.json(data, init);
@@ -11,9 +16,15 @@ function errorResponse(status: number, code: string, message: string) {
   return json({ error: { code, message } }, { status });
 }
 
+function rateLimitedResponse(result: ReturnType<typeof consumeRateLimit>) {
+  return json(
+    { error: { code: 'rate_limited', message: 'Too many processing requests. Try again in a few minutes.' } },
+    { status: 429, headers: rateLimitHeaders(result) },
+  );
+}
+
 function isAllowedMimeType(type: string) {
-  if (allowedMimeTypes.has(type)) return true;
-  return type.startsWith('audio/webm');
+  return allowedMimeTypes.has(type.toLowerCase()) || webmMimeType.test(type);
 }
 
 function isFileLike(value: FormDataEntryValue | null): value is File {
@@ -54,9 +65,16 @@ export async function POST(request: Request) {
     return errorResponse(415, 'unsupported_media_type', 'This audio type is not supported.');
   }
 
+  if (audioFile.size === 0) {
+    return errorResponse(400, 'empty_audio', 'The audio file must not be empty.');
+  }
+
   if (audioFile.size > config.maxBytes) {
     return errorResponse(413, 'payload_too_large', 'The audio recording is too large to transcribe.');
   }
+
+  const limit = consumeRateLimit(requestIdentity(request), TRANSCRIPTION_RATE_LIMIT, RATE_LIMIT_WINDOW_MS);
+  if (!limit.allowed) return rateLimitedResponse(limit);
 
   try {
     return json(await transcribeWithOpenAICompatibleProvider({ file: audioFile, config }));

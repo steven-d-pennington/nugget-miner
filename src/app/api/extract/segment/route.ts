@@ -15,6 +15,11 @@ import {
   extractionErrorResponse,
   runValidatedStructured,
 } from '../routeSupport';
+import { consumeRateLimit, rateLimitHeaders } from '@/lib/server/rateLimit';
+import { requestIdentity } from '@/lib/server/requestIdentity';
+
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1_000;
+const SEGMENTATION_RATE_LIMIT = 30;
 
 const segmentRequestSchema = z
   .object({
@@ -39,6 +44,13 @@ async function readRequest(request: Request) {
   }
 }
 
+function rateLimitedResponse(result: ReturnType<typeof consumeRateLimit>) {
+  return Response.json(
+    { error: { code: 'rate_limited', message: 'Too many processing requests. Try again in a few minutes.' } },
+    { status: 429, headers: rateLimitHeaders(result) },
+  );
+}
+
 export async function POST(request: Request) {
   const body = await readRequest(request);
   if (!body) {
@@ -52,6 +64,9 @@ export async function POST(request: Request) {
   if (!config.available || !config.apiKey) {
     return errorResponse(503, 'provider_unconfigured', 'LLM extraction provider is not configured.');
   }
+
+  const limit = consumeRateLimit(requestIdentity(request, body.safetyIdentifier), SEGMENTATION_RATE_LIMIT, RATE_LIMIT_WINDOW_MS);
+  if (!limit.allowed) return rateLimitedResponse(limit);
 
   const prompt = getSegmentationPrompt({
     transcriptHash: body.transcript.hash,
