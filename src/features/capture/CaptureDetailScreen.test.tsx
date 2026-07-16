@@ -288,6 +288,18 @@ describe('CaptureDetailScreen', () => {
     expect(mocks.getCapture).toHaveBeenCalledTimes(initialReads);
   });
 
+  it('uses only a bounded startup probe for an automatic transcript_ready capture', async () => {
+    vi.useFakeTimers();
+    mocks.getCapture.mockResolvedValue(capture({ processingPreference: 'automatic' }));
+    render(<CaptureDetailScreen captureId="capture-1" />);
+    await act(async () => { await Promise.resolve(); await Promise.resolve(); });
+    expect(screen.getByRole('heading', { name: 'Recording saved' })).toBeInTheDocument();
+    for (let index = 0; index < 5; index += 1) {
+      await act(async () => { vi.advanceTimersByTime(1_000); await Promise.resolve(); await Promise.resolve(); });
+    }
+    expect(mocks.getCapture).toHaveBeenCalledTimes(4);
+  });
+
   it('polls only an observed active lifecycle without overlap and preserves dirty text', async () => {
     vi.useFakeTimers();
     mocks.getCapture.mockResolvedValue(capture({ processingState: 'queued' }));
@@ -316,6 +328,21 @@ describe('CaptureDetailScreen', () => {
     await waitFor(() => expect(mocks.getCapture.mock.calls.length).toBeGreaterThan(before));
     unmount();
     expect(remove).toHaveBeenCalledWith('visibilitychange', expect.any(Function));
+  });
+
+  it('retains the same recording object across poll refreshes so playback is not recreated', async () => {
+    vi.useFakeTimers();
+    mocks.getCapture.mockResolvedValue(capture({ source: 'audio', processingState: 'queued' }));
+    mocks.getTranscript.mockResolvedValue(undefined);
+    mocks.getRecording.mockImplementation(async () => recording());
+    render(<CaptureDetailScreen captureId="capture-1" />);
+    await act(async () => { await Promise.resolve(); await Promise.resolve(); });
+    expect(screen.getByLabelText('Saved recording playback')).toBeInTheDocument();
+    expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
+    await act(async () => { vi.advanceTimersByTime(2_100); await Promise.resolve(); await Promise.resolve(); });
+    expect(mocks.getRecording.mock.calls.length).toBeGreaterThan(1);
+    expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
+    expect(URL.revokeObjectURL).not.toHaveBeenCalled();
   });
 });
 

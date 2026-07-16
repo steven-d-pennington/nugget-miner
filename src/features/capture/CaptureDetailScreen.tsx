@@ -52,6 +52,7 @@ export function CaptureDetailScreen({ captureId, stayOnCapture = false }: Captur
   const [editNotice, setEditNotice] = useState<string | null>(null);
   const [lifecycleObserved, setLifecycleObserved] = useState(false);
   const refreshPromise = useRef<Promise<void> | null>(null);
+  const automaticProbeCount = useRef(0);
   const dirtyRef = useRef(false);
   const redirected = useRef(false);
 
@@ -65,7 +66,7 @@ export function CaptureDetailScreen({ captureId, stayOnCapture = false }: Captur
           transcriptRepository.getCurrent(captureId),
         ]);
         setCapture(nextCapture ?? null);
-        setRecording(nextRecording);
+        setRecording((current) => current?.id === nextRecording?.id ? current : nextRecording);
         setTranscript(nextTranscript);
         if (!dirtyRef.current) setDraftText(nextTranscript?.text ?? '');
         setLoadError(null);
@@ -109,6 +110,32 @@ export function CaptureDetailScreen({ captureId, stayOnCapture = false }: Captur
       document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [refresh, shouldPoll]);
+
+  const shouldProbeAutomaticTranscript = Boolean(
+    capture &&
+      capture.processingPreference === 'automatic' &&
+      capture.processingState === 'transcript_ready' &&
+      !lifecycleObserved &&
+      automaticProbeCount.current < 3,
+  );
+
+  useEffect(() => {
+    if (!shouldProbeAutomaticTranscript) return;
+    let cancelled = false;
+    let timeout: number | undefined;
+    const scheduleProbe = () => {
+      timeout = window.setTimeout(async () => {
+        automaticProbeCount.current += 1;
+        await refresh();
+        if (!cancelled && automaticProbeCount.current < 3) scheduleProbe();
+      }, 1_000);
+    };
+    scheduleProbe();
+    return () => {
+      cancelled = true;
+      if (timeout !== undefined) window.clearTimeout(timeout);
+    };
+  }, [refresh, shouldProbeAutomaticTranscript]);
 
   useEffect(() => {
     if (capture?.processingState !== 'ready_for_review' || stayOnCapture || redirected.current) return;
