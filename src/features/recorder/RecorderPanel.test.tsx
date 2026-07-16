@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RecordingDraft } from '@/types';
 import { RecorderPanel } from './RecorderPanel';
 
@@ -62,6 +62,7 @@ function deferred<T>() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  Object.defineProperty(navigator, 'onLine', { configurable: true, value: true });
   setRecorder();
   mocks.getSettings.mockResolvedValue({ automaticProcessing: false, cloudProcessingConsent: 'unknown' });
   mocks.saveRecording.mockResolvedValue({ capture: { id: 'capture-1' } });
@@ -70,6 +71,10 @@ beforeEach(() => {
     Object.assign(mocks.recorder, { state: 'idle', draft, elapsedMs: draft.durationMs });
     return draft;
   });
+});
+
+afterEach(() => {
+  Object.defineProperty(navigator, 'onLine', { configurable: true, value: true });
 });
 
 describe('RecorderPanel mobile capture', () => {
@@ -127,6 +132,23 @@ describe('RecorderPanel mobile capture', () => {
     expect(mocks.process).toHaveBeenCalledWith('capture-1');
     expect(mocks.clearSavedDraft.mock.invocationCallOrder[0]).toBeLessThan(mocks.push.mock.invocationCallOrder[0]!);
     expect(mocks.push.mock.invocationCallOrder[0]).toBeLessThan(mocks.process.mock.invocationCallOrder[0]!);
+  });
+
+  it('keeps an automatic capture local until the browser reconnects', async () => {
+    setRecorder('recording');
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false });
+    mocks.getSettings.mockResolvedValue({ automaticProcessing: true, cloudProcessingConsent: 'granted' });
+    const onCaptureSaved = vi.fn();
+    render(<RecorderPanel onCaptureSaved={onCaptureSaved} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Stop & save' }));
+
+    expect(await screen.findByText('Recording saved locally. Reconnect to continue processing.')).toBeInTheDocument();
+    expect(mocks.saveRecording).toHaveBeenCalledWith({ draft, processingPreference: 'automatic' });
+    expect(mocks.clearSavedDraft).toHaveBeenCalledTimes(1);
+    expect(onCaptureSaved).toHaveBeenCalledTimes(1);
+    expect(mocks.push).not.toHaveBeenCalled();
+    expect(mocks.process).not.toHaveBeenCalled();
   });
 
   it('retains and retries the same stopped draft without stopping twice', async () => {

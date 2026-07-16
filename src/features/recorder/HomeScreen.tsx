@@ -82,7 +82,7 @@ export function HomeScreen() {
   return (
     <AppShell showHeader={!captureLocked} showNavigation={!captureLocked}>
       <div className="capture-home">
-        <RecorderPanel onCaptureLockChange={setCaptureLocked} />
+        <RecorderPanel onCaptureLockChange={setCaptureLocked} onCaptureSaved={() => void loadHome()} />
 
         {!captureLocked ? (
           <>

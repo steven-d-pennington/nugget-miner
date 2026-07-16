@@ -10,7 +10,7 @@ export function ProcessingQueueRunner() {
     let active = true;
 
     async function resume() {
-      if (!active || runningRef.current) return;
+      if (!active || runningRef.current || !navigator.onLine) return;
       runningRef.current = true;
       try {
         await ProcessingService.resumePending();

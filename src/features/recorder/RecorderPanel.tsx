@@ -19,13 +19,15 @@ function formatDuration(durationMs: number) {
 
 export interface RecorderPanelProps {
   onCaptureLockChange?: (locked: boolean) => void;
+  onCaptureSaved?: () => void;
 }
 
-export function RecorderPanel({ onCaptureLockChange }: RecorderPanelProps) {
+export function RecorderPanel({ onCaptureLockChange, onCaptureSaved }: RecorderPanelProps) {
   const router = useRouter();
   const recorder = useRecorder();
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<ReturnType<typeof userErrorMessage> | null>(null);
+  const [saveNotice, setSaveNotice] = useState<string | null>(null);
   const [followupError, setFollowupError] = useState<string | null>(null);
   const savingRef = useRef(false);
   const isRecording = recorder.state === 'recording' || recorder.state === 'stopping';
@@ -52,6 +54,7 @@ export function RecorderPanel({ onCaptureLockChange }: RecorderPanelProps) {
     savingRef.current = true;
     setSaving(true);
     setSaveError(null);
+    setSaveNotice(null);
     setFollowupError(null);
     let savedCaptureId: string;
     let automaticProcessing = false;
@@ -71,6 +74,13 @@ export function RecorderPanel({ onCaptureLockChange }: RecorderPanelProps) {
     }
 
     recorder.clearSavedDraft();
+    onCaptureSaved?.();
+    if (!navigator.onLine) {
+      setSaveNotice('Recording saved locally. Reconnect to continue processing.');
+      setSaving(false);
+      savingRef.current = false;
+      return;
+    }
     try {
       router.push(`/capture/${savedCaptureId}`);
     } catch {
@@ -91,6 +101,7 @@ export function RecorderPanel({ onCaptureLockChange }: RecorderPanelProps) {
     savingRef.current = true;
     setSaving(true);
     setSaveError(null);
+    setSaveNotice(null);
     setFollowupError(null);
     const draft = await recorder.stop();
     if (!draft) {
@@ -178,6 +189,7 @@ export function RecorderPanel({ onCaptureLockChange }: RecorderPanelProps) {
           <p>{saveError.detail}</p>
         </div>
       ) : null}
+      {saveNotice ? <p aria-live="polite" className="success-note">{saveNotice}</p> : null}
       {followupError ? <p className="inline-error" role="alert">{followupError}</p> : null}
 
       {canStart ? (
