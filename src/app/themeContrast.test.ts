@@ -36,22 +36,17 @@ function contrastRatio(foreground: string, background: string) {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
-const themes = [
-  {
-    name: 'dark',
-    tokens: readBlock(/:root\s*\{([\s\S]*?)\}/, 'dark'),
-  },
-  {
-    name: 'light',
-    tokens: readBlock(/@media\s*\(prefers-color-scheme:\s*light\)\s*\{\s*:root\s*\{([\s\S]*?)\}/, 'light'),
-  },
-];
+const tokens = readBlock(/:root\s*\{([\s\S]*?)\}/, 'approved light');
 
-describe.each(themes)('$name theme accent contrast', ({ tokens }) => {
-  it('meets WCAG AA for normal text', () => {
+describe('approved light theme accent contrast', () => {
+  it('meets WCAG AA for normal text and amber controls', () => {
     const accent = readHexToken(tokens, '--accent');
-    const foreground = readHexToken(tokens, '--accent-foreground');
+    const canvas = readHexToken(tokens, '--canvas');
+    const ink = readHexToken(tokens, '--ink');
+    const muted = readHexToken(tokens, '--muted');
 
-    expect(contrastRatio(foreground, accent)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(ink, accent)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(ink, canvas)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(muted, canvas)).toBeGreaterThanOrEqual(4.5);
   });
 });

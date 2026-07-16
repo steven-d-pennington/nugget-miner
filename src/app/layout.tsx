@@ -1,18 +1,33 @@
 import type { Metadata, Viewport } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Fraunces, IBM_Plex_Mono, Manrope } from 'next/font/google';
 import './globals.css';
 
-const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
-const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
+const wordmark = Fraunces({
+  subsets: ['latin'],
+  variable: '--font-wordmark',
+  weight: ['600', '700'],
+});
+
+const ui = Manrope({
+  subsets: ['latin'],
+  variable: '--font-ui',
+});
+
+const metadataFont = IBM_Plex_Mono({
+  subsets: ['latin'],
+  variable: '--font-metadata',
+  weight: ['400', '500', '600'],
+});
 
 export const metadata: Metadata = {
   title: 'Nugget',
-  description: 'Private voice idea capture with local mock transcription.',
+  description:
+    'Capture rambles locally, then organize them into useful ideas with optional cloud processing.',
   applicationName: 'Nugget',
 };
 
 export const viewport: Viewport = {
-  themeColor: '#080b10',
+  themeColor: '#fbf8f2',
   width: 'device-width',
   initialScale: 1,
 };
@@ -20,7 +35,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>{children}</body>
+      <body className={`${wordmark.variable} ${ui.variable} ${metadataFont.variable}`}>
+        {children}
+      </body>
     </html>
   );
 }
