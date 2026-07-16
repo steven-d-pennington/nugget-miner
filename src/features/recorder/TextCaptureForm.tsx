@@ -24,17 +24,26 @@ export function TextCaptureForm({ onSaved }: TextCaptureFormProps) {
     event.preventDefault();
     setSaving(true);
     setSaveError(null);
+    let captureSessionId: string;
     try {
       const settings = await settingsRepository.get();
       const { capture } = await CaptureService.saveText({
         text,
         processingPreference: settings.automaticProcessing ? 'automatic' : 'manual',
       });
-      await onSaved(capture.id);
+      captureSessionId = capture.id;
       setText('');
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : 'Could not save your ramble.';
       setSaveError(`${message} Your text is still here.`);
+      setSaving(false);
+      return;
+    }
+
+    try {
+      await onSaved(captureSessionId);
+    } catch {
+      setSaveError('Your ramble was saved locally, but the next screen could not open. Open it from Recent captures.');
     } finally {
       setSaving(false);
     }
@@ -91,7 +100,7 @@ export function TextCaptureForm({ onSaved }: TextCaptureFormProps) {
               Cancel
             </button>
             <button
-              className="min-h-12 rounded-full bg-accent px-6 py-3 font-semibold text-black disabled:opacity-50"
+              className="min-h-12 rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground disabled:opacity-50"
               disabled={saving}
               type="submit"
             >

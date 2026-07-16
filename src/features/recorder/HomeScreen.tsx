@@ -36,10 +36,9 @@ export function HomeScreen() {
     void loadCaptures();
   }, [loadCaptures]);
 
-  const handleTextSaved = useCallback(async (captureSessionId: string) => {
-    await loadCaptures();
+  const handleTextSaved = useCallback((captureSessionId: string) => {
     router.push(`/idea/${captureSessionId}`);
-  }, [loadCaptures, router]);
+  }, [router]);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">

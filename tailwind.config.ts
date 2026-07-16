@@ -10,6 +10,7 @@ const config: Config = {
         text: 'var(--text)',
         muted: 'var(--muted)',
         accent: 'var(--accent)',
+        'accent-foreground': 'var(--accent-foreground)',
         danger: 'var(--danger)',
         success: 'var(--success)',
       },

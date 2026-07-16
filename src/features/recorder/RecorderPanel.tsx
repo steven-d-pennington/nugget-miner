@@ -23,16 +23,25 @@ export function RecorderPanel({ onSaved }: { onSaved?: () => void | Promise<void
     if (!recorder.draft) return;
     setSaving(true);
     setSaveError(null);
+    let captureSessionId: string;
     try {
       const settings = await settingsRepository.get();
       const { capture } = await CaptureService.saveRecording({
         draft: recorder.draft,
         processingPreference: settings.automaticProcessing ? 'automatic' : 'manual',
       });
-      await onSaved?.();
-      router.push(`/idea/${capture.id}`);
+      captureSessionId = capture.id;
     } catch (caught) {
       setSaveError(caught instanceof Error ? caught.message : 'Could not save recording.');
+      setSaving(false);
+      return;
+    }
+
+    router.push(`/idea/${captureSessionId}`);
+    try {
+      await onSaved?.();
+    } catch {
+      // Recent captures reload when the user returns to this screen.
     } finally {
       setSaving(false);
     }

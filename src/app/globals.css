@@ -10,6 +10,7 @@
   --text: #f6f7fb;
   --muted: #aab3c5;
   --accent: #7dd3fc;
+  --accent-foreground: #080b10;
   --danger: #fb7185;
   --success: #86efac;
   --radius: 18px;
@@ -30,6 +31,7 @@
     --text: #111827;
     --muted: #5b6475;
     --accent: #0369a1;
+    --accent-foreground: #ffffff;
     --danger: #be123c;
     --success: #047857;
   }

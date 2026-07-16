@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { db, resetClientDatabaseForTests } from '@/lib/db';
 import { settingsRepository } from '@/lib/repositories';
+import { CaptureService } from '@/lib/services/CaptureService';
 import { TextCaptureForm } from './TextCaptureForm';
 
 afterEach(async () => {
@@ -21,6 +22,7 @@ describe('TextCaptureForm', () => {
 
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByLabelText('Ramble text')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save and organize' })).toHaveClass('text-accent-foreground');
   });
 
   it('persists a real capture and transcript with the stored processing preference', async () => {
@@ -78,5 +80,26 @@ describe('TextCaptureForm', () => {
     expect(textarea).toHaveValue(ramble);
     expect(await db.captureSessions.count()).toBe(0);
     expect(await db.transcripts.count()).toBe(0);
+  });
+
+  it('clears a durably saved ramble and reports follow-up navigation separately', async () => {
+    const saveText = vi.spyOn(CaptureService, 'saveText');
+    const onSaved = vi.fn().mockRejectedValueOnce(new Error('Recent captures could not refresh.'));
+    render(<TextCaptureForm onSaved={onSaved} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Paste a ramble' }));
+    const textarea = screen.getByLabelText('Ramble text');
+    fireEvent.change(textarea, { target: { value: 'This thought must not be saved twice.' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save and organize' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(saveText).toHaveBeenCalledTimes(1);
+    expect(onSaved).toHaveBeenCalledTimes(1);
+    expect(textarea).toHaveValue('');
+    expect(alert).toHaveTextContent(/saved locally/i);
+    expect(alert).toHaveTextContent(/next screen/i);
+    expect(alert).not.toHaveTextContent('Your text is still here.');
+    expect(await db.captureSessions.count()).toBe(1);
+    expect(await db.transcripts.count()).toBe(1);
   });
 });

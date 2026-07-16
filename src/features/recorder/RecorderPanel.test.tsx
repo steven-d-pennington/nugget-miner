@@ -75,4 +75,16 @@ describe('RecorderPanel durable save bridge', () => {
     );
     expect(push).toHaveBeenCalledWith('/idea/capture-1');
   });
+
+  it('routes a durable recording even when the noncritical refresh callback fails', async () => {
+    const onSaved = vi.fn().mockRejectedValueOnce(new Error('Recent captures could not refresh.'));
+    render(<RecorderPanel onSaved={onSaved} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /save recording/i }));
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/idea/capture-1'));
+    expect(saveRecording).toHaveBeenCalledTimes(1);
+    expect(onSaved).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText('Recent captures could not refresh.')).not.toBeInTheDocument();
+  });
 });
