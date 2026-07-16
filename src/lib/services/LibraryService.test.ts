@@ -124,12 +124,31 @@ describe('LibraryService.search', () => {
   });
 
   it('normalizes case and extra spaces and applies AND behavior across query terms', async () => {
+    await db.ideas.add(
+      idea('one-term-only', {
+        title: 'Neighborhood garden notes',
+        summary: grounded('summary-one-term', 'A local planting plan.'),
+        categoryId: DEFAULT_CATEGORY_IDS.personal,
+        updatedAt: timestamp + 35,
+      }),
+    );
+
     const rows = await LibraryService.search({ query: '  NEIGHBORHOOD    community  ' });
 
     expect(rows.map((row) => row.idea.id)).toEqual(['title-match']);
   });
 
   it('combines category and all-selected-tag filters', async () => {
+    await db.ideas.add(
+      idea('same-tags-other-category', {
+        title: 'Office equipment exchange',
+        summary: grounded('summary-other-category', 'Share equipment with coworkers.'),
+        categoryId: DEFAULT_CATEGORY_IDS.work,
+        tagIds: ['tag-community', 'tag-weekend'],
+        updatedAt: timestamp + 35,
+      }),
+    );
+
     const rows = await LibraryService.search({
       categoryId: DEFAULT_CATEGORY_IDS.personal,
       tagIds: ['tag-community', 'tag-weekend'],
@@ -161,9 +180,8 @@ describe('LibraryService.search', () => {
 });
 
 describe('library editing repositories', () => {
-  it('updates only editable idea fields while preserving provenance and confirmation timestamps', async () => {
-    const original = (await ideaRepository.getById('title-match'))!;
-    const input: UpdateIdeaInput = {
+  function updateInput(original: Idea): UpdateIdeaInput {
+    return {
       title: 'Updated tool library',
       summary: grounded('updated-summary', 'Updated summary.'),
       goals: [],
@@ -175,6 +193,11 @@ describe('library editing repositories', () => {
       tagIds: ['tag-community'],
       status: 'archived',
     };
+  }
+
+  it('updates only editable idea fields while preserving provenance and confirmation timestamps', async () => {
+    const original = (await ideaRepository.getById('title-match'))!;
+    const input = updateInput(original);
 
     const updated = await ideaRepository.update(original.id, input);
 
@@ -189,6 +212,64 @@ describe('library editing repositories', () => {
       status: 'archived',
     });
     expect(updated.updatedAt).toBeGreaterThan(original.updatedAt);
+  });
+
+  it('rejects updates to draft ideas and leaves the draft unchanged', async () => {
+    const original = (await ideaRepository.getById('draft'))!;
+
+    await expect(ideaRepository.update(original.id, updateInput(original))).rejects.toThrow(
+      'Only confirmed or archived ideas may be updated.',
+    );
+
+    await expect(ideaRepository.getById(original.id)).resolves.toEqual(original);
+  });
+
+  it('rejects archive and restore attempts for drafts and leaves the draft unchanged', async () => {
+    const original = (await ideaRepository.getById('draft'))!;
+
+    await expect(ideaRepository.setArchived(original.id, true)).rejects.toThrow(
+      'Only confirmed or archived ideas may be archived or restored.',
+    );
+    await expect(ideaRepository.setArchived(original.id, false)).rejects.toThrow(
+      'Only confirmed or archived ideas may be archived or restored.',
+    );
+
+    await expect(ideaRepository.getById(original.id)).resolves.toEqual(original);
+  });
+
+  it('accepts grounded explicit edits and rejects invalid explicit source references', async () => {
+    const original = (await ideaRepository.getById('title-match'))!;
+    const withEvidence: Idea = {
+      ...original,
+      sourceSpans: [{ id: 'source-1', startChar: 0, endChar: 19, quote: 'Neighborhood library' }],
+    };
+    await db.ideas.put(withEvidence);
+
+    const valid = await ideaRepository.update(withEvidence.id, {
+      ...updateInput(withEvidence),
+      status: 'confirmed',
+      summary: {
+        id: 'explicit-summary',
+        text: 'Neighborhood library',
+        basis: 'explicit',
+        sourceSpanIds: ['source-1'],
+      },
+    });
+    expect(valid.summary).toMatchObject({ basis: 'explicit', sourceSpanIds: ['source-1'] });
+
+    await expect(
+      ideaRepository.update(withEvidence.id, {
+        ...updateInput(valid),
+        status: 'confirmed',
+        summary: {
+          id: 'invalid-explicit-summary',
+          text: 'Unsupported statement',
+          basis: 'explicit',
+          sourceSpanIds: ['missing-source'],
+        },
+      }),
+    ).rejects.toThrow('Explicit content references invalid source evidence.');
+    await expect(ideaRepository.getById(withEvidence.id)).resolves.toEqual(valid);
   });
 
   it('archives and restores ideas and optionally includes archived library records', async () => {

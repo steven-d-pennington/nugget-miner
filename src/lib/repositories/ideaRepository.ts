@@ -49,6 +49,10 @@ function validateExplicitGrounding(idea: Idea, input: ConfirmIdeaInput) {
   }
 }
 
+function isLibraryStatus(status: unknown): status is 'confirmed' | 'archived' {
+  return status === 'confirmed' || status === 'archived';
+}
+
 export const ideaRepository = {
   async addDrafts(ideas: Idea[]): Promise<void> {
     try {
@@ -152,8 +156,12 @@ export const ideaRepository = {
 
   async update(id: string, input: UpdateIdeaInput): Promise<Idea> {
     return db.transaction('rw', db.ideas, db.categories, async () => {
-      const [idea, category] = await Promise.all([db.ideas.get(id), db.categories.get(input.categoryId)]);
+      const idea = await db.ideas.get(id);
       if (!idea) throw new ValidationError('Idea not found.');
+      if (!isLibraryStatus(idea.status) || (input.status !== undefined && !isLibraryStatus(input.status))) {
+        throw new ValidationError('Only confirmed or archived ideas may be updated.');
+      }
+      const category = await db.categories.get(input.categoryId);
       if (!category) throw new ValidationError('Category not found.');
       validateExplicitGrounding(idea, input);
 
@@ -179,9 +187,17 @@ export const ideaRepository = {
   },
 
   async setArchived(id: string, archived: boolean): Promise<void> {
-    await db.ideas.update(id, {
-      status: archived ? 'archived' : 'confirmed',
-      updatedAt: Date.now(),
+    await db.transaction('rw', db.ideas, async () => {
+      const idea = await db.ideas.get(id);
+      if (!idea) throw new ValidationError('Idea not found.');
+      if (!isLibraryStatus(idea.status)) {
+        throw new ValidationError('Only confirmed or archived ideas may be archived or restored.');
+      }
+      await db.ideas.put({
+        ...idea,
+        status: archived ? 'archived' : 'confirmed',
+        updatedAt: Date.now(),
+      });
     });
   },
 
