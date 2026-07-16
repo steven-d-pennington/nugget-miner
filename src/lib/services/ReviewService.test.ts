@@ -108,6 +108,82 @@ describe('ReviewService compatibility bridge', () => {
     await expect(captureRepository.getById(capture.id)).resolves.toMatchObject({ processingState: 'ready_for_review' });
   });
 
+  it('creates a distinct run and output when the preset fingerprint changes', async () => {
+    const { capture } = await seedTranscriptCapture('Remember to send the launch notes and review the product idea.');
+
+    const general = await ReviewService.runMockExtraction({
+      captureSessionId: capture.id,
+      preset: 'general-thought',
+    });
+    const work = await ReviewService.runMockExtraction({
+      captureSessionId: capture.id,
+      preset: 'work-reminder',
+    });
+
+    expect(work.run.id).not.toBe(general.run.id);
+    expect(JSON.parse(work.run.rawJson).summary).not.toBe(JSON.parse(general.run.rawJson).summary);
+    await expect(extractionRunRepository.listByCapture(capture.id)).resolves.toHaveLength(2);
+  });
+
+  it('creates distinct runs when provider, model, and organization prompt metadata change', async () => {
+    const { capture } = await seedTranscriptCapture('Use cloud organization for this transcript.');
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    fetchSpy
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            result: { ...cloudResult, summary: 'First cloud output' },
+            provider: 'cloud-a',
+            model: 'model-a',
+            promptVersion: 'organize-a',
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            result: { ...cloudResult, summary: 'Second cloud output' },
+            provider: 'cloud-b',
+            model: 'model-b',
+            promptVersion: 'organize-b',
+          }),
+          { status: 200 },
+        ),
+      );
+
+    const first = await ReviewService.runCloudExtraction({
+      captureSessionId: capture.id,
+      preset: 'product-idea',
+      requestConsent: async () => true,
+    });
+    const second = await ReviewService.runCloudExtraction({
+      captureSessionId: capture.id,
+      preset: 'product-idea',
+      requestConsent: async () => true,
+    });
+
+    expect(second.run.id).not.toBe(first.run.id);
+    expect(first.run).toMatchObject({ provider: 'cloud-a', model: 'model-a', organizationPromptVersion: 'organize-a' });
+    expect(second.run).toMatchObject({ provider: 'cloud-b', model: 'model-b', organizationPromptVersion: 'organize-b' });
+    expect(JSON.parse(first.run.rawJson).summary).toBe('First cloud output');
+    expect(JSON.parse(second.run.rawJson).summary).toBe('Second cloud output');
+  });
+
+  it('marks a started run failed and preserves provider output when persistence fails', async () => {
+    const { capture } = await seedTranscriptCapture();
+    vi.spyOn(nuggetRepository, 'createMany').mockRejectedValueOnce(new Error('IndexedDB write failed'));
+
+    await expect(
+      ReviewService.runMockExtraction({ captureSessionId: capture.id, preset: 'general-thought' }),
+    ).rejects.toThrow('IndexedDB write failed');
+
+    const [failedRun] = await extractionRunRepository.listByCapture(capture.id);
+    expect(failedRun).toMatchObject({ status: 'failed', errorCode: 'legacy_persistence_failed', attempt: 1 });
+    expect(JSON.parse(failedRun!.rawJson).summary).toContain('General thought summary');
+    await expect(captureRepository.getById(capture.id)).resolves.toMatchObject({ processingState: 'failed' });
+  });
+
   it('runs cloud extraction through the same canonical persistence path after consent', async () => {
     const { capture } = await seedTranscriptCapture('We should extract this with the real model.');
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(

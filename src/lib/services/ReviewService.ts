@@ -12,6 +12,7 @@ import {
 } from '@/lib/repositories';
 import { EXTRACTION_SCHEMA_VERSION, parseExtractionResult } from '@/lib/validation/extractionResult';
 import type { ActionItem, ExtractionPreset, ExtractionRun, Nugget, Question, Transcript } from '@/types';
+import { processingFingerprint } from './processingFingerprint';
 
 export interface ReviewSnapshot {
   run: ExtractionRun;
@@ -55,15 +56,30 @@ async function persistExtractionOutput(
   preset: ExtractionPreset,
   output: ExtractionProviderOutput,
 ): Promise<ReviewSnapshot> {
-  const idempotencyKey = [captureSessionId, transcript.contentHash, 'organization', EXTRACTION_SCHEMA_VERSION].join(':');
+  const model = output.model ?? output.provider;
+  const reasoningEffort = 'legacy';
+  const segmentationPromptVersion = `legacy-preset:${preset}`;
+  const idempotencyKey = processingFingerprint({
+    captureSessionId,
+    transcriptId: transcript.id,
+    transcriptHash: transcript.contentHash,
+    provider: output.provider,
+    model,
+    reasoningEffort,
+    preset,
+    segmentationPromptVersion,
+    organizationPromptVersion: output.promptVersion,
+    stage: 'organization',
+    schemaVersion: EXTRACTION_SCHEMA_VERSION,
+  });
   const run = await extractionRunRepository.start({
     captureSessionId,
     transcriptId: transcript.id,
     transcriptHash: transcript.contentHash,
     provider: output.provider,
-    model: output.model ?? output.provider,
-    reasoningEffort: 'legacy',
-    segmentationPromptVersion: `legacy-preset:${preset}`,
+    model,
+    reasoningEffort,
+    segmentationPromptVersion,
     organizationPromptVersion: output.promptVersion,
     schemaVersion: EXTRACTION_SCHEMA_VERSION,
     idempotencyKey,
@@ -75,15 +91,20 @@ async function persistExtractionOutput(
   }
 
   const rawJson = JSON.stringify(output.result);
-  const [nuggets, questions] = await Promise.all([
-    nuggetRepository.createMany(captureSessionId, run.id, output.result.nuggets),
-    questionRepository.createMany(captureSessionId, run.id, output.result.questions),
-  ]);
-  await extractionRunRepository.complete(run.id, rawJson, 0);
-  await captureRepository.transition(captureSessionId, 'ready_for_review', { activeExtractionRunId: run.id });
-  const completed = await extractionRunRepository.getById(run.id);
-  if (!completed) throw new ProviderError('Completed extraction run not found.');
-  return { run: completed, preset, nuggets, questions, actions: output.result.actions };
+  try {
+    const [nuggets, questions] = await Promise.all([
+      nuggetRepository.createMany(captureSessionId, run.id, output.result.nuggets),
+      questionRepository.createMany(captureSessionId, run.id, output.result.questions),
+    ]);
+    await extractionRunRepository.complete(run.id, rawJson, 0);
+    await captureRepository.transition(captureSessionId, 'ready_for_review', { activeExtractionRunId: run.id });
+    const completed = await extractionRunRepository.getById(run.id);
+    if (!completed) throw new ProviderError('Completed extraction run not found.');
+    return { run: completed, preset, nuggets, questions, actions: output.result.actions };
+  } catch (error) {
+    await extractionRunRepository.fail(run.id, 'legacy_persistence_failed', rawJson);
+    throw error;
+  }
 }
 
 async function getTranscriptOrThrow(captureSessionId: string) {

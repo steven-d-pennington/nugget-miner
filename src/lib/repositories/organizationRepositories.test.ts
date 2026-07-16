@@ -10,10 +10,12 @@ afterEach(async () => {
 
 describe('categoryRepository', () => {
   it('seeds ordered classifier-ready defaults without overwriting edits', async () => {
+    await db.categories.delete(DEFAULT_CATEGORY_IDS.school);
     const defaults = await categoryRepository.ensureDefaults();
 
     expect(defaults.map((item) => item.name)).toEqual(['Work', 'School', 'Personal', 'Family', 'Misc']);
     expect(defaults.every((item) => item.description.length >= 20)).toBe(true);
+    expect(defaults.every((item) => item.createdAt > 0 && item.updatedAt > 0)).toBe(true);
     expect(defaults.find((item) => item.id === DEFAULT_CATEGORY_IDS.misc)).toMatchObject({ isFallback: true });
 
     const customDescription = 'Professional work with examples and boundaries customized by the user.';

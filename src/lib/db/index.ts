@@ -131,7 +131,7 @@ export class NuggetDatabase extends Dexie {
         ideas: '&id, captureSessionId, extractionRunId, status, categoryId, createdAt, updatedAt, *tagIds, [status+updatedAt]',
         recordings: '&id, captureSessionId',
         transcripts: '&id, captureSessionId, [captureSessionId+version], contentHash',
-        extractionRuns: '&id, captureSessionId, transcriptId, status, stage, startedAt, &idempotencyKey',
+        extractionRuns: '&id, captureSessionId, transcriptId, status, stage, startedAt, idempotencyKey, &[idempotencyKey+attempt]',
         categories: '&id, &normalizedName, sortOrder, isFallback',
         tags: '&id, &normalizedName, createdAt',
         nuggets: '&id, captureSessionId, extractionRunId, status',
@@ -288,6 +288,13 @@ export class NuggetDatabase extends Dexie {
             delete row.extractionRunId;
           });
       });
+
+    this.on('populate', (tx) => {
+      const timestamp = Date.now();
+      return tx.table<Category, string>('categories').bulkAdd(
+        DEFAULT_CATEGORIES.map((category) => ({ ...category, createdAt: timestamp, updatedAt: timestamp })),
+      );
+    });
   }
 }
 

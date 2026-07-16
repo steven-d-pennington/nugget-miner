@@ -14,25 +14,40 @@ export interface StartExtractionRunInput {
   schemaVersion: string;
   idempotencyKey: string;
   stage: ExtractionRun['stage'];
-  attempt?: number;
 }
 
 export const extractionRunRepository = {
   async start(input: StartExtractionRunInput): Promise<ExtractionRun> {
-    const existing = await this.findByIdempotencyKey(input.idempotencyKey);
-    if (existing?.status === 'succeeded') return existing;
-
     try {
-      const run: ExtractionRun = {
-        id: crypto.randomUUID(),
-        ...input,
-        status: 'running',
-        attempt: input.attempt ?? 1,
-        rawJson: '',
-        startedAt: Date.now(),
-      };
-      await db.extractionRuns.add(run);
-      return run;
+      return await db.transaction('rw', db.extractionRuns, async () => {
+        const attempts = await db.extractionRuns
+          .where('idempotencyKey')
+          .equals(input.idempotencyKey)
+          .sortBy('attempt');
+        const succeeded = attempts.filter((attempt) => attempt.status === 'succeeded').at(-1);
+        if (succeeded) return succeeded;
+
+        const timestamp = Date.now();
+        for (const interrupted of attempts.filter((attempt) => attempt.status === 'running')) {
+          await db.extractionRuns.update(interrupted.id, {
+            status: 'superseded',
+            completedAt: timestamp,
+            errorCode: interrupted.errorCode ?? 'interrupted',
+          });
+        }
+
+        const nextAttempt = (attempts.at(-1)?.attempt ?? 0) + 1;
+        const run: ExtractionRun = {
+          id: crypto.randomUUID(),
+          ...input,
+          status: 'running',
+          attempt: nextAttempt,
+          rawJson: '',
+          startedAt: timestamp,
+        };
+        await db.extractionRuns.add(run);
+        return run;
+      });
     } catch (error) {
       throw new StorageError(error instanceof Error ? error.message : undefined);
     }
@@ -48,11 +63,14 @@ export const extractionRunRepository = {
     });
   },
 
-  async fail(id: string, errorCode: string): Promise<void> {
+  async fail(id: string, errorCode: string, rawJson?: string): Promise<void> {
+    const existing = await db.extractionRuns.get(id);
+    if (!existing) return;
     await db.extractionRuns.update(id, {
       errorCode,
       status: 'failed',
       completedAt: Date.now(),
+      rawJson: existing.rawJson || rawJson || '',
     });
   },
 
@@ -61,7 +79,8 @@ export const extractionRunRepository = {
   },
 
   async findByIdempotencyKey(key: string): Promise<ExtractionRun | undefined> {
-    return db.extractionRuns.where('idempotencyKey').equals(key).first();
+    const attempts = await db.extractionRuns.where('idempotencyKey').equals(key).sortBy('attempt');
+    return attempts.filter((attempt) => attempt.status === 'succeeded').at(-1) ?? attempts.at(-1);
   },
 
   async listByCapture(captureSessionId: string): Promise<ExtractionRun[]> {

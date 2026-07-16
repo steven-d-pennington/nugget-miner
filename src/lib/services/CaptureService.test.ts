@@ -53,6 +53,20 @@ describe('CaptureService', () => {
     await expect(db.captureSessions.get(result.capture.id)).resolves.toMatchObject({ transcriptId: result.transcript?.id });
   });
 
+  it('rolls back a typed capture when transcript persistence fails', async () => {
+    vi.spyOn(db.transcripts, 'add').mockRejectedValueOnce(new DOMException('Storage quota exceeded.', 'QuotaExceededError'));
+
+    await expect(
+      CaptureService.saveText({
+        text: 'Keep the capture and transcript transaction atomic.',
+        processingPreference: 'automatic',
+      }),
+    ).rejects.toThrow();
+
+    expect(await db.captureSessions.count()).toBe(0);
+    expect(await db.transcripts.count()).toBe(0);
+  });
+
   it('rejects typed captures with fewer than three non-whitespace characters', async () => {
     await expect(CaptureService.saveText({ text: ' a  b ', processingPreference: 'manual' })).rejects.toThrow(
       'Enter at least three non-whitespace characters.',

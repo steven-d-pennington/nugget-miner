@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { db, resetClientDatabaseForTests } from '@/lib/db';
-import { DEFAULT_CATEGORIES, DEFAULT_CATEGORY_IDS } from '@/lib/db/defaultCategories';
+import { DEFAULT_CATEGORY_IDS } from '@/lib/db/defaultCategories';
 import { ValidationError } from '@/lib/errors';
 import {
   captureRepository,
@@ -124,16 +124,36 @@ describe('capture, recording, and transcript repositories', () => {
 });
 
 describe('canonical idea repository', () => {
-  it('rejects confirmation when explicit content has no source evidence', async () => {
+  it.each([
+    {
+      evidence: 'missing source references',
+      sourceSpans: [{ id: 'source-1', startChar: 0, endChar: 12, quote: 'The original' }],
+      sourceSpanIds: [],
+    },
+    {
+      evidence: 'a nonexistent source reference',
+      sourceSpans: [{ id: 'source-1', startChar: 0, endChar: 12, quote: 'The original' }],
+      sourceSpanIds: ['source-missing'],
+    },
+    {
+      evidence: 'an empty source quote',
+      sourceSpans: [{ id: 'source-empty', startChar: 0, endChar: 12, quote: '   ' }],
+      sourceSpanIds: ['source-empty'],
+    },
+    {
+      evidence: 'invalid source coordinates',
+      sourceSpans: [{ id: 'source-invalid', startChar: -1, endChar: 12, quote: 'The original' }],
+      sourceSpanIds: ['source-invalid'],
+    },
+  ])('rejects confirmation when explicit content has $evidence', async ({ sourceSpans, sourceSpanIds }) => {
     const capture = await captureRepository.create({ source: 'text', processingPreference: 'manual' });
-    await db.categories.bulkAdd(DEFAULT_CATEGORIES);
-    const idea = draftIdea(capture.id, 'idea-without-evidence');
+    const idea = { ...draftIdea(capture.id), sourceSpans };
     await ideaRepository.addDrafts([idea]);
 
     await expect(
       ideaRepository.confirm(idea.id, {
         title: idea.title,
-        summary: grounded('explicit-summary', 'The user explicitly said this.', 'explicit'),
+        summary: grounded('explicit-summary', 'The user explicitly said this.', 'explicit', sourceSpanIds),
         goals: [],
         blockers: [],
         questions: [],
@@ -148,7 +168,6 @@ describe('canonical idea repository', () => {
 
   it('confirms grounded ideas and advances the parent capture state', async () => {
     const capture = await captureRepository.create({ source: 'text', processingPreference: 'manual' });
-    await db.categories.bulkAdd(DEFAULT_CATEGORIES);
     const idea = {
       ...draftIdea(capture.id, 'grounded-idea'),
       sourceSpans: [{ id: 'source-1', startChar: 0, endChar: 14, quote: 'Build a library' }],
@@ -173,22 +192,29 @@ describe('canonical idea repository', () => {
 });
 
 describe('extraction run repository', () => {
-  it('reuses a succeeded run at the same idempotency boundary', async () => {
+  async function runInput(idempotencyKey = 'pipeline-fingerprint') {
     const capture = await captureRepository.create({ source: 'text', processingPreference: 'manual' });
     const transcript = await transcriptRepository.createVersion(capture.id, { text: 'One idea', provider: 'typed' });
-    const input = {
-      captureSessionId: capture.id,
-      transcriptId: transcript.id,
-      transcriptHash: transcript.contentHash,
-      provider: 'test',
-      model: 'test-model',
-      reasoningEffort: 'medium',
-      segmentationPromptVersion: 'segment-v1',
-      organizationPromptVersion: 'organize-v1',
-      schemaVersion: '2',
-      idempotencyKey: `${capture.id}:${transcript.contentHash}:segmentation:2`,
-      stage: 'segmenting' as const,
+    return {
+      capture,
+      input: {
+        captureSessionId: capture.id,
+        transcriptId: transcript.id,
+        transcriptHash: transcript.contentHash,
+        provider: 'test',
+        model: 'test-model',
+        reasoningEffort: 'medium',
+        segmentationPromptVersion: 'segment-v1',
+        organizationPromptVersion: 'organize-v1',
+        schemaVersion: '2',
+        idempotencyKey,
+        stage: 'segmenting' as const,
+      },
     };
+  }
+
+  it('reuses a succeeded run at the same idempotency boundary', async () => {
+    const { capture, input } = await runInput();
     const first = await extractionRunRepository.start(input);
     await extractionRunRepository.complete(first.id, '{"ideas":[]}', 25);
 
@@ -196,5 +222,56 @@ describe('extraction run repository', () => {
 
     expect(second.id).toBe(first.id);
     await expect(extractionRunRepository.listByCapture(capture.id)).resolves.toHaveLength(1);
+  });
+
+  it('allocates the next unique attempt after a failed run without overwriting its raw output', async () => {
+    const { capture, input } = await runInput();
+    const first = await extractionRunRepository.start(input);
+    await extractionRunRepository.fail(first.id, 'schema_invalid', '{"partial":true}');
+
+    const second = await extractionRunRepository.start(input);
+
+    expect(second).toMatchObject({ attempt: 2, status: 'running' });
+    expect(second.id).not.toBe(first.id);
+    await expect(extractionRunRepository.getById(first.id)).resolves.toMatchObject({
+      attempt: 1,
+      status: 'failed',
+      errorCode: 'schema_invalid',
+      rawJson: '{"partial":true}',
+    });
+    await expect(extractionRunRepository.listByCapture(capture.id)).resolves.toHaveLength(2);
+  });
+
+  it('supersedes an interrupted running attempt and preserves its partial output', async () => {
+    const { input } = await runInput();
+    const interrupted = await extractionRunRepository.start(input);
+    await db.extractionRuns.update(interrupted.id, { rawJson: '{"checkpoint":"saved"}' });
+
+    const resumed = await extractionRunRepository.start(input);
+
+    expect(resumed).toMatchObject({ attempt: 2, status: 'running' });
+    await expect(extractionRunRepository.getById(interrupted.id)).resolves.toMatchObject({
+      attempt: 1,
+      status: 'superseded',
+      errorCode: 'interrupted',
+      rawJson: '{"checkpoint":"saved"}',
+    });
+  });
+
+  it('increments attempts across retries and reuses the first succeeded retry', async () => {
+    const { capture, input } = await runInput();
+    const first = await extractionRunRepository.start(input);
+    await extractionRunRepository.fail(first.id, 'first_failure');
+    const second = await extractionRunRepository.start(input);
+    await extractionRunRepository.fail(second.id, 'second_failure');
+    const third = await extractionRunRepository.start(input);
+    await extractionRunRepository.complete(third.id, '{"ideas":["ready"]}', 50);
+
+    const reused = await extractionRunRepository.start(input);
+
+    expect([first.attempt, second.attempt, third.attempt]).toEqual([1, 2, 3]);
+    expect(reused.id).toBe(third.id);
+    expect(reused.attempt).toBe(3);
+    await expect(extractionRunRepository.listByCapture(capture.id)).resolves.toHaveLength(3);
   });
 });
