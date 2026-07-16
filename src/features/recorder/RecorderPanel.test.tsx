@@ -135,7 +135,8 @@ describe('RecorderPanel mobile capture', () => {
     render(<RecorderPanel />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Stop & save' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('still ready to save');
+    expect(await screen.findByRole('alert')).toHaveTextContent('This device is low on storage');
+    expect(screen.getByRole('alert')).not.toHaveTextContent('Quota exceeded');
     expect(screen.getByRole('button', { name: 'Retry save' })).toBeInTheDocument();
     expect(mocks.clearSavedDraft).not.toHaveBeenCalled();
     expect(mocks.push).not.toHaveBeenCalled();

@@ -8,6 +8,8 @@ import { buildFullExport } from '@/lib/export/fullExport';
 import { ORGANIZATION_PROMPT_VERSION } from '@/lib/llm/organizationPrompt';
 import { SEGMENTATION_PROMPT_VERSION } from '@/lib/llm/segmentationPrompt';
 import { DataManagementService } from '@/lib/services/DataManagementService';
+import { requestPersistentStorage, storageHealth, type StorageHealth } from '@/lib/storage/storageHealth';
+import { userErrorMessage, type UserErrorMessage } from '@/lib/userErrorMessage';
 import { ORGANIZATION_SCHEMA_VERSION } from '@/lib/validation/organizationResult';
 import { SEGMENTATION_SCHEMA_VERSION } from '@/lib/validation/segmentationResult';
 import type { AppSettings } from '@/types';
@@ -36,6 +38,11 @@ interface SettingsScreenProps {
   navigateToCapture?: () => void;
 }
 
+interface SettingsError {
+  message: UserErrorMessage;
+  retry?: () => void;
+}
+
 async function loadSettingsRepository() {
   return (await import('@/lib/repositories')).settingsRepository;
 }
@@ -48,15 +55,36 @@ export function SettingsScreen({ navigateToCapture = () => globalThis.location.a
   const [eraseText, setEraseText] = useState('');
   const [eraseArmed, setEraseArmed] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [storage, setStorage] = useState<StorageHealth>();
+  const [storageBusy, setStorageBusy] = useState(false);
+  const [message, setMessage] = useState<string>();
+  const [error, setError] = useState<SettingsError>();
+
+  function showError(cause: unknown, retry?: () => void) {
+    setMessage(undefined);
+    setError({ message: userErrorMessage(cause), retry });
+  }
+
+  async function refreshSettings() {
+    try {
+      setSettings(await (await loadSettingsRepository()).get());
+    } catch (cause) {
+      showError(cause, () => void refreshSettings());
+    }
+  }
+
+  async function refreshStorageHealth() {
+    try {
+      setStorage(await storageHealth());
+    } catch (cause) {
+      showError(cause, () => void refreshStorageHealth());
+    }
+  }
 
   useEffect(() => {
     let active = true;
-    loadSettingsRepository()
-      .then((repository) => repository.get())
-      .then((value) => active && setSettings(value))
-      .catch(() => active && setError('Settings could not be loaded.'));
+    void refreshSettings();
+    void refreshStorageHealth();
     fetch('/api/health')
       .then((response) => response.ok ? response.json() : Promise.reject(new Error('Health unavailable')))
       .then((value) => {
@@ -70,7 +98,7 @@ export function SettingsScreen({ navigateToCapture = () => globalThis.location.a
   }, []);
 
   async function persist(patch: { automaticProcessing?: boolean; cloudProcessingConsent?: AppSettings['cloudProcessingConsent'] }) {
-    setError('');
+    setError(undefined);
     const updated = await (await loadSettingsRepository()).update(patch);
     setSettings(updated);
     return updated;
@@ -83,8 +111,8 @@ export function SettingsScreen({ navigateToCapture = () => globalThis.location.a
     }
     try {
       await persist({ automaticProcessing: enabled });
-    } catch {
-      setError('Automatic organization could not be updated.');
+    } catch (cause) {
+      showError(cause, () => void toggleAutomatic(enabled));
     }
   }
 
@@ -93,8 +121,8 @@ export function SettingsScreen({ navigateToCapture = () => globalThis.location.a
       await persist({ cloudProcessingConsent: 'granted', automaticProcessing: true });
       setConsentPrompt(false);
       setMessage('Cloud processing consent granted and automatic organization enabled.');
-    } catch {
-      setError('Cloud processing consent could not be updated.');
+    } catch (cause) {
+      showError(cause, () => void grantConsent());
     }
   }
 
@@ -102,20 +130,20 @@ export function SettingsScreen({ navigateToCapture = () => globalThis.location.a
     try {
       await persist({ cloudProcessingConsent: 'denied', automaticProcessing: false });
       setMessage('Cloud processing consent revoked. Saved local data was not deleted.');
-    } catch {
-      setError('Cloud processing consent could not be revoked.');
+    } catch (cause) {
+      showError(cause, () => void revokeConsent());
     }
   }
 
   async function exportAll() {
     setBusy(true);
-    setError('');
+    setError(undefined);
     try {
       const data = await buildFullExport();
       downloadText(`nugget-full-export-${data.exportedAt.slice(0, 10)}.json`, JSON.stringify(data, null, 2), 'application/json');
       setMessage('Your local Nugget export was downloaded.');
-    } catch {
-      setError('Your local data could not be exported. No data was changed.');
+    } catch (cause) {
+      showError(cause, () => void exportAll());
     } finally {
       setBusy(false);
     }
@@ -123,14 +151,32 @@ export function SettingsScreen({ navigateToCapture = () => globalThis.location.a
 
   async function eraseAll() {
     setBusy(true);
-    setError('');
+    setError(undefined);
     try {
       await DataManagementService.deleteAll();
       setMessage('All local Nugget data was erased.');
       globalThis.setTimeout(navigateToCapture, 300);
-    } catch {
-      setError('Erase failed. Some local data may still be present. Stay in Settings and try again.');
+    } catch (cause) {
+      showError(cause, () => void eraseAll());
       setBusy(false);
+    }
+  }
+
+  async function improveOfflineStorage() {
+    setStorageBusy(true);
+    setError(undefined);
+    try {
+      const persisted = await requestPersistentStorage();
+      await refreshStorageHealth();
+      setMessage(
+        persisted
+          ? 'This browser granted persistent offline storage for Nugget.'
+          : 'This browser did not grant persistent storage. Your existing local data remains in this browser.',
+      );
+    } catch (cause) {
+      showError(cause, () => void improveOfflineStorage());
+    } finally {
+      setStorageBusy(false);
     }
   }
 
@@ -144,8 +190,14 @@ export function SettingsScreen({ navigateToCapture = () => globalThis.location.a
         <p className="mb-0 mt-4 max-w-2xl leading-7 text-[#6E6B67]">Shape how Nugget organizes your thoughts and review how local data and cloud processing work.</p>
       </header>
 
-      {message ? <p className="m-0 border-l-4 border-[#247A55] bg-white p-4 text-[#101D36]" role="alert">{message}</p> : null}
-      {error ? <p role="alert" className="m-0 border-l-4 border-red-700 bg-red-50 p-4 text-red-800">{error}</p> : null}
+      {message ? <p aria-live="polite" className="m-0 border-l-4 border-[#247A55] bg-white p-4 text-[#101D36]">{message}</p> : null}
+      {error ? (
+        <div className="m-0 border-l-4 border-red-700 bg-red-50 p-4 text-red-800" role="alert">
+          <strong>{error.message.title}</strong>
+          <p>{error.message.detail}</p>
+          {error.retry && error.message.actionLabel ? <button className="button-quiet" onClick={error.retry} type="button">{error.message.actionLabel}</button> : null}
+        </div>
+      ) : null}
 
       <div className="grid border-b border-[#E8DDCE]">
         <section className="border-t border-[#E8DDCE] py-6" aria-labelledby="category-organization-heading">
@@ -178,6 +230,15 @@ export function SettingsScreen({ navigateToCapture = () => globalThis.location.a
         </section>
 
         <InstallAppButton />
+
+        <section className="border-t border-[#E8DDCE] py-6" aria-labelledby="offline-storage-heading">
+          <h2 className="m-0 text-xl font-bold text-[#101D36]" id="offline-storage-heading">Offline storage</h2>
+          <p className="mb-0 mt-2 leading-6 text-[#6E6B67]">{storage ? storage.persisted ? 'This browser has granted persistent storage for Nugget.' : 'Persistent offline storage is not enabled. Nugget stores recordings and saved data locally in this browser.' : 'Checking browser storage availability…'}</p>
+          {storage?.usage !== undefined && storage.quota !== undefined ? <p className="mb-0 mt-2 text-sm text-[#6E6B67]">Browser storage in use: {Math.round(storage.usage / 1_024)} KB of {Math.round(storage.quota / 1_024)} KB.</p> : null}
+          <button className="mt-4 min-h-12 rounded-full border border-[#E5A11A] px-5 font-extrabold text-[#101D36]" disabled={storageBusy} onClick={() => void improveOfflineStorage()} type="button">
+            {storageBusy ? 'Improving offline storage reliability…' : 'Improve offline storage reliability'}
+          </button>
+        </section>
 
         <section className="border-t border-[#E8DDCE] py-6" aria-labelledby="data-export-heading">
           <h2 className="m-0 text-xl font-bold text-[#101D36]" id="data-export-heading">Data export</h2>

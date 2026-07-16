@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRecorder } from '@/hooks/useRecorder';
 import { useWakeLock } from '@/hooks/useWakeLock';
 import { settingsRepository } from '@/lib/repositories';
+import { userErrorMessage } from '@/lib/userErrorMessage';
 import { CaptureService } from '@/lib/services/CaptureService';
 import { ProcessingService } from '@/lib/services/ProcessingService';
 import type { RecordingDraft } from '@/types';
@@ -16,11 +17,6 @@ function formatDuration(durationMs: number) {
   return `${minutes.toString().padStart(2, '0')}:${remainder.toString().padStart(2, '0')}`;
 }
 
-function storageMessage(error: unknown) {
-  const detail = error instanceof Error && error.message ? ` ${error.message}` : '';
-  return `This recording is still ready to save. Free some browser storage if needed, then try again.${detail}`;
-}
-
 export interface RecorderPanelProps {
   onCaptureLockChange?: (locked: boolean) => void;
 }
@@ -29,7 +25,7 @@ export function RecorderPanel({ onCaptureLockChange }: RecorderPanelProps) {
   const router = useRouter();
   const recorder = useRecorder();
   const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<ReturnType<typeof userErrorMessage> | null>(null);
   const [followupError, setFollowupError] = useState<string | null>(null);
   const savingRef = useRef(false);
   const isRecording = recorder.state === 'recording' || recorder.state === 'stopping';
@@ -68,7 +64,7 @@ export function RecorderPanel({ onCaptureLockChange }: RecorderPanelProps) {
       });
       savedCaptureId = saved.capture.id;
     } catch (error) {
-      setSaveError(storageMessage(error));
+      setSaveError(userErrorMessage(error));
       setSaving(false);
       savingRef.current = false;
       return;
@@ -106,6 +102,11 @@ export function RecorderPanel({ onCaptureLockChange }: RecorderPanelProps) {
     await persistDraft(draft);
   }
 
+  function openPasteRamble() {
+    document.querySelector<HTMLButtonElement>('[aria-controls="text-capture-panel"]')?.click();
+  }
+
+  const recorderRecovery = recorder.error ? userErrorMessage(recorder.error) : null;
   const canStart = (recorder.state === 'idle' || recorder.state === 'error') && !recorder.draft;
 
   if (recorder.state === 'requesting-permission') {
@@ -156,8 +157,27 @@ export function RecorderPanel({ onCaptureLockChange }: RecorderPanelProps) {
       <h1 id="capture-heading">What&apos;s on your mind?</h1>
       <p className="capture-hero__lede">Speak freely. Your recording is stored in this browser before any processing starts.</p>
 
-      {recorder.error ? <p className="inline-error" role="alert">{recorder.error}</p> : null}
-      {saveError ? <p className="inline-error" role="alert">{saveError}</p> : null}
+      {recorderRecovery ? (
+        <div className="inline-error" role="alert">
+          <strong>{recorderRecovery.title}</strong>
+          <p>{recorderRecovery.detail}</p>
+          {recorderRecovery.actionLabel ? (
+            <button
+              className="button-quiet"
+              onClick={recorderRecovery.actionLabel === 'Paste a ramble' ? openPasteRamble : recorder.start}
+              type="button"
+            >
+              {recorderRecovery.actionLabel}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+      {saveError ? (
+        <div className="inline-error" role="alert">
+          <strong>{saveError.title}</strong>
+          <p>{saveError.detail}</p>
+        </div>
+      ) : null}
       {followupError ? <p className="inline-error" role="alert">{followupError}</p> : null}
 
       {canStart ? (

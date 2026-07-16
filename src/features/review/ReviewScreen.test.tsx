@@ -186,8 +186,9 @@ describe('ReviewScreen multi-idea confirmation', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Confirm all ready ideas (3)' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      '1 of 3 ready ideas confirmed before this stopped. quota write failed',
+      'This device is low on storage',
     );
+    expect(screen.getByRole('alert')).not.toHaveTextContent('quota write failed');
     expect(mocks.confirm).toHaveBeenCalledTimes(2);
     expect(screen.getByLabelText('Title')).toHaveValue('Edited second idea');
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
@@ -209,7 +210,8 @@ describe('ReviewScreen multi-idea confirmation', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Discard draft idea' }));
 
     const dialog = screen.getByRole('dialog');
-    expect(await within(dialog).findByRole('alert')).toHaveTextContent('delete failed');
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent('Something needs attention');
+    expect(within(dialog).getByRole('alert')).not.toHaveTextContent('delete failed');
     const retry = within(dialog).getByRole('button', { name: 'Retry discard' });
     expect(retry).toHaveFocus();
     expect(screen.getByLabelText('Title')).toHaveValue('Keep this edit');
@@ -271,7 +273,8 @@ describe('ReviewScreen multi-idea confirmation', () => {
     await screen.findByRole('heading', { name: 'No clear ideas found' });
     fireEvent.click(screen.getByRole('button', { name: 'Reprocess' }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('organization failed');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Something needs attention');
+    expect(screen.getByRole('alert')).not.toHaveTextContent('organization failed');
     expect(screen.getByText(malicious)).toBeInTheDocument();
     expect(container.querySelector('.review-empty__transcript img')).toBeNull();
   });

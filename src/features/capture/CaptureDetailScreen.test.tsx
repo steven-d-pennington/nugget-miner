@@ -132,7 +132,8 @@ describe('CaptureDetailScreen', () => {
     mocks.getCapture.mockRejectedValueOnce(new Error('IndexedDB unavailable'));
     render(<CaptureDetailScreen captureId="broken" />);
     expect(await screen.findByRole('heading', { name: 'Unable to load capture' })).toBeInTheDocument();
-    expect(screen.getByRole('alert')).toHaveTextContent('IndexedDB unavailable');
+    expect(screen.getByRole('alert')).toHaveTextContent('Your existing local work is still available');
+    expect(screen.getByRole('alert')).not.toHaveTextContent('IndexedDB unavailable');
   });
 
   it('renders durable typed and audio sources without mislabeling missing audio', async () => {
@@ -171,7 +172,8 @@ describe('CaptureDetailScreen', () => {
     }));
     render(<CaptureDetailScreen captureId="capture-1" />);
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Organization failed. Your saved transcript remains safe');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Nugget could not organize this result');
+    expect(screen.getByRole('alert')).not.toHaveTextContent('Organization failed.');
     expect(screen.getByText('Organizing').closest('li')).toHaveTextContent('failed here');
     expect(screen.getByRole('button', { name: 'Retry' })).toBeEnabled();
   });

@@ -7,6 +7,7 @@ import { AppShell } from '@/components/AppShell';
 import { AudioPlayer } from '@/components/AudioPlayer';
 import { captureRepository, recordingRepository, transcriptRepository } from '@/lib/repositories';
 import { ReviewService } from '@/lib/services/ReviewService';
+import { userErrorMessage, type UserErrorMessage } from '@/lib/userErrorMessage';
 import type { CaptureSession, Recording, Transcript } from '@/types';
 import { ProcessCaptureButton } from './ProcessCaptureButton';
 import { ProcessingTimeline } from './ProcessingTimeline';
@@ -39,6 +40,11 @@ interface CaptureDetailScreenProps {
   stayOnCapture?: boolean;
 }
 
+interface EditRecovery {
+  message: UserErrorMessage;
+  retry: 'save' | 'reprocess';
+}
+
 export function CaptureDetailScreen({ captureId, stayOnCapture = false }: CaptureDetailScreenProps) {
   const router = useRouter();
   const [capture, setCapture] = useState<CaptureSession | null>(null);
@@ -47,9 +53,10 @@ export function CaptureDetailScreen({ captureId, stayOnCapture = false }: Captur
   const [draftText, setDraftText] = useState('');
   const [dirty, setDirty] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<UserErrorMessage | null>(null);
   const [editBusy, setEditBusy] = useState(false);
   const [editNotice, setEditNotice] = useState<string | null>(null);
+  const [editRecovery, setEditRecovery] = useState<EditRecovery | null>(null);
   const [lifecycleObserved, setLifecycleObserved] = useState(false);
   const refreshPromise = useRef<Promise<void> | null>(null);
   const automaticProbeCount = useRef(0);
@@ -71,7 +78,7 @@ export function CaptureDetailScreen({ captureId, stayOnCapture = false }: Captur
         if (!dirtyRef.current) setDraftText(nextTranscript?.text ?? '');
         setLoadError(null);
       } catch (error) {
-        setLoadError(error instanceof Error ? error.message : 'The local capture could not be read.');
+        setLoadError(userErrorMessage(error));
       } finally {
         setLoading(false);
       }
@@ -155,6 +162,7 @@ export function CaptureDetailScreen({ captureId, stayOnCapture = false }: Captur
     dirtyRef.current = nextDirty;
     setDirty(nextDirty);
     setEditNotice(null);
+    setEditRecovery(null);
   }
 
   async function persistTranscript() {
@@ -173,12 +181,13 @@ export function CaptureDetailScreen({ captureId, stayOnCapture = false }: Captur
   async function saveTranscript() {
     setEditBusy(true);
     setEditNotice(null);
+    setEditRecovery(null);
     try {
       await persistTranscript();
       await refresh();
       setEditNotice('Transcript edit saved. It will not be reprocessed unless you choose Save and reprocess.');
     } catch (error) {
-      setEditNotice(`${error instanceof Error ? error.message : 'The transcript could not be saved.'} ${preservationCopy(recording, transcript)}`);
+      setEditRecovery({ message: userErrorMessage(error), retry: 'save' });
     } finally {
       setEditBusy(false);
     }
@@ -187,6 +196,7 @@ export function CaptureDetailScreen({ captureId, stayOnCapture = false }: Captur
   async function saveAndReprocess() {
     setEditBusy(true);
     setEditNotice(null);
+    setEditRecovery(null);
     try {
       await persistTranscript();
       setLifecycleObserved(true);
@@ -194,7 +204,7 @@ export function CaptureDetailScreen({ captureId, stayOnCapture = false }: Captur
       await ReviewService.reprocess(captureId);
       await refresh();
     } catch (error) {
-      setEditNotice(`${error instanceof Error ? error.message : 'Reprocessing could not continue.'} ${preservationCopy(recording, transcript)}`);
+      setEditRecovery({ message: userErrorMessage(error), retry: 'reprocess' });
       await refresh().catch(() => undefined);
     } finally {
       setEditBusy(false);
@@ -210,8 +220,8 @@ export function CaptureDetailScreen({ captureId, stayOnCapture = false }: Captur
       <AppShell backHref="/" title="Capture">
         <section className="capture-detail__empty" role="alert">
           <h1>Unable to load capture</h1>
-          <p>{loadError}</p>
-          <button className="button-primary" onClick={() => void refresh()} type="button">Try again</button>
+          <p>{loadError.detail}</p>
+          {loadError.actionLabel ? <button className="button-primary" onClick={() => void refresh()} type="button">{loadError.actionLabel}</button> : null}
         </section>
       </AppShell>
     );
@@ -230,6 +240,9 @@ export function CaptureDetailScreen({ captureId, stayOnCapture = false }: Captur
   }
 
   const reviewReady = ['ready_for_review', 'partially_confirmed', 'confirmed'].includes(capture.processingState);
+  const processingRecovery = capture.processingState === 'failed' && capture.lastError
+    ? userErrorMessage(capture.lastError)
+    : null;
 
   return (
     <AppShell backHref="/" title="Capture">
@@ -268,10 +281,12 @@ export function CaptureDetailScreen({ captureId, stayOnCapture = false }: Captur
             recoverableStage={capture.recoverableStage}
             state={capture.processingState}
           />
-          {capture.processingState === 'failed' && capture.lastError ? (
-            <p className="inline-error" role="alert">
-              {capture.lastError.message} {preservationCopy(recording, transcript)}
-            </p>
+          {processingRecovery ? (
+            <div className="inline-error" role="alert">
+              <strong>{processingRecovery.title}</strong>
+              <p>{processingRecovery.detail} {preservationCopy(recording, transcript)}</p>
+              {processingRecovery.actionLabel === 'Review privacy' ? <Link className="button-quiet" href="/settings">Review privacy</Link> : null}
+            </div>
           ) : null}
           {reviewReady && (stayOnCapture || capture.processingState !== 'ready_for_review') ? (
             <Link
@@ -316,7 +331,23 @@ export function CaptureDetailScreen({ captureId, stayOnCapture = false }: Captur
             <p className="capture-detail__edit-note">
               Reprocessing creates drafts for this transcript version. Confirmed ideas are preserved.
             </p>
-            {editNotice ? <p aria-live="polite" className={editNotice.includes('saved.') ? 'success-note' : 'inline-error'}>{editNotice}</p> : null}
+            {editNotice ? <p aria-live="polite" className="success-note">{editNotice}</p> : null}
+            {editRecovery ? (
+              <div aria-live="assertive" className="inline-error" role="alert">
+                <strong>{editRecovery.message.title}</strong>
+                <p>{editRecovery.message.detail} {preservationCopy(recording, transcript)}</p>
+                {editRecovery.message.actionLabel ? (
+                  <button
+                    className="button-quiet"
+                    disabled={editBusy}
+                    onClick={() => void (editRecovery.retry === 'save' ? saveTranscript() : saveAndReprocess())}
+                    type="button"
+                  >
+                    {editRecovery.message.actionLabel}
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
           </section>
         ) : null}
       </article>

@@ -9,6 +9,9 @@ const updateSettings = vi.fn();
 const buildFullExport = vi.fn();
 const downloadText = vi.fn();
 const deleteAll = vi.fn();
+const estimateStorage = vi.fn();
+const persistedStorage = vi.fn();
+const persistStorage = vi.fn();
 
 vi.mock('@/components/AppShell', () => ({ AppShell: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 vi.mock('@/lib/repositories', () => ({
@@ -26,6 +29,13 @@ beforeEach(() => {
   updateSettings.mockImplementation(async (patch) => ({ ...baseSettings, ...patch }));
   buildFullExport.mockResolvedValue({ schemaVersion: 'nugget-full-export-v1', exportedAt: '2026-07-16T12:00:00.000Z' });
   deleteAll.mockResolvedValue(undefined);
+  estimateStorage.mockResolvedValue({ usage: 2_048, quota: 8_192 });
+  persistedStorage.mockResolvedValue(false);
+  persistStorage.mockResolvedValue(true);
+  Object.defineProperty(navigator, 'storage', {
+    configurable: true,
+    value: { estimate: estimateStorage, persisted: persistedStorage, persist: persistStorage },
+  });
   navigate.mockReset();
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({
     status: 'ok', secret: 'must-not-render', internalPath: '/server/private',
@@ -87,7 +97,7 @@ describe('SettingsScreen', () => {
     expect(deleteAll).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Erase all local data now' }));
     await waitFor(() => expect(deleteAll).toHaveBeenCalledTimes(1));
-    expect(screen.getByRole('alert')).toHaveTextContent('All local Nugget data was erased.');
+    expect(screen.getByText('All local Nugget data was erased.')).toBeInTheDocument();
     expect(navigate).not.toHaveBeenCalled();
     await waitFor(() => expect(navigate).toHaveBeenCalledWith());
   });
@@ -98,8 +108,18 @@ describe('SettingsScreen', () => {
     fireEvent.change(screen.getByLabelText('Type ERASE exactly to continue'), { target: { value: 'ERASE' } });
     fireEvent.click(screen.getByRole('button', { name: 'Continue to erase' }));
     fireEvent.click(screen.getByRole('button', { name: 'Erase all local data now' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Some local data may still be present');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Something needs attention');
     expect(navigate).not.toHaveBeenCalled();
     expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
+  });
+
+  it('requests persistent browser storage only from the explicit reliability action', async () => {
+    render(<SettingsScreen />);
+    await screen.findByRole('button', { name: 'Improve offline storage reliability' });
+
+    expect(persistStorage).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Improve offline storage reliability' }));
+    await waitFor(() => expect(persistStorage).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('This browser granted persistent offline storage for Nugget.')).toBeInTheDocument();
   });
 });

@@ -3,8 +3,10 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppShell } from '@/components/AppShell';
+import { errorDetails } from '@/lib/errors';
 import { tagRepository } from '@/lib/repositories';
 import { ReviewService, type CanonicalReviewSnapshot } from '@/lib/services/ReviewService';
+import { userErrorMessage, type UserErrorMessage } from '@/lib/userErrorMessage';
 import type { Idea, Tag } from '@/types';
 import {
   IdeaCandidateForm,
@@ -15,7 +17,7 @@ import {
 
 interface MutationFailure {
   ideaId?: string;
-  message: string;
+  message: UserErrorMessage;
   retry: 'confirm' | 'confirm-all' | 'discard' | 'reprocess';
 }
 
@@ -35,10 +37,6 @@ function confirmationInput(value: IdeaDraftFormValue, tagIds: string[]) {
   };
 }
 
-function errorMessage(error: unknown, fallback: string) {
-  return error instanceof Error ? error.message : fallback;
-}
-
 export function ReviewScreen({ captureId }: { captureId: string }) {
   const [snapshot, setSnapshot] = useState<CanonicalReviewSnapshot>();
   const [pendingIdeas, setPendingIdeas] = useState<Idea[]>([]);
@@ -47,7 +45,7 @@ export function ReviewScreen({ captureId }: { captureId: string }) {
   const [activeIdeaId, setActiveIdeaId] = useState<string>();
   const [initialIdeaCount, setInitialIdeaCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [loadFailure, setLoadFailure] = useState<string>();
+  const [loadFailure, setLoadFailure] = useState<unknown>();
   const [mutationFailure, setMutationFailure] = useState<MutationFailure>();
   const [notice, setNotice] = useState<string>();
   const [busy, setBusy] = useState(false);
@@ -72,7 +70,7 @@ export function ReviewScreen({ captureId }: { captureId: string }) {
       setActiveIdeaId(nextSnapshot.ideas[0]?.id);
       setInitialIdeaCount(nextSnapshot.ideas.length);
     } catch (error) {
-      setLoadFailure(errorMessage(error, 'The local review could not be loaded.'));
+      setLoadFailure(error);
     } finally {
       setLoading(false);
     }
@@ -159,7 +157,7 @@ export function ReviewScreen({ captureId }: { captureId: string }) {
     } catch (error) {
       setMutationFailure({
         ideaId,
-        message: errorMessage(error, 'This idea could not be confirmed.'),
+        message: userErrorMessage(error),
         retry: 'confirm',
       });
     } finally {
@@ -190,12 +188,14 @@ export function ReviewScreen({ captureId }: { captureId: string }) {
           removeCandidate(idea.id);
         } catch (error) {
           setActiveIdeaId(idea.id);
+          const recovery = userErrorMessage(error);
           setMutationFailure({
             ideaId: idea.id,
-            message: `${succeeded} of ${ready.length} ready ideas confirmed before this stopped. ${errorMessage(
-              error,
-              'The next idea could not be confirmed.',
-            )}`,
+            message: {
+              ...recovery,
+              detail: `${succeeded} of ${ready.length} ready ideas confirmed before this stopped. ${recovery.detail}`,
+              actionLabel: 'Retry',
+            },
             retry: 'confirm-all',
           });
           return;
@@ -225,7 +225,7 @@ export function ReviewScreen({ captureId }: { captureId: string }) {
     } catch (error) {
       setMutationFailure({
         ideaId,
-        message: errorMessage(error, 'This draft could not be discarded.'),
+        message: userErrorMessage(error),
         retry: 'discard',
       });
     } finally {
@@ -245,7 +245,7 @@ export function ReviewScreen({ captureId }: { captureId: string }) {
       await load();
     } catch (error) {
       setMutationFailure({
-        message: errorMessage(error, 'This capture could not be reprocessed.'),
+        message: userErrorMessage(error),
         retry: 'reprocess',
       });
     } finally {
@@ -271,14 +271,16 @@ export function ReviewScreen({ captureId }: { captureId: string }) {
   }
 
   if (loadFailure) {
-    const missingCapture = loadFailure === 'Capture not found.';
-    const missingTranscript = loadFailure === 'A transcript is required before review.';
+    const failureMessage = errorDetails(loadFailure).message;
+    const missingCapture = failureMessage === 'Capture not found.';
+    const missingTranscript = failureMessage === 'A transcript is required before review.';
+    const recovery = userErrorMessage(loadFailure);
     return (
       <AppShell backHref="/" title="Review">
         <section className="review-empty" role="alert">
           <p className="review-screen__eyebrow">Review unavailable</p>
           <h1>{missingCapture ? 'Capture not found' : missingTranscript ? 'Transcript unavailable' : 'Unable to load review'}</h1>
-          <p>{loadFailure}</p>
+          <p>{missingCapture ? 'This capture is not stored in this browser profile.' : missingTranscript ? 'This capture needs a saved transcript before it can be reviewed.' : recovery.detail}</p>
           <div className="review-empty__actions">
             {!missingCapture ? <Link className="button-primary" href={`/capture/${captureId}?stay=1`}>Back to capture</Link> : null}
             <button className="button-quiet" onClick={() => void load()} type="button">Try again</button>
@@ -321,8 +323,9 @@ export function ReviewScreen({ captureId }: { captureId: string }) {
           <blockquote className="review-empty__transcript">{snapshot.transcript.text}</blockquote>
           {mutationFailure ? (
             <div className="review-mutation-error" role="alert">
-              <p>{mutationFailure.message}</p>
-              <button className="button-quiet" disabled={busy} onClick={retryMutation} type="button">Retry</button>
+              <strong>{mutationFailure.message.title}</strong>
+              <p>{mutationFailure.message.detail}</p>
+              <button className="button-quiet" disabled={busy} onClick={retryMutation} type="button">{mutationFailure.message.actionLabel ?? 'Retry'}</button>
             </div>
           ) : null}
           <div className="review-empty__actions">
@@ -376,8 +379,9 @@ export function ReviewScreen({ captureId }: { captureId: string }) {
         {notice ? <p aria-live="polite" className="success-note">{notice}</p> : null}
         {mutationFailure && mutationFailure.retry !== 'discard' ? (
           <div className="review-mutation-error" role="alert">
-            <p>{mutationFailure.message}</p>
-            <button className="button-quiet" disabled={busy} onClick={retryMutation} type="button">Retry</button>
+            <strong>{mutationFailure.message.title}</strong>
+            <p>{mutationFailure.message.detail}</p>
+            <button className="button-quiet" disabled={busy} onClick={retryMutation} type="button">{mutationFailure.message.actionLabel ?? 'Retry'}</button>
           </div>
         ) : null}
 
@@ -387,7 +391,7 @@ export function ReviewScreen({ captureId }: { captureId: string }) {
             categories={snapshot.categories}
             discardError={
               mutationFailure?.retry === 'discard' && mutationFailure.ideaId === activeIdea.id
-                ? mutationFailure.message
+                ? `${mutationFailure.message.title}. ${mutationFailure.message.detail}`
                 : undefined
             }
             idea={activeIdea}
