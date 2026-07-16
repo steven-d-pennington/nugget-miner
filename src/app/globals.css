@@ -631,6 +631,220 @@ time {
   color: var(--danger);
 }
 
+.capture-detail {
+  display: grid;
+  max-width: 46rem;
+  margin: 0 auto;
+  gap: 2rem;
+}
+
+.capture-detail__header {
+  padding: 0.5rem 0 0.25rem;
+}
+
+.capture-detail__eyebrow {
+  margin: 0;
+  color: var(--success);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.capture-detail__header h1,
+.capture-detail__empty h1 {
+  margin: 0.5rem 0 0;
+  font-size: clamp(2rem, 9vw, 3.2rem);
+  letter-spacing: -0.05em;
+  line-height: 1.05;
+}
+
+.capture-detail__header > p:last-child,
+.capture-detail__empty p {
+  max-width: 36rem;
+  margin: 0.75rem 0 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.capture-detail__section {
+  border-top: 1px solid var(--line);
+  padding-top: 1.5rem;
+}
+
+.capture-detail__section h2,
+.capture-detail__empty h1 {
+  color: var(--ink);
+}
+
+.capture-detail__section h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  letter-spacing: -0.025em;
+}
+
+.capture-detail__section audio {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 1rem;
+}
+
+.capture-detail__metadata,
+.capture-detail__typed-label,
+.capture-detail__edit-note {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+.capture-detail__typed-label {
+  border-left: 3px solid var(--accent);
+  margin: 1rem 0 0;
+  padding: 0.65rem 0.9rem;
+  background: var(--surface-warm);
+}
+
+.processing-timeline {
+  display: grid;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  list-style: none;
+}
+
+.processing-timeline__stage {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  justify-items: center;
+  gap: 0.55rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 750;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.processing-timeline__stage:not(:last-child)::after {
+  position: absolute;
+  z-index: 0;
+  top: 0.85rem;
+  left: calc(50% + 1rem);
+  width: calc(100% - 2rem);
+  height: 1px;
+  background: var(--line);
+  content: "";
+}
+
+.processing-timeline__icon {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--canvas);
+  font-family: var(--font-metadata), "IBM Plex Mono", monospace;
+}
+
+.processing-timeline__stage[data-state="complete"],
+.processing-timeline__stage[data-state="current"] {
+  color: var(--ink);
+}
+
+.processing-timeline__stage[data-state="complete"] .processing-timeline__icon {
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.processing-timeline__stage[data-state="current"] .processing-timeline__icon {
+  border-color: var(--accent-strong);
+  background: var(--surface-warm);
+  color: var(--accent-strong);
+}
+
+.process-capture-action {
+  margin-top: 1.5rem;
+}
+
+.process-capture-action__disclosure {
+  max-width: 40rem;
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.capture-detail textarea {
+  width: 100%;
+  min-height: 14rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--surface);
+  color: var(--ink);
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.capture-detail textarea:disabled {
+  background: #f4f0e9;
+  color: var(--muted);
+}
+
+.capture-detail__edit-actions {
+  display: flex;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.capture-detail__link-button {
+  display: inline-flex;
+  min-height: 48px;
+  margin-top: 1rem;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.capture-detail__empty {
+  max-width: 38rem;
+  margin: 2rem auto;
+}
+
+.success-note {
+  border-left: 3px solid var(--success);
+  padding: 0.75rem 1rem;
+  background: #f2faf6;
+  color: var(--success);
+}
+
+@media (max-width: 30rem) {
+  .processing-timeline {
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+  }
+
+  .processing-timeline__stage {
+    min-height: 2rem;
+    grid-template-columns: 2rem 1fr;
+    align-items: center;
+    justify-items: start;
+    text-align: left;
+  }
+
+  .processing-timeline__stage:not(:last-child)::after {
+    top: 1.8rem;
+    left: 0.86rem;
+    width: 1px;
+    height: 1rem;
+  }
+}
+
 @media (min-width: 48rem) {
   .app-shell__main {
     padding: 3rem max(2rem, env(safe-area-inset-right, 0px))

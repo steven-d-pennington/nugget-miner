@@ -1,6 +1,6 @@
-import { IdeaDetailScreen } from '@/features/library/IdeaDetailScreen';
+import { redirect } from 'next/navigation';
 
-export default async function IdeaPage({ params }: { params: Promise<{ ideaId: string }> }) {
+export default async function LegacyIdeaPage({ params }: { params: Promise<{ ideaId: string }> }) {
   const { ideaId } = await params;
-  return <IdeaDetailScreen ideaId={ideaId} />;
+  redirect(`/capture/${ideaId}`);
 }

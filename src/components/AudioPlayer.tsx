@@ -18,7 +18,7 @@ export function AudioPlayer({ recording }: { recording?: Recording }) {
   }
 
   return (
-    <audio className="w-full" controls preload="metadata" src={url}>
+    <audio aria-label="Saved recording playback" className="w-full" controls preload="metadata" src={url}>
       <track kind="captions" />
       Your browser does not support audio playback.
     </audio>
