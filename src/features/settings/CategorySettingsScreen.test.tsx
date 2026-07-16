@@ -198,6 +198,23 @@ describe('CategorySettingsScreen', () => {
     expect(container).not.toHaveAttribute('aria-hidden');
     expect(trigger).toHaveFocus();
   });
+
+  it('keeps replacement focus and dialog state while the selection changes', async () => {
+    render(<CategorySettingsScreen />);
+    const communityRow = (await screen.findByRole('heading', { name: 'Community' })).closest('li');
+    fireEvent.click(within(communityRow!).getByRole('button', { name: 'Delete category' }));
+    const dialog = screen.getByRole('dialog', { name: 'Delete Community?' });
+    const replacement = within(dialog).getByLabelText('Replacement category');
+
+    replacement.focus();
+    fireEvent.change(replacement, { target: { value: work.id } });
+    expect(replacement).toHaveValue(work.id);
+    expect(replacement).toHaveFocus();
+    fireEvent.change(replacement, { target: { value: misc.id } });
+    expect(replacement).toHaveValue(misc.id);
+    expect(replacement).toHaveFocus();
+    expect(within(dialog).getByRole('button', { name: 'Reassign and delete' })).toBeEnabled();
+  });
 });
 
 describe('SettingsPage', () => {

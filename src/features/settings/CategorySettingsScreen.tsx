@@ -30,6 +30,7 @@ export function CategorySettingsScreen() {
   const wasDeletingRef = useRef(false);
 
   const fallback = useMemo(() => categories.find((category) => category.isFallback), [categories]);
+  const deletingCategoryId = deleting?.category.id;
 
   async function refresh() {
     const [nextCategories, nextCounts] = await Promise.all([
@@ -41,7 +42,7 @@ export function CategorySettingsScreen() {
   }
 
   useEffect(() => {
-    if (!deleting || !deleteDialogRef.current) return;
+    if (!deletingCategoryId || !deleteDialogRef.current) return;
     const overlay = deleteDialogRef.current;
     const background = Array.from(document.body.children).filter((element) => element !== overlay);
     const previous = background.map((element) => ({
@@ -60,7 +61,7 @@ export function CategorySettingsScreen() {
         if (!state.inert) state.element.removeAttribute('inert');
       }
     };
-  }, [deleting]);
+  }, [deletingCategoryId]);
 
   useEffect(() => {
     let active = true;
@@ -80,14 +81,14 @@ export function CategorySettingsScreen() {
   }, []);
 
   useEffect(() => {
-    if (deleting) {
+    if (deletingCategoryId) {
       wasDeletingRef.current = true;
       cancelDeleteRef.current?.focus();
     } else if (wasDeletingRef.current) {
       wasDeletingRef.current = false;
       deleteTriggerRef.current?.focus();
     }
-  }, [deleting]);
+  }, [deletingCategoryId]);
 
   async function saveCategory(input: { name: string; description: string }) {
     setBusy(true);
