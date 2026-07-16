@@ -22,7 +22,7 @@ Automated evidence does not substitute for a real-phone result where the checkli
 | Desktop-sized automated gate | Pass | Sol reported `npm run check` passing typecheck, lint, 42 test files / 292 tests, and the Next.js production build. |
 | Final Task 5 focused verification | Pass | `npx vitest run src/features/review/ReviewScreen.test.tsx src/features/review/IdeaCandidateForm.test.tsx src/features/library/ConfirmedIdeasPreview.test.tsx` passed 3 files / 22 tests after the final candidate isolation guard. The later modal recovery fix also passed the same 3 files / 22 tests plus typecheck, lint, and `git diff --check`. |
 | Independent Task 5 review | Pass | Commits `af2c744`, `494d90e`, and `3b64ad9` were independently reviewed. The initial modal-retry finding was fixed in `3b64ad9`, and re-review approved the result. |
-| In-app mobile viewport | Pass | Sol verified the local app at 430 x 932 using `http://127.0.0.1:3011`. The Capture home put one-tap Record first and showed the zero-review queue link, typed fallback, recent captures, and persistent bottom navigation. `/ideas` showed the honest empty-library state with persistent navigation. |
+| In-app mobile viewport | Pass | Sol verified the local app at 430 x 932 using `http://127.0.0.1:3011`. The Capture home put one-tap Record first and showed the zero-review queue link, typed fallback, recent captures, and persistent bottom navigation. `/ideas` showed the honest empty-library state with persistent navigation. Final screenshots were then recaptured from the production build server using `next start` at `http://127.0.0.1:3012`, without development controls. |
 | Synthetic typed save and reload | Pass | Sol saved a synthetic 369-character typed ramble. The app navigated to `/capture/47190cef-001c-46bf-835a-be162378c850`, displayed Transcript Version 1, the processing timeline, and the cloud disclosure. A full reload preserved the same capture and transcript, with no console errors observed. |
 | Real phone and HTTPS preview | Blocked | No real phone connected to an HTTPS-capable deployed preview was available during the overnight run. Plain LAN HTTP is not sufficient evidence for mobile `getUserMedia`. |
 | Microphone authority | Blocked | Microphone acceptance requires explicit permission confirmation and a supported secure browser context. That confirmation was unavailable for this documentation pass. |
@@ -81,8 +81,8 @@ Automated evidence does not substitute for a real-phone result where the checkli
 
 | Path | Evidence | Status |
 |---|---|---|
-| `docs/hackathon/evidence/sprint-3/capture-idle.png` | Capture home at 430 x 932; 38,205 bytes; SHA-256 `7352C708DB4D96C3BFFF6B38EAC02847029A1B5CA96976989F8328EC0C047350` | Pass |
-| `docs/hackathon/evidence/sprint-3/processing.png` | Saved synthetic typed capture with manual processing pending. This is not evidence of active provider processing; 32,106 bytes; SHA-256 `B80F0C09F2B91BE60454C2E52B120AC0F8153A5A00514144C20609F6AD2294B3` | Pass |
+| `docs/hackathon/evidence/sprint-3/capture-idle.png` | Capture home at 430 x 932 from the production build server; 34,904 bytes; SHA-256 `136897526830656452505A90B81BE567B68405F1A5FC1C8D45B5A55D201CFDFD` | Pass |
+| `docs/hackathon/evidence/sprint-3/processing.png` | Saved synthetic typed capture with manual processing pending, recaptured from the production build server. This is not evidence of active provider processing; 31,563 bytes; SHA-256 `0DA4AFA1861955334CB25D51EE5EB6ED834F091C4B0C06CCF51F7B71FF67C303` | Pass |
 | `docs/hackathon/evidence/sprint-3/capture-recording.png` | Not produced. Active microphone recording requires explicit permission acceptance and a real phone/HTTPS-capable preview. | Blocked |
 | `docs/hackathon/evidence/sprint-3/three-idea-confirmation.png` | Not produced. The live GPT/evaluation run was deferred under the overnight cost ceiling; API usage remains $0. | Blocked |
 
