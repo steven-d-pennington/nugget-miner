@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CanonicalReviewSnapshot } from '@/lib/services/ReviewService';
 import type { Category, GroundedText, Idea, Tag } from '@/types';
@@ -200,7 +200,7 @@ describe('ReviewScreen multi-idea confirmation', () => {
     expect(await screen.findByRole('heading', { name: 'All ideas reviewed' })).toBeInTheDocument();
   });
 
-  it('keeps the candidate and its discard confirmation open when persistence fails', async () => {
+  it('keeps discard failure feedback and retry operable inside the modal without losing edits', async () => {
     mocks.discard.mockRejectedValueOnce(new Error('delete failed')).mockResolvedValueOnce(undefined);
     render(<ReviewScreen captureId="capture-1" />);
     await screen.findByRole('heading', { name: '3 ideas found' });
@@ -208,10 +208,13 @@ describe('ReviewScreen multi-idea confirmation', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Discard idea' }));
     fireEvent.click(screen.getByRole('button', { name: 'Discard draft idea' }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('delete failed');
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    const dialog = screen.getByRole('dialog');
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent('delete failed');
+    const retry = within(dialog).getByRole('button', { name: 'Retry discard' });
+    expect(retry).toHaveFocus();
     expect(screen.getByLabelText('Title')).toHaveValue('Keep this edit');
-    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
+    fireEvent.click(retry);
     await waitFor(() => expect(mocks.discard).toHaveBeenCalledTimes(2));
     expect(screen.getByText('1 of 2')).toBeInTheDocument();
   });

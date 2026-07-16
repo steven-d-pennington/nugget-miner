@@ -374,7 +374,7 @@ export function ReviewScreen({ captureId }: { captureId: string }) {
         </header>
 
         {notice ? <p aria-live="polite" className="success-note">{notice}</p> : null}
-        {mutationFailure ? (
+        {mutationFailure && mutationFailure.retry !== 'discard' ? (
           <div className="review-mutation-error" role="alert">
             <p>{mutationFailure.message}</p>
             <button className="button-quiet" disabled={busy} onClick={retryMutation} type="button">Retry</button>
@@ -385,6 +385,11 @@ export function ReviewScreen({ captureId }: { captureId: string }) {
           <IdeaCandidateForm
             busy={busy}
             categories={snapshot.categories}
+            discardError={
+              mutationFailure?.retry === 'discard' && mutationFailure.ideaId === activeIdea.id
+                ? mutationFailure.message
+                : undefined
+            }
             idea={activeIdea}
             key={activeIdea.id}
             onChange={(value) => changeDraft(activeIdea.id, value)}

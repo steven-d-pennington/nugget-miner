@@ -181,6 +181,7 @@ interface IdeaCandidateFormProps {
   onChange(value: IdeaDraftFormValue): void;
   onConfirm(): void;
   onDiscard(): void;
+  discardError?: string;
   busy: boolean;
 }
 
@@ -215,6 +216,7 @@ export function IdeaCandidateForm({
   onChange,
   onConfirm,
   onDiscard,
+  discardError,
   busy,
 }: IdeaCandidateFormProps) {
   const [attemptedConfirm, setAttemptedConfirm] = useState(false);
@@ -222,6 +224,7 @@ export function IdeaCandidateForm({
   const discardButtonRef = useRef<HTMLButtonElement>(null);
   const discardDialogRef = useRef<HTMLDialogElement>(null);
   const discardCancelRef = useRef<HTMLButtonElement>(null);
+  const discardConfirmRef = useRef<HTMLButtonElement>(null);
   const validation = useMemo(
     () => validateIdeaDraftFormValue(idea, value, categories),
     [categories, idea, value],
@@ -244,6 +247,10 @@ export function IdeaCandidateForm({
     } else dialog?.setAttribute('open', '');
     discardCancelRef.current?.focus();
   }, [discardOpen]);
+
+  useEffect(() => {
+    if (discardOpen && discardError) discardConfirmRef.current?.focus();
+  }, [discardError, discardOpen]);
 
   function closeDiscardConfirmation() {
     const dialog = discardDialogRef.current;
@@ -691,6 +698,11 @@ export function IdeaCandidateForm({
         >
           <h2 id={`discard-title-${idea.id}`}>Discard this draft idea?</h2>
           <p>Only this draft idea will be removed. The source recording and transcript will remain available.</p>
+          {discardError ? (
+            <p className="discard-confirmation__error" role="alert">
+              {discardError}
+            </p>
+          ) : null}
           <div>
             <button
               className="button-quiet"
@@ -701,8 +713,14 @@ export function IdeaCandidateForm({
             >
               Cancel
             </button>
-            <button className="review-danger-button" disabled={busy} onClick={onDiscard} type="button">
-              Discard draft idea
+            <button
+              className="review-danger-button"
+              disabled={busy}
+              onClick={onDiscard}
+              ref={discardConfirmRef}
+              type="button"
+            >
+              {discardError ? 'Retry discard' : 'Discard draft idea'}
             </button>
           </div>
         </dialog>

@@ -1132,6 +1132,14 @@ time {
   line-height: 1.55;
 }
 
+.discard-confirmation p.discard-confirmation__error {
+  border-left: 3px solid var(--danger);
+  padding: 0.65rem 0.8rem;
+  background: #fff5f3;
+  color: #862525;
+  font-weight: 750;
+}
+
 .discard-confirmation > div {
   display: grid;
   margin-top: 1rem;
