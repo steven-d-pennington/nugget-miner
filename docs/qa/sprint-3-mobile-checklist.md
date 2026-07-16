@@ -27,7 +27,7 @@ Automated evidence does not substitute for a real-phone result where the checkli
 | Synthetic multi-idea browser flow | Pass | On the production build at 430 x 932, a temporary local-only seed harness created fixed QA-prefixed records without live provider use. Sol verified a true `organizing` state, three draft ideas, independent edit persistence across Next/Previous, an exact source quote, discard-one/confirm-two, the completed review state, and two independent confirmed records in Ideas. The harness was removed before the final build and is not committed. |
 | Real phone and HTTPS preview | Blocked | No real phone connected to an HTTPS-capable deployed preview was available during the overnight run. Plain LAN HTTP is not sufficient evidence for mobile `getUserMedia`. |
 | Microphone authority | Blocked | Microphone acceptance requires explicit permission confirmation and a supported secure browser context. That confirmation was unavailable for this documentation pass. |
-| Live GPT/OpenAI processing | Blocked | No live provider run was performed for Sprint 3. Overnight API usage remains $0. Deterministic and mocked processing checks do not prove a live GPT-5.6 flow. |
+| Live GPT/OpenAI processing | Pass | On the deployed HTTPS preview, the user recorded audio, received the transcript, and then confirmed the GPT organization flow worked after commit `4c064e7` changed the API model default to `gpt-5.6-terra`. Vercel reported deployment `dpl_5Py2H5H6wuQJEaC9p5MMrHA8j4nt` READY. Exact API usage was not captured and is not estimated here. |
 
 ## Automated verification
 
@@ -51,8 +51,8 @@ Automated evidence does not substitute for a real-phone result where the checkli
 | Microphone-denied recovery | Blocked | Requires an explicit browser permission denial in a secure microphone-capable context. Automated RecorderPanel coverage exists, but the required real interaction was unavailable. |
 | 30-second recording, Stop & save, then immediate refresh | Blocked | Requires a real microphone capture and browser refresh. Automated tests prove Stop & save awaits local persistence before navigation/processing, but do not replace this device test. |
 | Local playback after refresh | Blocked | Depends on producing a real locally saved recording. Automated AudioPlayer/CaptureDetail tests cover Blob URL lifecycle and stable playback identity during polling. |
-| Automatic processing after consent | Blocked | The consent and ordering UI is covered automatically, but no live OpenAI call was made. API usage remains $0. |
-| Manual Process now after consent | Blocked | Sol verified that Process now opened the explicit **Send for cloud processing?** dialog and that Cancel closed it without sending content. Sending after consent and completing a live provider run were not performed; API usage remains $0. |
+| Automatic processing after consent | Not run | The consent and ordering UI is covered automatically. The user completed a live OpenAI transcription-and-organization flow, but did not identify whether it began automatically or through **Process now**. |
+| Manual Process now after consent | Not run | Sol verified that Process now opened the explicit **Send for cloud processing?** dialog and that Cancel closed it without sending content. The user later completed a live provider flow, but did not identify whether the successful run began through this manual control. |
 | App hidden during processing and resumed when visible | Not run | Automated visibility/resume listeners pass. A completed browser lifecycle observation has not yet been supplied. |
 | Multi-idea review and independent editing | Pass | The synthetic production-browser flow rendered **3 ideas found**; an edited first title remained intact after Next and Previous navigation. |
 | Source excerpt accuracy | Pass | Expanding **View source excerpt** displayed the exact seeded transcript quote for the current explicit summary. |
@@ -90,6 +90,6 @@ Automated evidence does not substitute for a real-phone result where the checkli
 ## Open verification work
 
 1. Run the microphone-denied and 30-second Stop & save/refresh/playback flow on a real phone using an HTTPS-capable preview, then produce `capture-recording.png`.
-2. Run one authorized live transcription and GPT-5.6 organization flow and record actual API usage separately; local three-idea UI evidence is now complete, but live-model quality remains an MVP validation gap.
+2. Capture non-private evidence from a successful live transcription and GPT-5.6 Terra organization flow and record actual API usage separately. The user confirmed the deployed path works, but no reusable success screenshot or usage total was supplied.
 3. Exercise visibility resume, reduced motion, keyboard-only navigation, and a screen reader in a real browser.
 4. Re-run the full gate if additional code changes land after the evidence pass.
