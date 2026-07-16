@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { InstallAppButton } from '@/components/InstallAppButton';
 import { downloadText } from '@/lib/export/download';
 import { buildFullExport } from '@/lib/export/fullExport';
 import { ORGANIZATION_PROMPT_VERSION } from '@/lib/llm/organizationPrompt';
@@ -175,6 +176,8 @@ export function SettingsScreen({ navigateToCapture = () => globalThis.location.a
             </div>
           ) : null}
         </section>
+
+        <InstallAppButton />
 
         <section className="border-t border-[#E8DDCE] py-6" aria-labelledby="data-export-heading">
           <h2 className="m-0 text-xl font-bold text-[#101D36]" id="data-export-heading">Data export</h2>

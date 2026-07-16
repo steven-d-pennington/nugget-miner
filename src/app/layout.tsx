@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Fraunces, IBM_Plex_Mono, Manrope } from 'next/font/google';
+import { InstallAppProvider } from '@/components/InstallAppButton';
+import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration';
 import './globals.css';
 
 const wordmark = Fraunces({
@@ -37,7 +39,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body className={`${wordmark.variable} ${ui.variable} ${metadataFont.variable}`}>
-        {children}
+        <InstallAppProvider>
+          <ServiceWorkerRegistration />
+          {children}
+        </InstallAppProvider>
       </body>
     </html>
   );

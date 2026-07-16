@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Nugget</title>
+  <rect width="512" height="512" rx="112" fill="#FBF8F2"/>
+  <path d="M256 92 382 174 350 352 256 420 154 352 126 174Z" fill="#E5A11A"/>
+  <path d="m256 92 40 132-170-50Zm0 0 126 82-86 50Zm40 132 54 128-94 68Zm0 0-40 196-102-68Zm0 0-170-50 28 178Zm0 0 86-50-32 178Z" fill="none" stroke="#FFF2D4" stroke-width="14" stroke-linejoin="round"/>
+</svg>
