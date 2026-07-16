@@ -42,7 +42,10 @@ export function IdeaLibraryRow({ row }: { row: LibraryRow }) {
       >
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="mb-1 text-xs font-extrabold uppercase tracking-[0.12em] text-[#6E6B67]">{row.category.name}</p>
+            <div className="mb-1 flex flex-wrap items-center gap-2 text-xs font-extrabold uppercase tracking-[0.12em] text-[#6E6B67]">
+              <span>{row.category.name}</span>
+              {row.idea.id.startsWith('demo-') ? <span className="rounded-full bg-[#FFF2D4] px-2 py-0.5 text-[#8A5700]">Sample</span> : null}
+            </div>
             <h2 className="text-lg font-extrabold leading-snug tracking-[-0.015em] group-hover:text-[#8A5700]">{row.idea.title}</h2>
           </div>
           <svg aria-hidden="true" className="mt-1 shrink-0 text-[#B97700] transition-transform group-hover:translate-x-1 motion-reduce:transform-none" fill="none" height="20" viewBox="0 0 24 24" width="20">

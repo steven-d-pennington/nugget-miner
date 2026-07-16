@@ -12,6 +12,8 @@ const deleteAll = vi.fn();
 const estimateStorage = vi.fn();
 const persistedStorage = vi.fn();
 const persistStorage = vi.fn();
+const seedDemo = vi.fn();
+const navigateToIdeas = vi.fn();
 
 vi.mock('@/components/AppShell', () => ({ AppShell: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 vi.mock('@/lib/repositories', () => ({
@@ -20,6 +22,7 @@ vi.mock('@/lib/repositories', () => ({
 vi.mock('@/lib/export/fullExport', () => ({ buildFullExport: (...args: unknown[]) => buildFullExport(...args) }));
 vi.mock('@/lib/export/download', () => ({ downloadText: (...args: unknown[]) => downloadText(...args) }));
 vi.mock('@/lib/services/DataManagementService', () => ({ DataManagementService: { deleteAll: (...args: unknown[]) => deleteAll(...args) } }));
+vi.mock('@/lib/demo/DemoDataService', () => ({ DemoDataService: { seed: (...args: unknown[]) => seedDemo(...args) } }));
 
 const baseSettings = { key: 'app', automaticProcessing: false, cloudProcessingConsent: 'unknown', clientId: 'hidden', createdAt: 1, updatedAt: 1 } as const;
 
@@ -32,11 +35,13 @@ beforeEach(() => {
   estimateStorage.mockResolvedValue({ usage: 2_048, quota: 8_192 });
   persistedStorage.mockResolvedValue(false);
   persistStorage.mockResolvedValue(true);
+  seedDemo.mockResolvedValue({ created: true, captureId: 'demo-capture' });
   Object.defineProperty(navigator, 'storage', {
     configurable: true,
     value: { estimate: estimateStorage, persisted: persistedStorage, persist: persistStorage },
   });
   navigate.mockReset();
+  navigateToIdeas.mockReset();
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({
     status: 'ok', secret: 'must-not-render', internalPath: '/server/private',
     transcription: { available: true, model: 'gpt-transcribe', apiKey: 'secret' },
@@ -83,6 +88,24 @@ describe('SettingsScreen', () => {
       'application/json',
     ));
     expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('loads a clearly disclosed local sample library without calling GPT-5.6', async () => {
+    seedDemo
+      .mockResolvedValueOnce({ created: true, captureId: 'demo-capture' })
+      .mockResolvedValueOnce({ created: false, captureId: 'demo-capture' });
+    render(<SettingsScreen navigateToIdeas={navigateToIdeas} />);
+
+    expect(await screen.findByText('Adds three clearly labeled sample ideas to this browser so you can explore search, categories, actions, and export. It does not call GPT-5.6 and does not replace the live capture demo.')).toBeInTheDocument();
+    const loadSample = screen.getByRole('button', { name: 'Load sample library' });
+    fireEvent.click(loadSample);
+    await waitFor(() => expect(seedDemo).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('Sample ideas added')).toBeInTheDocument();
+    await waitFor(() => expect(navigateToIdeas).toHaveBeenCalledTimes(1));
+
+    fireEvent.click(loadSample);
+    await waitFor(() => expect(seedDemo).toHaveBeenCalledTimes(2));
+    expect(screen.getByText('Sample ideas are already loaded')).toBeInTheDocument();
   });
 
   it('requires exact ERASE plus a second destructive action', async () => {

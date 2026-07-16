@@ -121,6 +121,15 @@ describe('IdeaDetailScreen', () => {
     expect(within(source!).getByText('The complete source transcript.')).toBeInTheDocument();
   });
 
+  it('labels a demo idea and truthfully identifies its transcript-only source', async () => {
+    getIdea.mockResolvedValue({ ...idea, id: 'demo-idea-tool-sharing' });
+    render(<IdeaDetailScreen ideaId="demo-idea-tool-sharing" />);
+
+    expect(await screen.findByText('Sample')).toBeInTheDocument();
+    expect(screen.getByText('Sample transcript\u2014no recording')).toBeInTheDocument();
+    expect(screen.queryByText('No local recording found.')).not.toBeInTheDocument();
+  });
+
   it('persists title, category, and tag edits through the canonical repository update', async () => {
     render(<IdeaDetailScreen ideaId="idea-1" />);
     fireEvent.change(await screen.findByLabelText('Title'), { target: { value: 'Neighborhood lending pilot' } });

@@ -139,6 +139,14 @@ describe('IdeaLibraryScreen', () => {
     expect(screen.getByText('2 open actions')).toBeInTheDocument();
   });
 
+  it('visibly labels demo idea rows as Sample', async () => {
+    mocks.search.mockResolvedValue([{ ...rows[0]!, idea: { ...rows[0]!.idea, id: 'demo-idea-tool-sharing' } }]);
+    render(<IdeaLibraryScreen />);
+
+    expect(await screen.findByText('Sample')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Neighborhood tool library/ })).toHaveAttribute('href', '/ideas/demo-idea-tool-sharing');
+  });
+
   it('changes query results only after the 150 ms debounce', async () => {
     vi.useFakeTimers();
     try {

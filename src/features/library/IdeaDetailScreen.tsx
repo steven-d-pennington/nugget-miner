@@ -302,13 +302,15 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
   }
 
   const idea = bundle.idea;
+  const isSample = idea.id.startsWith('demo-');
   const sectionClass = 'border-t border-[#E8DDCE] py-7';
 
   return (
     <article className="mx-auto max-w-3xl px-4 pb-28 pt-8 sm:px-6">
       <header className="pb-7">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#247A55]">
-          {idea.status === 'archived' ? 'Archived idea' : 'Saved idea'}
+        <p className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#247A55]">
+          {isSample ? <span className="rounded-full bg-[#FFF2D4] px-2 py-1 text-[#8A5700]">Sample</span> : null}
+          <span>{idea.status === 'archived' ? 'Archived idea' : 'Saved idea'}</span>
         </p>
         <label className="mt-4 block text-sm font-semibold text-[#101D36]" htmlFor={`idea-title-${idea.id}`}>Title</label>
         <input
@@ -425,10 +427,10 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
       </section>
 
       <details className={`${sectionClass} group`}>
-        <summary className="min-h-12 cursor-pointer py-3 text-xl font-semibold text-[#101D36] focus:outline-none focus:ring-2 focus:ring-[#E5A11A]">Source recording</summary>
+        <summary className="min-h-12 cursor-pointer py-3 text-xl font-semibold text-[#101D36] focus:outline-none focus:ring-2 focus:ring-[#E5A11A]">{isSample ? 'Sample transcript—no recording' : 'Source recording'}</summary>
         <div className="space-y-5 pb-3 pt-2">
           {bundle.capture ? <p className="text-sm text-[#6E6B67]">Capture {bundle.capture.id} · {formatDate(bundle.capture.createdAt)}</p> : <p className="text-sm text-[#6E6B67]">Source capture metadata is unavailable.</p>}
-          <AudioPlayer recording={bundle.recording} />
+          {isSample ? <p className="text-sm text-[#6E6B67]">This local sample includes a transcript but no recording Blob.</p> : <AudioPlayer recording={bundle.recording} />}
           {bundle.transcript ? (
             <div>
               <h3 className="font-semibold text-[#101D36]">Transcript</h3>

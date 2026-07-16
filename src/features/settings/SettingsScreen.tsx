@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { InstallAppButton } from '@/components/InstallAppButton';
+import { DemoDataService } from '@/lib/demo/DemoDataService';
 import { downloadText } from '@/lib/export/download';
 import { buildFullExport } from '@/lib/export/fullExport';
 import { ORGANIZATION_PROMPT_VERSION } from '@/lib/llm/organizationPrompt';
@@ -36,6 +37,7 @@ function parseHealth(value: unknown): PublicHealth | undefined {
 
 interface SettingsScreenProps {
   navigateToCapture?: () => void;
+  navigateToIdeas?: () => void;
 }
 
 interface SettingsError {
@@ -47,7 +49,10 @@ async function loadSettingsRepository() {
   return (await import('@/lib/repositories')).settingsRepository;
 }
 
-export function SettingsScreen({ navigateToCapture = () => globalThis.location.assign('/') }: SettingsScreenProps = {}) {
+export function SettingsScreen({
+  navigateToCapture = () => globalThis.location.assign('/'),
+  navigateToIdeas = () => globalThis.location.assign('/ideas'),
+}: SettingsScreenProps = {}) {
   const [settings, setSettings] = useState<AppSettings>();
   const [health, setHealth] = useState<PublicHealth>();
   const [healthUnavailable, setHealthUnavailable] = useState(false);
@@ -149,6 +154,20 @@ export function SettingsScreen({ navigateToCapture = () => globalThis.location.a
     }
   }
 
+  async function loadSampleLibrary() {
+    setBusy(true);
+    setError(undefined);
+    try {
+      const result = await DemoDataService.seed();
+      setMessage(result.created ? 'Sample ideas added' : 'Sample ideas are already loaded');
+      globalThis.setTimeout(navigateToIdeas, 300);
+    } catch (cause) {
+      showError(cause, () => void loadSampleLibrary());
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function eraseAll() {
     setBusy(true);
     setError(undefined);
@@ -244,6 +263,15 @@ export function SettingsScreen({ navigateToCapture = () => globalThis.location.a
           <h2 className="m-0 text-xl font-bold text-[#101D36]" id="data-export-heading">Data export</h2>
           <p className="mb-0 mt-2 leading-6 text-[#6E6B67]">Download your captures, recordings, transcripts, ideas, organization, and settings as JSON. The export is built locally in this browser.</p>
           <button className="mt-4 min-h-12 rounded-full border border-[#E5A11A] px-5 font-extrabold text-[#101D36]" disabled={busy} onClick={() => void exportAll()} type="button">Export all local data</button>
+        </section>
+
+        <section className="border-t border-[#E8DDCE] py-6" aria-labelledby="sample-library-heading">
+          <p className="m-0 text-xs font-extrabold uppercase tracking-[0.12em] text-[#A66700]">Local demo data</p>
+          <h2 className="mb-0 mt-2 text-xl font-bold text-[#101D36]" id="sample-library-heading">Sample library</h2>
+          <p className="mb-0 mt-2 leading-6 text-[#6E6B67]">Adds three clearly labeled sample ideas to this browser so you can explore search, categories, actions, and export. It does not call GPT-5.6 and does not replace the live capture demo.</p>
+          <button className="mt-4 min-h-12 rounded-full border border-[#E5A11A] px-5 font-extrabold text-[#101D36]" disabled={busy} onClick={() => void loadSampleLibrary()} type="button">
+            {busy ? 'Loading sample library…' : 'Load sample library'}
+          </button>
         </section>
 
         <section className="border-t border-[#E8DDCE] py-6" aria-labelledby="erase-heading">
