@@ -38,6 +38,28 @@ MVP defaults documented in `.env.example`.
 Only add an override in Vercel when the deployment must differ from these
 defaults.
 
+## Verified Vercel environment presence — 2026-07-16
+
+`vercel env ls` confirmed these encrypted entries by presence only:
+
+| Key | Confirmed environments |
+| --- | --- |
+| `OPENAI_API_KEY` | Production, Preview |
+| `NUGGET_LLM_MODEL` | Development, Preview, Production |
+| `NUGGET_TRANSCRIPTION_MODEL` | Development, Preview, Production |
+| `NUGGET_TRANSCRIPTION_API_KEY` | Development, Preview, Production |
+
+The values were not pulled, inspected, printed, or otherwise verified. This is
+only an encrypted-entry presence check; it does not change the template
+defaults above or authorize use of any value.
+
+## Preview protection note
+
+The verified 2026-07-16 preview is protected by Vercel authentication for
+anonymous access. It can support authenticated smoke checks, but it is not a
+public judging URL. Do not change Deployment Protection or create a production
+deployment without explicit authorization.
+
 ## Pull environment values locally
 
 ```powershell
@@ -46,6 +68,7 @@ vercel env pull .env.local
 
 `.env.local` may contain secrets and must never be committed. Do not paste its
 contents into terminal output, logs, issues, pull requests, or chat messages.
+Do not use `vercel env pull` for a presence-only evidence check.
 
 ## Secure context note
 
