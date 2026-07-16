@@ -31,15 +31,36 @@ export const actionItemRepository = {
     });
   },
 
+  async getById(id: string): Promise<ActionItem | undefined> {
+    return db.actionItems.get(id);
+  },
+
   async listByIdea(ideaId: string): Promise<ActionItem[]> {
     return db.actionItems.where('ideaId').equals(ideaId).toArray();
   },
 
+  async listByStatus(status: ActionStatus): Promise<ActionItem[]> {
+    return db.actionItems.where('status').equals(status).toArray();
+  },
+
   async setStatus(id: string, status: ActionStatus): Promise<void> {
-    await db.actionItems.update(id, {
-      status,
-      updatedAt: Date.now(),
-      completedAt: status === 'completed' ? Date.now() : undefined,
+    await db.transaction('rw', db.actionItems, async () => {
+      const item = await db.actionItems.get(id);
+      if (!item) return;
+
+      const timestamp = Date.now();
+      const updated: ActionItem = {
+        ...item,
+        status,
+        updatedAt: timestamp,
+        ...(status === 'completed' ? { completedAt: timestamp } : {}),
+      };
+      if (status === 'open') delete updated.completedAt;
+      await db.actionItems.put(updated);
     });
+  },
+
+  async remove(id: string): Promise<void> {
+    await db.actionItems.delete(id);
   },
 };

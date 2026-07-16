@@ -16,6 +16,10 @@ export interface ConfirmIdeaInput {
   tagIds: string[];
 }
 
+export interface UpdateIdeaInput extends ConfirmIdeaInput {
+  status?: 'confirmed' | 'archived';
+}
+
 function groundedValues(input: ConfirmIdeaInput): GroundedText[] {
   return [
     input.summary,
@@ -107,10 +111,11 @@ export const ideaRepository = {
     }
   },
 
-  async listConfirmed(): Promise<Idea[]> {
+  async listConfirmed(includeArchived = false): Promise<Idea[]> {
+    const statuses: Idea['status'][] = includeArchived ? ['confirmed', 'archived'] : ['confirmed'];
     return db.ideas
       .where('status')
-      .equals('confirmed')
+      .anyOf(statuses)
       .sortBy('updatedAt')
       .then((ideas) => ideas.reverse());
   },
@@ -145,6 +150,41 @@ export const ideaRepository = {
     });
   },
 
+  async update(id: string, input: UpdateIdeaInput): Promise<Idea> {
+    return db.transaction('rw', db.ideas, db.categories, async () => {
+      const [idea, category] = await Promise.all([db.ideas.get(id), db.categories.get(input.categoryId)]);
+      if (!idea) throw new ValidationError('Idea not found.');
+      if (!category) throw new ValidationError('Category not found.');
+      validateExplicitGrounding(idea, input);
+
+      const updated: Idea = {
+        ...idea,
+        title: input.title,
+        summary: input.summary,
+        purpose: input.purpose,
+        goals: input.goals,
+        problem: input.problem,
+        blockers: input.blockers,
+        questions: input.questions,
+        suggestedActions: input.suggestedActions,
+        research: input.research,
+        categoryId: input.categoryId,
+        tagIds: input.tagIds,
+        status: input.status ?? idea.status,
+        updatedAt: Date.now(),
+      };
+      await db.ideas.put(updated);
+      return updated;
+    });
+  },
+
+  async setArchived(id: string, archived: boolean): Promise<void> {
+    await db.ideas.update(id, {
+      status: archived ? 'archived' : 'confirmed',
+      updatedAt: Date.now(),
+    });
+  },
+
   async discardDraft(id: string): Promise<void> {
     await db.transaction('rw', db.ideas, db.captureSessions, async () => {
       const idea = await db.ideas.get(id);
@@ -176,6 +216,6 @@ export const ideaRepository = {
   },
 
   async archive(id: string): Promise<void> {
-    await db.ideas.update(id, { status: 'archived', updatedAt: Date.now() });
+    await this.setArchived(id, true);
   },
 };
