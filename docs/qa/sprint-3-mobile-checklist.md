@@ -1,7 +1,9 @@
 # Sprint 3 Mobile Capture and Review Checklist
 
-Date: 2026-07-16  
-Branch: `codex/mvp-overnight-2026-07-15`  
+Date: 2026-07-16
+
+Branch: `codex/mvp-overnight-2026-07-15`
+
 Scope: Sprint 3 capture, processing, editable multi-idea review, and minimal confirmed-idea destination
 
 ## Status definitions
