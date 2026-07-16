@@ -45,7 +45,7 @@ describe('live evaluation configuration preflight', () => {
     ).toThrow(`requires the official OpenAI base URL: ${OFFICIAL_OPENAI_BASE_URL}`);
   });
 
-  it('requires the exact GPT-5.6 model alias', () => {
+  it('requires the exact GPT-5.6 Terra model alias', () => {
     expect(() =>
       resolveAuthorizedLiveConfig({
         OPENAI_API_KEY: explicitKey,

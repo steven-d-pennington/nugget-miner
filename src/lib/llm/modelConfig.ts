@@ -15,7 +15,7 @@ export interface LlmConfig {
 type EnvLike = Partial<Record<string, string | undefined>>;
 
 const DEFAULT_BASE_URL = 'https://api.openai.com/v1';
-const DEFAULT_MODEL = 'gpt-5.6';
+const DEFAULT_MODEL = 'gpt-5.6-terra';
 const DEFAULT_REASONING_EFFORT: ReasoningEffort = 'medium';
 const DEFAULT_TIMEOUT_MS = 90_000;
 const DEFAULT_MAX_INPUT_CHARS = 24_000;

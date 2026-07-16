@@ -35,15 +35,15 @@ describe('resolveLlmConfig', () => {
     expect(resolveLlmConfig({ NUGGET_TRANSCRIPTION_API_KEY: fallbackKey }).apiKey).toBe(fallbackKey);
     expect(resolveLlmConfig({})).toMatchObject({
       missing: ['apiKey'],
-      model: 'gpt-5.6',
+      model: 'gpt-5.6-terra',
       reasoningEffort: 'medium',
       timeoutMs: 90_000,
     });
   });
 
-  it('uses the GPT-5.6 medium-reasoning production defaults', () => {
+  it('uses the GPT-5.6 Terra medium-reasoning production defaults', () => {
     expect(resolveLlmConfig({ OPENAI_API_KEY: 'key' })).toMatchObject({
-      model: 'gpt-5.6',
+      model: 'gpt-5.6-terra',
       reasoningEffort: 'medium',
       timeoutMs: 90_000,
     });

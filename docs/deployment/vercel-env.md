@@ -28,7 +28,7 @@ MVP defaults documented in `.env.example`.
 | `NUGGET_TRANSCRIPTION_BASE_URL` | Transcription-specific base URL | `https://api.openai.com/v1` |
 | `NUGGET_LLM_BASE_URL` | Organization-specific base URL | `https://api.openai.com/v1` |
 | `NUGGET_TRANSCRIPTION_MODEL` | Transcription model | `gpt-4o-mini-transcribe` |
-| `NUGGET_LLM_MODEL` | Organization model | `gpt-5.6` |
+| `NUGGET_LLM_MODEL` | Organization model | `gpt-5.6-terra` |
 | `NUGGET_LLM_REASONING_EFFORT` | GPT-5.6 reasoning effort | `medium` |
 | `NUGGET_TRANSCRIPTION_MAX_BYTES` | Maximum transcription upload size | `26214400` |
 | `NUGGET_LLM_MAX_INPUT_CHARS` | Maximum transcript input length | `24000` |

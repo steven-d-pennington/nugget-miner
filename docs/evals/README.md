@@ -23,7 +23,7 @@ npx vitest run src/lib/evals/scoring.test.ts
 
 These tests use no provider and are included in the normal `npm test` and CI runs. They do not constitute a live model score.
 
-## Live GPT-5.6 run
+## Live GPT-5.6 Terra run
 
 The live suite directly uses the production `resolveLlmConfig`, `createOpenAIModelClient`, prompt builders, structured-output schemas, span normalization, and grounding validator. It does not call an application route or substitute a mock client. Fixtures run sequentially. Each of the 12 fixtures makes one segmentation request followed by one organization request, including the expected zero-idea fixture, for 24 GPT-5.6 requests total.
 
@@ -32,7 +32,7 @@ The suite refuses to run unless all of these conditions hold:
 - `OPENAI_API_KEY` is present in the process environment;
 - neither `NUGGET_LLM_API_KEY` nor `NUGGET_TRANSCRIPTION_API_KEY` contains a value, so production key precedence cannot silently bill a different credential;
 - the resolved base URL is exactly `https://api.openai.com/v1`;
-- the resolved model is exactly `gpt-5.6`; and
+- the resolved model is exactly `gpt-5.6-terra`; and
 - reasoning effort is `medium`.
 
 Set `OPENAI_API_KEY` through the developer's local secret manager or current shell without writing it to a file, then run:

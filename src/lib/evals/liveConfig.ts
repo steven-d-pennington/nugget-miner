@@ -1,7 +1,7 @@
 import { resolveLlmConfig, type LlmConfig } from '@/lib/llm';
 
 export const OFFICIAL_OPENAI_BASE_URL = 'https://api.openai.com/v1';
-export const LIVE_EVAL_MODEL = 'gpt-5.6';
+export const LIVE_EVAL_MODEL = 'gpt-5.6-terra';
 export const LIVE_EVAL_REASONING_EFFORT = 'medium';
 export const LIVE_FIXTURE_DEADLINE_MS = 170_000;
 
