@@ -1,4 +1,5 @@
 import { db } from '@/lib/db';
+import { ValidationError } from '@/lib/errors';
 import type { ActionItem, ActionStatus } from '@/types';
 
 export interface AcceptActionSuggestionInput {
@@ -57,6 +58,17 @@ export const actionItemRepository = {
       };
       if (status === 'open') delete updated.completedAt;
       await db.actionItems.put(updated);
+    });
+  },
+
+  async updateText(id: string, value: string): Promise<void> {
+    const text = value.trim();
+    if (!text) throw new ValidationError('Action text is required.');
+
+    await db.transaction('rw', db.actionItems, async () => {
+      const item = await db.actionItems.get(id);
+      if (!item) throw new ValidationError('Action not found.');
+      await db.actionItems.put({ ...item, text, updatedAt: Date.now() });
     });
   },
 

@@ -3,6 +3,7 @@ import { db, resetClientDatabaseForTests } from '@/lib/db';
 import { DEFAULT_CATEGORY_IDS } from '@/lib/db/defaultCategories';
 import { StorageError, ValidationError } from '@/lib/errors';
 import {
+  actionItemRepository,
   captureRepository,
   extractionRunRepository,
   ideaRepository,
@@ -146,6 +147,29 @@ describe('capture, recording, and transcript repositories', () => {
       expect.objectContaining({ id: 'ready-middle' }),
       expect.objectContaining({ id: 'ready-newer' }),
     ]);
+  });
+});
+
+describe('action item repository', () => {
+  it('trims and persists action text while rejecting blank updates', async () => {
+    const item = {
+      id: 'action-edit',
+      ideaId: 'idea-1',
+      text: 'Draft a survey',
+      status: 'open' as const,
+      createdAt: 100,
+      updatedAt: 100,
+    };
+    await db.actionItems.add(item);
+
+    await actionItemRepository.updateText(item.id, '  Share the interest survey  ');
+    await expect(actionItemRepository.getById(item.id)).resolves.toMatchObject({
+      text: 'Share the interest survey',
+      updatedAt: expect.any(Number),
+    });
+
+    await expect(actionItemRepository.updateText(item.id, '   ')).rejects.toBeInstanceOf(ValidationError);
+    await expect(actionItemRepository.getById(item.id)).resolves.toMatchObject({ text: 'Share the interest survey' });
   });
 });
 
