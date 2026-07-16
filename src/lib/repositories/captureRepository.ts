@@ -51,6 +51,14 @@ export const captureRepository = {
     return db.captureSessions.orderBy('createdAt').reverse().limit(limit).toArray();
   },
 
+  async listReviewReadyOldestFirst(): Promise<CaptureSession[]> {
+    const captures = await db.captureSessions
+      .where('processingState')
+      .anyOf('ready_for_review', 'partially_confirmed')
+      .toArray();
+    return captures.sort((left, right) => left.createdAt - right.createdAt);
+  },
+
   async listRunnable(): Promise<CaptureSession[]> {
     const now = Date.now();
     const candidates = await db.captureSessions.where('processingState').anyOf('queued', 'failed').toArray();

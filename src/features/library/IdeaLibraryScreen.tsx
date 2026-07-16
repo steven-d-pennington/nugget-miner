@@ -2,21 +2,48 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { captureRepository, categoryRepository, tagRepository } from '@/lib/repositories';
 import { LibraryService, type IdeaLibraryRow as LibraryRow } from '@/lib/services/LibraryService';
 import type { CaptureSession, Category, Tag } from '@/types';
 import { IdeaFilters } from './IdeaFilters';
 import { IdeaLibraryRow } from './IdeaLibraryRow';
 
-function parseTagIds(value: string | null) {
-  return value?.split(',').map((tagId) => tagId.trim()).filter(Boolean) ?? [];
+interface FilterState {
+  query: string;
+  categoryId?: string;
+  tagIds: string[];
+  includeArchived: boolean;
 }
 
-function reviewCaptures(captures: CaptureSession[]) {
-  return captures
-    .filter((capture) => capture.processingState === 'ready_for_review' || capture.processingState === 'partially_confirmed')
-    .sort((left, right) => left.createdAt - right.createdAt);
+function parseTagIds(value: string | null) {
+  return [...new Set(value?.split(',').map((tagId) => tagId.trim()).filter(Boolean) ?? [])];
+}
+
+function filtersFromParams(params: { get(name: string): string | null }): FilterState {
+  return {
+    query: params.get('q') ?? '',
+    categoryId: params.get('category') ?? undefined,
+    tagIds: parseTagIds(params.get('tags')),
+    includeArchived: params.get('archived') === '1',
+  };
+}
+
+function canonicalFilterQuery(filters: FilterState) {
+  const params = new URLSearchParams();
+  if (filters.query) params.set('q', filters.query);
+  if (filters.categoryId) params.set('category', filters.categoryId);
+  if (filters.tagIds.length) params.set('tags', filters.tagIds.join(','));
+  if (filters.includeArchived) params.set('archived', '1');
+  return params.toString();
+}
+
+function filtersEqual(left: FilterState, right: FilterState) {
+  return left.query === right.query
+    && left.categoryId === right.categoryId
+    && left.includeArchived === right.includeArchived
+    && left.tagIds.length === right.tagIds.length
+    && left.tagIds.every((tagId, index) => tagId === right.tagIds[index]);
 }
 
 export function IdeaLibraryScreen() {
@@ -32,8 +59,14 @@ export function IdeaLibraryScreen() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [readyCaptures, setReadyCaptures] = useState<CaptureSession[]>([]);
   const [loading, setLoading] = useState(true);
-  const [failure, setFailure] = useState<string>();
+  const [metadataFailure, setMetadataFailure] = useState<string>();
+  const [searchFailure, setSearchFailure] = useState<string>();
   const [refreshVersion, setRefreshVersion] = useState(0);
+  const searchParamsKey = searchParams.toString();
+  const currentFilters: FilterState = { query, categoryId, tagIds, includeArchived };
+  const filtersRef = useRef(currentFilters);
+  filtersRef.current = currentFilters;
+  const canonicalCurrentParams = canonicalFilterQuery(filtersFromParams(searchParams));
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedQuery(query), 150);
@@ -41,14 +74,29 @@ export function IdeaLibraryScreen() {
   }, [query]);
 
   useEffect(() => {
-    const params = new URLSearchParams();
-    if (query) params.set('q', query);
-    if (categoryId) params.set('category', categoryId);
-    if (tagIds.length) params.set('tags', tagIds.join(','));
-    if (includeArchived) params.set('archived', '1');
-    const next = params.toString();
-    router.replace(next ? `/ideas?${next}` : '/ideas', { scroll: false });
-  }, [categoryId, includeArchived, query, router, tagIds]);
+    const nextFilters = filtersFromParams(new URLSearchParams(searchParamsKey));
+    if (filtersEqual(filtersRef.current, nextFilters)) return;
+    setQuery(nextFilters.query);
+    setDebouncedQuery(nextFilters.query);
+    setCategoryId(nextFilters.categoryId);
+    setTagIds(nextFilters.tagIds);
+    setIncludeArchived(nextFilters.includeArchived);
+  }, [searchParamsKey]);
+
+  const applyFilters = useCallback((nextFilters: FilterState) => {
+    setQuery(nextFilters.query);
+    setCategoryId(nextFilters.categoryId);
+    setTagIds(nextFilters.tagIds);
+    setIncludeArchived(nextFilters.includeArchived);
+    const nextParams = canonicalFilterQuery(nextFilters);
+    if (nextParams !== canonicalCurrentParams) {
+      router.replace(nextParams ? `/ideas?${nextParams}` : '/ideas', { scroll: false });
+    }
+  }, [canonicalCurrentParams, router]);
+
+  const updateFilters = useCallback((patch: Partial<FilterState>) => {
+    applyFilters({ ...filtersRef.current, ...patch });
+  }, [applyFilters]);
 
   useEffect(() => {
     const onFocus = () => setRefreshVersion((version) => version + 1);
@@ -58,18 +106,19 @@ export function IdeaLibraryScreen() {
 
   useEffect(() => {
     let active = true;
+    setMetadataFailure(undefined);
     void Promise.all([
       categoryRepository.ensureDefaults(),
       tagRepository.list(),
-      captureRepository.listRecent(100),
+      captureRepository.listReviewReadyOldestFirst(),
     ]).then(([nextCategories, nextTags, captures]) => {
       if (!active) return;
       setCategories(nextCategories);
       setTags(nextTags);
-      setReadyCaptures(reviewCaptures(captures));
+      setReadyCaptures(captures);
     }).catch((error: unknown) => {
       if (!active) return;
-      setFailure(error instanceof Error ? error.message : 'The local idea library could not be read.');
+      setMetadataFailure(error instanceof Error ? error.message : 'Library organization metadata could not be refreshed.');
     });
     return () => { active = false; };
   }, [refreshVersion]);
@@ -77,7 +126,7 @@ export function IdeaLibraryScreen() {
   useEffect(() => {
     let active = true;
     setLoading(true);
-    setFailure(undefined);
+    setSearchFailure(undefined);
     void LibraryService.search({
       query: debouncedQuery || undefined,
       categoryId,
@@ -89,18 +138,15 @@ export function IdeaLibraryScreen() {
       setLoading(false);
     }).catch((error: unknown) => {
       if (!active) return;
-      setFailure(error instanceof Error ? error.message : 'The local idea library could not be read.');
+      setSearchFailure(error instanceof Error ? error.message : 'The local idea library could not be read.');
       setLoading(false);
     });
     return () => { active = false; };
   }, [categoryId, debouncedQuery, includeArchived, refreshVersion, tagIds]);
 
   const clearFilters = useCallback(() => {
-    setQuery('');
-    setCategoryId(undefined);
-    setTagIds([]);
-    setIncludeArchived(false);
-  }, []);
+    applyFilters({ query: '', categoryId: undefined, tagIds: [], includeArchived: false });
+  }, [applyFilters]);
 
   const hasFilters = Boolean(query || categoryId || tagIds.length || includeArchived);
   const resultLabel = `${rows.length} ${rows.length === 1 ? 'idea' : 'ideas'}`;
@@ -131,15 +177,23 @@ export function IdeaLibraryScreen() {
         </Link>
       ) : null}
 
+      {metadataFailure ? (
+        <div className="rounded-2xl border border-[#E0B1A8] bg-white p-5" role="alert">
+          <h2 className="font-extrabold text-[#101D36]">Library organization could not be refreshed</h2>
+          <p className="mt-2 text-sm text-[#5F5B56]">Your ideas are still available, but category, tag, or review information may be out of date. {metadataFailure}</p>
+          <button className="mt-3 min-h-12 rounded-xl bg-[#101D36] px-5 font-bold text-white" onClick={() => setRefreshVersion((version) => version + 1)} type="button">Try again</button>
+        </div>
+      ) : null}
+
       <IdeaFilters
         categories={categories}
         categoryId={categoryId}
         includeArchived={includeArchived}
-        onCategoryChange={setCategoryId}
+        onCategoryChange={(nextCategoryId) => updateFilters({ categoryId: nextCategoryId })}
         onClear={clearFilters}
-        onIncludeArchivedChange={setIncludeArchived}
-        onQueryChange={setQuery}
-        onTagToggle={(tagId) => setTagIds((current) => current.includes(tagId) ? current.filter((id) => id !== tagId) : [...current, tagId])}
+        onIncludeArchivedChange={(nextIncludeArchived) => updateFilters({ includeArchived: nextIncludeArchived })}
+        onQueryChange={(nextQuery) => updateFilters({ query: nextQuery })}
+        onTagToggle={(tagId) => updateFilters({ tagIds: tagIds.includes(tagId) ? tagIds.filter((id) => id !== tagId) : [...tagIds, tagId] })}
         query={query}
         tagIds={tagIds}
         tags={tags}
@@ -151,10 +205,10 @@ export function IdeaLibraryScreen() {
           <p aria-live="polite" className="metadata text-xs font-semibold uppercase tracking-wider text-[#6E6B67]">{loading ? 'Loading ideas…' : resultLabel}</p>
         </div>
 
-        {failure ? (
+        {searchFailure ? (
           <div className="rounded-2xl border border-[#E0B1A8] bg-white p-6" role="alert">
             <h3 className="font-extrabold text-[#101D36]">Ideas could not be loaded</h3>
-            <p className="mt-2 text-sm text-[#5F5B56]">{failure}</p>
+            <p className="mt-2 text-sm text-[#5F5B56]">{searchFailure}</p>
             <button className="mt-4 min-h-12 rounded-xl bg-[#101D36] px-5 font-bold text-white" onClick={() => setRefreshVersion((version) => version + 1)} type="button">Try again</button>
           </div>
         ) : !loading && rows.length === 0 ? (

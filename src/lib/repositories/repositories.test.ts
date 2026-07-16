@@ -9,7 +9,7 @@ import {
   recordingRepository,
   transcriptRepository,
 } from '@/lib/repositories';
-import type { GroundedText, Idea, RecordingDraft } from '@/types';
+import type { CaptureSession, GroundedText, Idea, RecordingDraft } from '@/types';
 
 const draft: RecordingDraft = {
   blob: new Blob(['audio-bytes'], { type: 'audio/webm' }),
@@ -121,6 +121,31 @@ describe('capture, recording, and transcript repositories', () => {
       ]),
     );
     expect(await captureRepository.listRunnable()).not.toContainEqual(expect.objectContaining({ id: futureRetry.id }));
+  });
+
+  it('returns every review-ready capture oldest-first without a recent-capture limit', async () => {
+    const savedCaptures: CaptureSession[] = Array.from({ length: 105 }, (_, index) => ({
+      id: `saved-${index}`,
+      source: 'text',
+      processingState: 'saved',
+      processingPreference: 'manual',
+      processingAttempt: 0,
+      durationMs: 0,
+      createdAt: 1_000 + index,
+      updatedAt: 1_000 + index,
+    }));
+    const eligible: CaptureSession[] = [
+      { ...savedCaptures[0]!, id: 'ready-newer', processingState: 'ready_for_review', createdAt: 300, updatedAt: 300 },
+      { ...savedCaptures[0]!, id: 'partial-oldest', processingState: 'partially_confirmed', createdAt: 100, updatedAt: 100 },
+      { ...savedCaptures[0]!, id: 'ready-middle', processingState: 'ready_for_review', createdAt: 200, updatedAt: 200 },
+    ];
+    await db.captureSessions.bulkPut([...savedCaptures, ...eligible]);
+
+    await expect(captureRepository.listReviewReadyOldestFirst()).resolves.toEqual([
+      expect.objectContaining({ id: 'partial-oldest' }),
+      expect.objectContaining({ id: 'ready-middle' }),
+      expect.objectContaining({ id: 'ready-newer' }),
+    ]);
   });
 });
 

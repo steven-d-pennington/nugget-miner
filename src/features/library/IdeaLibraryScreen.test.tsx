@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
   search: vi.fn(),
   ensureDefaults: vi.fn(),
   listTags: vi.fn(),
-  listRecent: vi.fn(),
+  listReviewReadyOldestFirst: vi.fn(),
 }));
 
 vi.mock('next/navigation', () => ({
@@ -25,7 +25,7 @@ vi.mock('@/lib/services/LibraryService', () => ({
 vi.mock('@/lib/repositories', () => ({
   categoryRepository: { ensureDefaults: () => mocks.ensureDefaults() },
   tagRepository: { list: () => mocks.listTags() },
-  captureRepository: { listRecent: (...args: unknown[]) => mocks.listRecent(...args) },
+  captureRepository: { listReviewReadyOldestFirst: () => mocks.listReviewReadyOldestFirst() },
 }));
 
 const personal: Category = {
@@ -116,36 +116,70 @@ beforeEach(() => {
   mocks.searchParams = new URLSearchParams();
   mocks.ensureDefaults.mockResolvedValue([personal, work]);
   mocks.listTags.mockResolvedValue([community, planning]);
-  mocks.listRecent.mockResolvedValue([]);
+  mocks.listReviewReadyOldestFirst.mockResolvedValue([]);
   mocks.search.mockImplementation(async (input) => filteredRows(input));
 });
 
 describe('IdeaLibraryScreen', () => {
-  it('renders confirmed ideas without drafts and exposes every indicator as text', async () => {
+  it('renders the rows returned by LibraryService and exposes every indicator as text', async () => {
     render(<IdeaLibraryScreen />);
 
     expect(await screen.findByRole('link', { name: /Neighborhood tool library/ })).toHaveAttribute(
       'href',
       '/ideas/tool-library',
     );
-    expect(screen.queryByText('Unconfirmed draft')).not.toBeInTheDocument();
+    expect(mocks.search).toHaveBeenCalledWith({
+      query: undefined,
+      categoryId: undefined,
+      tagIds: [],
+      includeArchived: false,
+    });
     expect(screen.getByText('Blocked')).toBeInTheDocument();
     expect(screen.getByText('Research')).toBeInTheDocument();
     expect(screen.getByText('2 open actions')).toBeInTheDocument();
   });
 
   it('changes query results only after the 150 ms debounce', async () => {
-    render(<IdeaLibraryScreen />);
+    vi.useFakeTimers();
+    try {
+      render(<IdeaLibraryScreen />);
+      await act(async () => { await Promise.resolve(); });
+
+      fireEvent.change(screen.getByRole('searchbox', { name: 'Search ideas' }), {
+        target: { value: 'meeting' },
+      });
+
+      await act(async () => { await vi.advanceTimersByTimeAsync(149); });
+      expect(mocks.search).not.toHaveBeenCalledWith(expect.objectContaining({ query: 'meeting' }));
+
+      await act(async () => { await vi.advanceTimersByTimeAsync(1); });
+      expect(mocks.search).toHaveBeenLastCalledWith(expect.objectContaining({ query: 'meeting' }));
+      expect(screen.getByRole('link', { name: /Meeting notes workflow/ })).toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: /Neighborhood tool library/ })).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('synchronizes controls from changed search params without replacing the URL back', async () => {
+    const view = render(<IdeaLibraryScreen />);
     await screen.findByText('2 ideas');
+    expect(mocks.replace).not.toHaveBeenCalled();
 
-    fireEvent.change(screen.getByRole('searchbox', { name: 'Search ideas' }), {
-      target: { value: 'meeting' },
-    });
+    mocks.searchParams = new URLSearchParams('q=meeting&category=work&tags=planning&archived=1');
+    view.rerender(<IdeaLibraryScreen />);
 
-    expect(mocks.search).not.toHaveBeenLastCalledWith(expect.objectContaining({ query: 'meeting' }));
-    await waitFor(() => expect(mocks.search).toHaveBeenLastCalledWith(expect.objectContaining({ query: 'meeting' })));
-    expect(await screen.findByRole('link', { name: /Meeting notes workflow/ })).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /Neighborhood tool library/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('searchbox', { name: 'Search ideas' })).toHaveValue('meeting');
+    expect(screen.getByRole('button', { name: 'Work' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: '#Planning' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('checkbox', { name: 'Include archived ideas' })).toBeChecked();
+    await waitFor(() => expect(mocks.search).toHaveBeenLastCalledWith({
+      query: 'meeting',
+      categoryId: 'work',
+      tagIds: ['planning'],
+      includeArchived: true,
+    }));
+    expect(mocks.replace).not.toHaveBeenCalled();
   });
 
   it('combines URL-initialized category and tag filters, then clears them', async () => {
@@ -172,10 +206,9 @@ describe('IdeaLibraryScreen', () => {
   });
 
   it('links the review callout to the oldest ready or partially confirmed capture', async () => {
-    mocks.listRecent.mockResolvedValue([
-      capture('newer', 300),
+    mocks.listReviewReadyOldestFirst.mockResolvedValue([
       { ...capture('oldest', 100), processingState: 'partially_confirmed' },
-      { ...capture('ignored', 50), processingState: 'saved' },
+      capture('newer', 300),
     ]);
     render(<IdeaLibraryScreen />);
 
@@ -185,7 +218,7 @@ describe('IdeaLibraryScreen', () => {
     );
   });
 
-  it('ignores a stale search result and refreshes the current filters on focus', async () => {
+  it('ignores a stale search result', async () => {
     let resolveFirst: ((value: LibraryRow[]) => void) | undefined;
     mocks.search
       .mockImplementationOnce(() => new Promise<LibraryRow[]>((resolve) => { resolveFirst = resolve; }))
@@ -199,8 +232,41 @@ describe('IdeaLibraryScreen', () => {
     await act(async () => resolveFirst?.([rows[0]!]));
     expect(screen.queryByRole('link', { name: /Neighborhood tool library/ })).not.toBeInTheDocument();
 
-    const callsBeforeFocus = mocks.search.mock.calls.length;
+  });
+
+  it('refreshes metadata and search with the current filters on focus', async () => {
+    mocks.searchParams = new URLSearchParams('q=meeting&category=work&tags=planning');
+    render(<IdeaLibraryScreen />);
+    await screen.findByText('1 idea');
+    vi.clearAllMocks();
+    mocks.ensureDefaults.mockResolvedValue([personal, work]);
+    mocks.listTags.mockResolvedValue([community, planning]);
+    mocks.listReviewReadyOldestFirst.mockResolvedValue([]);
+    mocks.search.mockImplementation(async (input) => filteredRows(input));
+
     fireEvent.focus(window);
-    await waitFor(() => expect(mocks.search.mock.calls.length).toBeGreaterThan(callsBeforeFocus));
+
+    await waitFor(() => expect(mocks.ensureDefaults).toHaveBeenCalledTimes(1));
+    expect(mocks.listTags).toHaveBeenCalledTimes(1);
+    expect(mocks.listReviewReadyOldestFirst).toHaveBeenCalledTimes(1);
+    expect(mocks.search).toHaveBeenCalledWith({
+      query: 'meeting',
+      categoryId: 'work',
+      tagIds: ['planning'],
+      includeArchived: false,
+    });
+  });
+
+  it('keeps metadata failures visible while successful searches remain usable', async () => {
+    mocks.ensureDefaults.mockRejectedValue(new Error('Categories unavailable.'));
+    render(<IdeaLibraryScreen />);
+
+    expect(await screen.findByRole('link', { name: /Neighborhood tool library/ })).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent('Library organization could not be refreshed');
+    expect(screen.getByRole('alert')).toHaveTextContent('Categories unavailable.');
+
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Search ideas' }), { target: { value: 'meeting' } });
+    await waitFor(() => expect(mocks.search).toHaveBeenCalledWith(expect.objectContaining({ query: 'meeting' })));
+    expect(screen.getByRole('alert')).toHaveTextContent('Categories unavailable.');
   });
 });
