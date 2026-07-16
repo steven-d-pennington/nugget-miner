@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const css = readFileSync(resolve('src/app/globals.css'), 'utf8');
+const layout = readFileSync(resolve('src/app/layout.tsx'), 'utf8');
 
 function readBlock(pattern: RegExp, label: string) {
   const match = css.match(pattern);
@@ -48,5 +49,32 @@ describe('approved light theme accent contrast', () => {
     expect(contrastRatio(ink, accent)).toBeGreaterThanOrEqual(4.5);
     expect(contrastRatio(ink, canvas)).toBeGreaterThanOrEqual(4.5);
     expect(contrastRatio(muted, canvas)).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe('mobile shell viewport contract', () => {
+  it('keeps navigation fixed and reserves its safe-area-aware height in content', () => {
+    const navigation = readBlock(/\.bottom-nav\s*\{([\s\S]*?)\}/, 'bottom navigation');
+    const main = readBlock(/\.app-shell__main\s*\{([\s\S]*?)\}/, 'application main');
+
+    expect(navigation).toMatch(/position:\s*fixed/);
+    expect(navigation).toMatch(/right:\s*0/);
+    expect(navigation).toMatch(/bottom:\s*0/);
+    expect(navigation).toMatch(/left:\s*0/);
+    expect(navigation).toContain('env(safe-area-inset-bottom');
+    expect(main).toContain('var(--bottom-nav-height)');
+    expect(main).toContain('env(safe-area-inset-bottom');
+  });
+
+  it('covers the viewport and respects horizontal device safe areas', () => {
+    const header = readBlock(/\.app-shell__header-inner\s*\{([\s\S]*?)\}/, 'application header');
+    const main = readBlock(/\.app-shell__main\s*\{([\s\S]*?)\}/, 'application main');
+    const navigationList = readBlock(/\.bottom-nav__list\s*\{([\s\S]*?)\}/, 'bottom navigation list');
+
+    for (const block of [header, main, navigationList]) {
+      expect(block).toContain('env(safe-area-inset-left');
+      expect(block).toContain('env(safe-area-inset-right');
+    }
+    expect(layout).toMatch(/viewportFit:\s*['"]cover['"]/);
   });
 });
