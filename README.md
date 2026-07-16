@@ -12,7 +12,7 @@ Ideas captured while walking, commuting, or between tasks often become long voic
 
 ## What Nugget does
 
-Nugget records audio or accepts pasted text, saves the capture in the browser, then—when cloud processing is enabled—transcribes it, separates it into distinct ideas, organizes each idea, and asks the person to review and confirm the result. Confirmed ideas are editable, searchable, filterable, actionable, and exportable.
+Nugget records audio or accepts pasted text, saves the capture in the browser, then—when cloud processing is enabled—transcribes audio only. Pasted text proceeds directly to idea separation and organization. Nugget then asks the person to review and confirm the result. Confirmed ideas are editable, searchable, filterable, actionable, and exportable.
 
 ## Try it
 
@@ -134,7 +134,7 @@ npx vitest run src/lib/evals/scoring.test.ts
 npm run eval:live
 ```
 
-`npm run check` is the combined gate: it runs typecheck, lint, the normal test suite, and the production build. `npm run eval:live` is optional, cost-incurring, and requires a safely injected nonempty `OPENAI_API_KEY`; it is excluded from normal tests and CI. An authorized live run writes `docs/evals/latest.json`, but that file does not exist because a live evaluation has not been authorized. The recorded-event live report remains an outstanding submission gate.
+`npm run check` is the combined gate: it runs typecheck, lint, the normal test suite, and the production build. `npm run eval:live` is optional, cost-incurring, and requires a safely injected nonempty `OPENAI_API_KEY`; it is excluded from normal tests and CI. An authorized live run writes `docs/evals/latest.json`, but that file does not exist because the local evaluation process could not receive a safely injected nonempty `OPENAI_API_KEY`. The recorded-event live report remains an outstanding submission gate.
 
 ## Privacy and data handling
 
@@ -148,7 +148,7 @@ npm run eval:live
 
 - The current verified preview is Vercel-auth protected. A public, anonymous judge path has not been authorized; final public production publication requires owner release approval.
 - Production currently points to the older `main` commit `a668857`; it is not the current MVP preview.
-- The live evaluation report and a reusable live-result artifact are not yet recorded because the safe nonempty-key run has not been authorized.
+- The live evaluation report and a reusable live-result artifact are not yet recorded because the local evaluation process could not receive a safely injected nonempty `OPENAI_API_KEY`, despite authorization to make live OpenAI calls after deterministic checks within an approximate four-dollar ceiling.
 - Physical-device, secondary-browser, install/standalone, and mobile backgrounding verification remain incomplete.
 - Nugget does not provide self-learning from corrections, live research, cloud sync, native apps, or guaranteed processing while a mobile browser is fully closed.
 
