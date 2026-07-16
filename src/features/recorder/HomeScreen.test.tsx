@@ -1,6 +1,9 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { HomeScreen } from './HomeScreen';
+
+const push = vi.fn();
+const saveText = vi.fn();
 
 vi.mock('@/lib/repositories', () => ({
   captureRepository: {
@@ -10,12 +13,18 @@ vi.mock('@/lib/repositories', () => ({
 }));
 
 vi.mock('@/lib/services/CaptureService', () => ({
-  CaptureService: { saveRecording: vi.fn() },
+  CaptureService: { saveRecording: vi.fn(), saveText: (...args: unknown[]) => saveText(...args) },
 }));
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push }),
 }));
+
+beforeEach(() => {
+  push.mockReset();
+  saveText.mockReset();
+  saveText.mockResolvedValue({ capture: { id: 'text-capture-1' } });
+});
 
 describe('HomeScreen', () => {
   it('describes local storage and cloud processing accurately', async () => {
@@ -26,5 +35,17 @@ describe('HomeScreen', () => {
     expect(screen.getByText(/when you choose cloud processing/i)).toBeInTheDocument();
     expect(screen.queryByText('Local-only')).not.toBeInTheDocument();
     expect(screen.queryByText(/everything stays on your device/i)).not.toBeInTheDocument();
+  });
+
+  it('routes a saved typed ramble through the capture compatibility URL', async () => {
+    render(<HomeScreen />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Paste a ramble' }));
+    fireEvent.change(screen.getByLabelText('Ramble text'), {
+      target: { value: 'Plan a neighborhood tool-sharing library.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save and organize' }));
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/idea/text-capture-1'));
   });
 });

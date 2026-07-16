@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { captureRepository } from '@/lib/repositories';
 import type { CaptureSession } from '@/types';
 import { RecorderPanel } from './RecorderPanel';
+import { TextCaptureForm } from './TextCaptureForm';
 
 function formatDuration(durationMs: number) {
   const seconds = Math.max(0, Math.round(durationMs / 1000));
@@ -23,6 +25,7 @@ function formatDate(timestamp: number) {
 }
 
 export function HomeScreen() {
+  const router = useRouter();
   const [captures, setCaptures] = useState<CaptureSession[]>([]);
 
   const loadCaptures = useCallback(async () => {
@@ -32,6 +35,11 @@ export function HomeScreen() {
   useEffect(() => {
     void loadCaptures();
   }, [loadCaptures]);
+
+  const handleTextSaved = useCallback(async (captureSessionId: string) => {
+    await loadCaptures();
+    router.push(`/idea/${captureSessionId}`);
+  }, [loadCaptures, router]);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
@@ -51,6 +59,8 @@ export function HomeScreen() {
       </header>
 
       <RecorderPanel onSaved={loadCaptures} />
+
+      <TextCaptureForm onSaved={handleTextSaved} />
 
       <section className="rounded-[var(--radius)] border border-white/10 bg-surface p-5" aria-labelledby="recent-heading">
         <div className="flex items-center justify-between gap-3">
