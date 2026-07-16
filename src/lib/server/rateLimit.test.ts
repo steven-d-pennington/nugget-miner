@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { consumeRateLimit, rateLimitBucketCountForTest, resetRateLimitsForTest } from './rateLimit';
+import { consumeRateLimit, rateLimitBucketCountForTest, rateLimitKey, resetRateLimitsForTest } from './rateLimit';
 
 afterEach(() => {
   resetRateLimitsForTest();
@@ -20,6 +20,16 @@ describe('consumeRateLimit', () => {
 
     expect(consumeRateLimit('client:b', 1, 10, now + 1)).toMatchObject({ allowed: true, remaining: 0 });
     expect(consumeRateLimit('client:a', 1, 10, now + 10)).toEqual({ allowed: true, remaining: 0, resetAt: 1_020 });
+  });
+
+  it('isolates route namespaces for the same request identity', () => {
+    const now = 1_000;
+    const identity = 'client:9c21b2a2-2f45-4c35-b1cb-19a2c17bbcd7';
+
+    expect(consumeRateLimit(rateLimitKey('transcription', identity), 1, 60_000, now)).toMatchObject({ allowed: true });
+    expect(consumeRateLimit(rateLimitKey('segmentation', identity), 1, 60_000, now)).toMatchObject({ allowed: true });
+    expect(consumeRateLimit(rateLimitKey('organization', identity), 1, 60_000, now)).toMatchObject({ allowed: true });
+    expect(consumeRateLimit(rateLimitKey('transcription', identity), 1, 60_000, now + 1)).toMatchObject({ allowed: false });
   });
 
   it('removes expired identities and caps active identities at two thousand buckets', () => {

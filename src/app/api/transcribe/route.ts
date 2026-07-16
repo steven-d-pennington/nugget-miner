@@ -1,6 +1,6 @@
 import { publicTranscriptionConfig, resolveTranscriptionConfig } from '@/lib/server/transcriptionConfig';
 import { TranscriptionProviderError, transcribeWithOpenAICompatibleProvider } from '@/lib/server/transcriptionClient';
-import { consumeRateLimit, rateLimitHeaders } from '@/lib/server/rateLimit';
+import { consumeRateLimit, rateLimitHeaders, rateLimitKey } from '@/lib/server/rateLimit';
 import { requestIdentity } from '@/lib/server/requestIdentity';
 
 const allowedMimeTypes = new Set(['audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/x-wav']);
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
     return errorResponse(413, 'payload_too_large', 'The audio recording is too large to transcribe.');
   }
 
-  const limit = consumeRateLimit(requestIdentity(request), TRANSCRIPTION_RATE_LIMIT, RATE_LIMIT_WINDOW_MS);
+  const limit = consumeRateLimit(rateLimitKey('transcription', requestIdentity(request)), TRANSCRIPTION_RATE_LIMIT, RATE_LIMIT_WINDOW_MS);
   if (!limit.allowed) return rateLimitedResponse(limit);
 
   try {

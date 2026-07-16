@@ -12,6 +12,10 @@ export interface RateLimitResult {
 const MAX_BUCKETS = 2_000;
 const buckets = new Map<string, Bucket>();
 
+export function rateLimitKey(scope: 'transcription' | 'segmentation' | 'organization', identity: string) {
+  return `${scope}:${identity}`;
+}
+
 function removeExpiredBuckets(now: number) {
   for (const [key, bucket] of buckets) {
     if (bucket.resetAt <= now) buckets.delete(key);

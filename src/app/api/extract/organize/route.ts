@@ -17,7 +17,7 @@ import {
   extractionErrorResponse,
   runValidatedStructured,
 } from '../routeSupport';
-import { consumeRateLimit, rateLimitHeaders } from '@/lib/server/rateLimit';
+import { consumeRateLimit, rateLimitHeaders, rateLimitKey } from '@/lib/server/rateLimit';
 import { requestIdentity } from '@/lib/server/requestIdentity';
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1_000;
@@ -102,7 +102,11 @@ export async function POST(request: Request) {
     return errorResponse(503, 'provider_unconfigured', 'LLM extraction provider is not configured.');
   }
 
-  const limit = consumeRateLimit(requestIdentity(request, body.safetyIdentifier), ORGANIZATION_RATE_LIMIT, RATE_LIMIT_WINDOW_MS);
+  const limit = consumeRateLimit(
+    rateLimitKey('organization', requestIdentity(request, body.safetyIdentifier)),
+    ORGANIZATION_RATE_LIMIT,
+    RATE_LIMIT_WINDOW_MS,
+  );
   if (!limit.allowed) return rateLimitedResponse(limit);
 
   const prompt = getOrganizationPrompt({
