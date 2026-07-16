@@ -1,16 +1,20 @@
 import { db } from '@/lib/db';
-import type { ExtractionQuestionSuggestion, ItemStatus, Question } from '@/types';
+import type { ExtractionQuestionSuggestion, LegacyItemStatus, Question } from '@/types';
 
 function now() {
   return Date.now();
 }
 
 export const questionRepository = {
-  async createMany(ideaId: string, extractionRunId: string, suggestions: ExtractionQuestionSuggestion[]): Promise<Question[]> {
+  async createMany(
+    captureSessionId: string,
+    extractionRunId: string,
+    suggestions: ExtractionQuestionSuggestion[],
+  ): Promise<Question[]> {
     const timestamp = now();
     const questions: Question[] = suggestions.map((suggestion) => ({
       id: crypto.randomUUID(),
-      ideaId,
+      captureSessionId,
       extractionRunId,
       text: suggestion.text,
       status: 'pending',
@@ -30,7 +34,7 @@ export const questionRepository = {
     await db.questions.update(id, { ...patch, updatedAt: now() });
   },
 
-  async updateStatus(id: string, status: ItemStatus): Promise<void> {
+  async updateStatus(id: string, status: LegacyItemStatus): Promise<void> {
     await this.update(id, { status });
   },
 };

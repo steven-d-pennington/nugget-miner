@@ -3,9 +3,14 @@ import { describe, expect, it, vi } from 'vitest';
 import { HomeScreen } from './HomeScreen';
 
 vi.mock('@/lib/repositories', () => ({
-  ideaRepository: {
-    listByRecency: vi.fn(async () => []),
+  captureRepository: {
+    listRecent: vi.fn(async () => []),
   },
+  settingsRepository: { get: vi.fn(async () => ({ automaticProcessing: false })) },
+}));
+
+vi.mock('@/lib/services/CaptureService', () => ({
+  CaptureService: { saveRecording: vi.fn() },
 }));
 
 vi.mock('next/navigation', () => ({

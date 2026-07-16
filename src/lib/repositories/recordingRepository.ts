@@ -3,11 +3,11 @@ import { StorageError } from '@/lib/errors';
 import type { Recording, RecordingDraft } from '@/types';
 
 export const recordingRepository = {
-  async add(ideaId: string, draft: RecordingDraft): Promise<Recording> {
+  async add(captureSessionId: string, draft: RecordingDraft): Promise<Recording> {
     try {
       const recording: Recording = {
         id: crypto.randomUUID(),
-        ideaId,
+        captureSessionId,
         blob: draft.blob,
         mimeType: draft.mimeType,
         sizeBytes: draft.sizeBytes,
@@ -22,7 +22,7 @@ export const recordingRepository = {
     }
   },
 
-  async getByIdeaId(ideaId: string): Promise<Recording | undefined> {
-    return db.recordings.where('ideaId').equals(ideaId).first();
+  async getByCaptureId(captureSessionId: string): Promise<Recording | undefined> {
+    return db.recordings.where('captureSessionId').equals(captureSessionId).first();
   },
 };

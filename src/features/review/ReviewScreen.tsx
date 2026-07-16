@@ -5,10 +5,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { ReviewService, type ReviewSnapshot } from '@/lib/services/ReviewService';
 import { parseExtractionResult } from '@/lib/validation/extractionResult';
 import { transcriptRepository } from '@/lib/repositories';
-import type { ExtractionActionSuggestion, ExtractionPreset, SourceSpan, Transcript } from '@/types';
+import type { ExtractionActionSuggestion, ExtractionPreset, LegacySourceSpan, Transcript } from '@/types';
 import { PresetSelector } from './PresetSelector';
 
-function sourceSnippet(transcript: Transcript | undefined, span?: SourceSpan) {
+function sourceSnippet(transcript: Transcript | undefined, span?: LegacySourceSpan) {
   if (!transcript || !span) return 'Source unavailable';
   return transcript.text.slice(span.start, span.end).replace(/\s+/g, ' ').trim() || 'Source unavailable';
 }
@@ -32,6 +32,7 @@ function ActionCard({ action, index, onAccept, transcript }: { action: Extractio
 }
 
 export function ReviewScreen({ ideaId }: { ideaId: string }) {
+  const captureSessionId = ideaId;
   const [snapshot, setSnapshot] = useState<ReviewSnapshot | undefined>();
   const [transcript, setTranscript] = useState<Transcript | undefined>();
   const [preset, setPreset] = useState<ExtractionPreset>('general-thought');
@@ -42,14 +43,14 @@ export function ReviewScreen({ ideaId }: { ideaId: string }) {
   const load = useCallback(async () => {
     setLoading(true);
     const [nextSnapshot, nextTranscript] = await Promise.all([
-      ReviewService.latestSnapshot(ideaId),
-      transcriptRepository.getByIdeaId(ideaId),
+      ReviewService.latestSnapshot(captureSessionId),
+      transcriptRepository.getCurrent(captureSessionId),
     ]);
     setSnapshot(nextSnapshot);
     setTranscript(nextTranscript);
-    if (nextSnapshot) setPreset(nextSnapshot.run.preset);
+    if (nextSnapshot) setPreset(nextSnapshot.preset);
     setLoading(false);
-  }, [ideaId]);
+  }, [captureSessionId]);
 
   useEffect(() => {
     void load();
@@ -59,7 +60,7 @@ export function ReviewScreen({ ideaId }: { ideaId: string }) {
     setRunning(true);
     setMessage(null);
     try {
-      await ReviewService.runMockExtraction({ ideaId, preset });
+      await ReviewService.runMockExtraction({ captureSessionId, preset });
       await load();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Extraction failed.');
@@ -91,7 +92,7 @@ export function ReviewScreen({ ideaId }: { ideaId: string }) {
   async function acceptAction(index: number) {
     if (!snapshot) return;
     const action = await ReviewService.acceptAction(snapshot.run.id, index);
-    setMessage(`Accepted action: ${action.title}`);
+    setMessage(`Accepted action: ${action.text}`);
     await load();
   }
 
@@ -124,7 +125,7 @@ export function ReviewScreen({ ideaId }: { ideaId: string }) {
           <section className="rounded-[var(--radius)] border border-white/10 bg-surface p-6">
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full border border-accent/40 px-3 py-1 text-sm text-accent">Suggested</span>
-              <span className="text-sm text-muted">{snapshot.run.provider} · {snapshot.run.preset} · {snapshot.run.schemaVersion}</span>
+              <span className="text-sm text-muted">{snapshot.run.provider} - {snapshot.preset} - {snapshot.run.schemaVersion}</span>
             </div>
             <h2 className="mt-4 text-xl font-semibold">Summary</h2>
             <p className="mt-2 text-muted">{result.summary}</p>

@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
-import { ideaRepository } from '@/lib/repositories';
-import type { Idea } from '@/types';
+import { captureRepository } from '@/lib/repositories';
+import type { CaptureSession } from '@/types';
 import { RecorderPanel } from './RecorderPanel';
 
 function formatDuration(durationMs: number) {
@@ -14,19 +14,24 @@ function formatDuration(durationMs: number) {
 }
 
 function formatDate(timestamp: number) {
-  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(timestamp);
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(timestamp);
 }
 
 export function HomeScreen() {
-  const [ideas, setIdeas] = useState<Idea[]>([]);
+  const [captures, setCaptures] = useState<CaptureSession[]>([]);
 
-  const loadIdeas = useCallback(async () => {
-    setIdeas(await ideaRepository.listByRecency());
+  const loadCaptures = useCallback(async () => {
+    setCaptures(await captureRepository.listRecent());
   }, []);
 
   useEffect(() => {
-    void loadIdeas();
-  }, [loadIdeas]);
+    void loadCaptures();
+  }, [loadCaptures]);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
@@ -45,25 +50,25 @@ export function HomeScreen() {
         </p>
       </header>
 
-      <RecorderPanel onSaved={loadIdeas} />
+      <RecorderPanel onSaved={loadCaptures} />
 
       <section className="rounded-[var(--radius)] border border-white/10 bg-surface p-5" aria-labelledby="recent-heading">
         <div className="flex items-center justify-between gap-3">
-          <h2 id="recent-heading" className="text-2xl font-semibold">Recent ideas</h2>
-          <span className="text-sm text-muted">{ideas.length} saved</span>
+          <h2 id="recent-heading" className="text-2xl font-semibold">Recent captures</h2>
+          <span className="text-sm text-muted">{captures.length} saved</span>
         </div>
-        {ideas.length === 0 ? (
+        {captures.length === 0 ? (
           <div className="mt-4 rounded-2xl border border-dashed border-white/20 p-6 text-muted">Record a thought. Nugget will help pull out the useful parts.</div>
         ) : (
           <ul className="mt-4 divide-y divide-white/10">
-            {ideas.map((idea) => (
-              <li key={idea.id}>
-                <Link className="flex flex-col gap-2 rounded-xl px-2 py-4 hover:bg-white/5 sm:flex-row sm:items-center sm:justify-between" href={`/idea/${idea.id}`}>
+            {captures.map((capture) => (
+              <li key={capture.id}>
+                <Link className="flex flex-col gap-2 rounded-xl px-2 py-4 hover:bg-white/5 sm:flex-row sm:items-center sm:justify-between" href={`/idea/${capture.id}`}>
                   <span>
-                    <span className="block font-medium">{idea.title}</span>
-                    <span className="text-sm text-muted">{formatDate(idea.createdAt)} · {formatDuration(idea.durationMs)} · {idea.status}</span>
+                    <span className="block font-medium">{capture.source === 'audio' ? 'Audio capture' : 'Text capture'}</span>
+                    <span className="text-sm text-muted">{formatDate(capture.createdAt)} - {formatDuration(capture.durationMs)} - {capture.processingState}</span>
                   </span>
-                  <span className="text-sm text-accent">Open →</span>
+                  <span className="text-sm text-accent">Open</span>
                 </Link>
               </li>
             ))}

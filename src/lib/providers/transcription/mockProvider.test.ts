@@ -6,7 +6,7 @@ describe('mockTranscriptionProvider', () => {
   it('returns deterministic local-only transcript text', async () => {
     const recording: Recording = {
       id: 'recording-1',
-      ideaId: 'idea-1',
+      captureSessionId: 'idea-1',
       blob: new Blob(['audio'], { type: 'audio/webm' }),
       mimeType: 'audio/webm',
       sizeBytes: 5,

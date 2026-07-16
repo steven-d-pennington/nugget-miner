@@ -1,36 +1,125 @@
-export type IdeaStatus = 'captured' | 'transcribing' | 'transcribed' | 'extracting' | 'reviewed' | 'failed';
-export type SourceType = 'recording' | 'manual';
+export type CaptureSource = 'audio' | 'text';
+export type ProcessingStage = 'transcription' | 'segmentation' | 'organization' | 'persistence';
+export type ProcessingState =
+  | 'saved'
+  | 'queued'
+  | 'transcribing'
+  | 'transcript_ready'
+  | 'segmenting'
+  | 'organizing'
+  | 'ready_for_review'
+  | 'partially_confirmed'
+  | 'confirmed'
+  | 'failed';
+export type ContentBasis = 'explicit' | 'inferred' | 'suggested';
+export type IdeaStatus = 'draft' | 'confirmed' | 'archived';
+export type CloudProcessingConsent = 'unknown' | 'granted' | 'denied';
+export type ActionStatus = 'open' | 'completed';
+
 export type ProviderMode = 'mock' | 'local' | 'browser' | 'cloud';
-export type NuggetCategory = 'idea' | 'decision' | 'risk' | 'note';
-export type ItemStatus = 'pending' | 'accepted' | 'rejected';
-export type ActionStatus = 'open' | 'done' | 'archived';
 export type Priority = 'low' | 'medium' | 'high';
-export type JobStatus = 'queued' | 'processing' | 'complete' | 'failed' | 'canceled';
 export type ExtractionPreset = 'product-idea' | 'work-reminder' | 'story-idea' | 'general-thought';
 
-export interface SourceSpan {
-  start: number;
-  end: number;
+export interface ProcessingError {
+  stage: ProcessingStage;
+  code: string;
+  message: string;
+  retryable: boolean;
+  occurredAt: number;
 }
 
-export interface Idea {
+export interface CaptureSession {
   id: string;
-  title: string;
-  status: IdeaStatus;
-  sourceType: SourceType;
-  projectId?: string;
-  tags: string[];
-  favorite: boolean;
-  archived: boolean;
+  source: CaptureSource;
+  recordingId?: string;
+  transcriptId?: string;
+  activeExtractionRunId?: string;
+  processingState: ProcessingState;
+  recoverableStage?: ProcessingStage;
+  processingPreference: 'automatic' | 'manual';
+  processingAttempt: number;
+  nextRetryAt?: number;
+  lastError?: ProcessingError;
   durationMs: number;
-  actionCount: number;
   createdAt: number;
   updatedAt: number;
 }
 
-export interface Recording {
+export interface SourceSpan {
+  id: string;
+  startChar: number;
+  endChar: number;
+  quote: string;
+}
+
+export interface GroundedText {
+  id: string;
+  text: string;
+  basis: ContentBasis;
+  sourceSpanIds: string[];
+}
+
+export interface Idea {
+  id: string;
+  captureSessionId: string;
+  extractionRunId?: string;
+  status: IdeaStatus;
+  title: string;
+  summary: GroundedText;
+  purpose?: GroundedText;
+  goals: GroundedText[];
+  problem?: { statement: GroundedText; type?: string };
+  blockers: GroundedText[];
+  questions: GroundedText[];
+  suggestedActions: GroundedText[];
+  research: {
+    needed: boolean;
+    assessment?: GroundedText;
+    suggestedQueries: string[];
+    suggestedResourceTypes: string[];
+  };
+  categoryId: string;
+  categoryConfidence?: number;
+  tagIds: string[];
+  sourceSpans: SourceSpan[];
+  createdAt: number;
+  updatedAt: number;
+  confirmedAt?: number;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  normalizedName: string;
+  description: string;
+  isDefault: boolean;
+  isFallback: boolean;
+  sortOrder: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface Tag {
+  id: string;
+  name: string;
+  normalizedName: string;
+  createdAt: number;
+}
+
+export interface ActionItem {
   id: string;
   ideaId: string;
+  sourceSuggestionId?: string;
+  text: string;
+  status: ActionStatus;
+  createdAt: number;
+  updatedAt: number;
+  completedAt?: number;
+}
+
+export interface Recording {
+  id: string;
+  captureSessionId: string;
   blob: Blob;
   mimeType: string;
   sizeBytes: number;
@@ -48,15 +137,16 @@ export interface TranscriptSegment {
 
 export interface Transcript {
   id: string;
-  ideaId: string;
+  captureSessionId: string;
+  version: number;
   text: string;
   segments?: TranscriptSegment[];
   language?: string;
   confidence?: number;
   provider: string;
   model?: string;
-  jobId?: string;
-  edited: boolean;
+  source: 'transcription' | 'typed' | 'edited';
+  contentHash: string;
   createdAt: number;
   updatedAt: number;
 }
@@ -78,14 +168,59 @@ export interface TranscriptResult {
   model?: string;
 }
 
+export interface ExtractionRun {
+  id: string;
+  captureSessionId: string;
+  transcriptId: string;
+  transcriptHash: string;
+  provider: string;
+  model: string;
+  reasoningEffort: string;
+  segmentationPromptVersion: string;
+  organizationPromptVersion: string;
+  schemaVersion: string;
+  idempotencyKey: string;
+  status: 'running' | 'succeeded' | 'failed' | 'superseded';
+  stage: 'segmenting' | 'organizing';
+  attempt: number;
+  rawJson: string;
+  startedAt: number;
+  completedAt?: number;
+  latencyMs?: number;
+  errorCode?: string;
+}
+
+export interface AppSettings {
+  key: 'app';
+  automaticProcessing: boolean;
+  cloudProcessingConsent: CloudProcessingConsent;
+  clientId: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+/** @deprecated Sprint 2 migration bridge */
+export interface LegacySourceSpan {
+  start: number;
+  end: number;
+}
+
+/** @deprecated Sprint 2 migration bridge */
+export type LegacyNuggetCategory = 'idea' | 'decision' | 'risk' | 'note';
+
+/** @deprecated Sprint 2 migration bridge */
+export type LegacyItemStatus = 'pending' | 'accepted' | 'rejected';
+
+/** @deprecated Sprint 2 migration bridge */
 export interface ExtractionNuggetSuggestion {
   title: string;
   detail?: string;
-  category: NuggetCategory;
+  category: LegacyNuggetCategory;
   confidence: number;
-  sourceSpan: SourceSpan;
+  sourceSpan: LegacySourceSpan;
 }
 
+/** @deprecated Sprint 2 migration bridge */
 export interface ExtractionActionSuggestion {
   title: string;
   description?: string;
@@ -93,15 +228,17 @@ export interface ExtractionActionSuggestion {
   dueDate: number | null;
   project: string | null;
   confidence: number;
-  sourceSpan: SourceSpan;
+  sourceSpan: LegacySourceSpan;
 }
 
+/** @deprecated Sprint 2 migration bridge */
 export interface ExtractionQuestionSuggestion {
   text: string;
   confidence: number;
-  sourceSpan: SourceSpan;
+  sourceSpan: LegacySourceSpan;
 }
 
+/** @deprecated Sprint 2 migration bridge */
 export interface ExtractionResult {
   summary: string;
   nuggets: ExtractionNuggetSuggestion[];
@@ -111,58 +248,29 @@ export interface ExtractionResult {
   warnings: string[];
 }
 
-export interface ExtractionRun {
-  id: string;
-  ideaId: string;
-  transcriptId: string;
-  provider: string;
-  preset: ExtractionPreset;
-  promptVersion: string;
-  schemaVersion: string;
-  status: JobStatus;
-  rawJson: string;
-  summary?: string;
-  warnings?: string[];
-  createdAt: number;
-}
-
+/** @deprecated Sprint 2 migration bridge */
 export interface Nugget {
   id: string;
-  ideaId: string;
+  captureSessionId: string;
   extractionRunId: string;
   title: string;
   detail?: string;
-  category: NuggetCategory;
+  category: LegacyNuggetCategory;
   confidence?: number;
-  sourceSpan?: SourceSpan;
-  status: ItemStatus;
+  sourceSpan?: LegacySourceSpan;
+  status: LegacyItemStatus;
   createdAt: number;
   updatedAt: number;
 }
 
+/** @deprecated Sprint 2 migration bridge */
 export interface Question {
   id: string;
-  ideaId: string;
+  captureSessionId: string;
   extractionRunId?: string;
   text: string;
-  status: ItemStatus;
-  sourceSpan?: SourceSpan;
-  createdAt: number;
-  updatedAt: number;
-}
-
-export interface ActionItem {
-  id: string;
-  ideaId?: string;
-  extractionRunId?: string;
-  title: string;
-  description?: string;
-  status: ActionStatus;
-  priority: Priority;
-  dueDate?: number;
-  projectId?: string;
-  tags: string[];
-  sourceSpan?: SourceSpan;
+  status: LegacyItemStatus;
+  sourceSpan?: LegacySourceSpan;
   createdAt: number;
   updatedAt: number;
 }

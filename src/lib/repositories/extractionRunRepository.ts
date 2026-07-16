@@ -1,35 +1,35 @@
 import { db } from '@/lib/db';
 import { StorageError } from '@/lib/errors';
-import { EXTRACTION_SCHEMA_VERSION } from '@/lib/validation/extractionResult';
-import type { ExtractionPreset, ExtractionResult, ExtractionRun, JobStatus } from '@/types';
+import type { ExtractionRun } from '@/types';
 
-export interface CreateExtractionRunInput {
-  ideaId: string;
+export interface StartExtractionRunInput {
+  captureSessionId: string;
   transcriptId: string;
+  transcriptHash: string;
   provider: string;
-  preset: ExtractionPreset;
-  promptVersion: string;
-  result: ExtractionResult;
-  status?: JobStatus;
+  model: string;
+  reasoningEffort: string;
+  segmentationPromptVersion: string;
+  organizationPromptVersion: string;
+  schemaVersion: string;
+  idempotencyKey: string;
+  stage: ExtractionRun['stage'];
+  attempt?: number;
 }
 
 export const extractionRunRepository = {
-  async create(input: CreateExtractionRunInput): Promise<ExtractionRun> {
+  async start(input: StartExtractionRunInput): Promise<ExtractionRun> {
+    const existing = await this.findByIdempotencyKey(input.idempotencyKey);
+    if (existing?.status === 'succeeded') return existing;
+
     try {
-      const createdAt = Date.now();
       const run: ExtractionRun = {
         id: crypto.randomUUID(),
-        ideaId: input.ideaId,
-        transcriptId: input.transcriptId,
-        provider: input.provider,
-        preset: input.preset,
-        promptVersion: input.promptVersion,
-        schemaVersion: EXTRACTION_SCHEMA_VERSION,
-        status: input.status ?? 'complete',
-        rawJson: JSON.stringify(input.result),
-        summary: input.result.summary,
-        warnings: input.result.warnings,
-        createdAt,
+        ...input,
+        status: 'running',
+        attempt: input.attempt ?? 1,
+        rawJson: '',
+        startedAt: Date.now(),
       };
       await db.extractionRuns.add(run);
       return run;
@@ -38,16 +38,33 @@ export const extractionRunRepository = {
     }
   },
 
+  async complete(id: string, rawJson: string, latencyMs: number): Promise<void> {
+    await db.extractionRuns.update(id, {
+      rawJson,
+      latencyMs,
+      status: 'succeeded',
+      completedAt: Date.now(),
+      errorCode: undefined,
+    });
+  },
+
+  async fail(id: string, errorCode: string): Promise<void> {
+    await db.extractionRuns.update(id, {
+      errorCode,
+      status: 'failed',
+      completedAt: Date.now(),
+    });
+  },
+
   async getById(id: string): Promise<ExtractionRun | undefined> {
     return db.extractionRuns.get(id);
   },
 
-  async listByIdea(ideaId: string): Promise<ExtractionRun[]> {
-    return db.extractionRuns.where('ideaId').equals(ideaId).sortBy('createdAt');
+  async findByIdempotencyKey(key: string): Promise<ExtractionRun | undefined> {
+    return db.extractionRuns.where('idempotencyKey').equals(key).first();
   },
 
-  async latestForIdea(ideaId: string): Promise<ExtractionRun | undefined> {
-    const runs = await this.listByIdea(ideaId);
-    return runs.at(-1);
+  async listByCapture(captureSessionId: string): Promise<ExtractionRun[]> {
+    return db.extractionRuns.where('captureSessionId').equals(captureSessionId).sortBy('startedAt');
   },
 };

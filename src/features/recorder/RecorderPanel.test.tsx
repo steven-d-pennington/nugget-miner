@@ -1,15 +1,16 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { RecorderPanel } from './RecorderPanel';
 import type { RecordingDraft } from '@/types';
+import { RecorderPanel } from './RecorderPanel';
 
 const push = vi.fn();
 const saveRecording = vi.fn();
+const getSettings = vi.fn();
 
 const draft: RecordingDraft = {
   blob: new Blob(['audio'], { type: 'audio/webm' }),
   mimeType: 'audio/webm',
-  durationMs: 1200,
+  durationMs: 1_200,
   sizeBytes: 5,
   waveformPreview: [0.1],
 };
@@ -21,7 +22,7 @@ vi.mock('next/navigation', () => ({
 vi.mock('@/hooks/useRecorder', () => ({
   useRecorder: () => ({
     state: 'idle',
-    elapsedMs: 1200,
+    elapsedMs: 1_200,
     level: 0,
     draft,
     error: null,
@@ -31,46 +32,47 @@ vi.mock('@/hooks/useRecorder', () => ({
   }),
 }));
 
-vi.mock('@/lib/providers/transcription/cloudProvider', () => ({
-  cloudTranscriptionProvider: {
-    getConfig: vi.fn(async () => ({ available: true, providerLabel: 'OpenAI-compatible transcription', model: 'whisper-test' })),
-  },
+vi.mock('@/lib/repositories', () => ({
+  settingsRepository: { get: (...args: unknown[]) => getSettings(...args) },
 }));
 
-vi.mock('./saveRecording', () => ({
-  saveRecording: (...args: unknown[]) => saveRecording(...args),
+vi.mock('@/lib/services/CaptureService', () => ({
+  CaptureService: { saveRecording: (...args: unknown[]) => saveRecording(...args) },
 }));
 
 beforeEach(() => {
   push.mockReset();
   saveRecording.mockReset();
-  saveRecording.mockResolvedValue({ idea: { id: 'idea-1' } });
+  getSettings.mockReset();
+  getSettings.mockResolvedValue({ automaticProcessing: false });
+  saveRecording.mockResolvedValue({ capture: { id: 'capture-1' } });
 });
 
-describe('RecorderPanel real transcription affordance', () => {
-  it('shows mock and real transcription actions for a stopped draft', async () => {
+describe('RecorderPanel durable save bridge', () => {
+  it('offers one local-first save action without synchronous provider choices', () => {
     render(<RecorderPanel />);
 
     expect(screen.getByText('Saved locally first')).toBeInTheDocument();
-    expect(screen.getByText(/configured cloud provider/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Your recording is saved in this browser before processing. Real transcription sends audio to the configured cloud provider after consent.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /save recording/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /transcribe/i })).not.toBeInTheDocument();
     expect(screen.queryByText('Local-only')).not.toBeInTheDocument();
     expect(screen.queryByText(/everything stays on your device/i)).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /save & mock transcribe/i })).toBeInTheDocument();
-    expect(await screen.findByRole('button', { name: /save & real transcribe/i })).toBeInTheDocument();
   });
 
-  it('opens consent before real transcription and cancel sends nothing', async () => {
+  it('uses the stored processing preference and routes only after local save resolves', async () => {
+    getSettings.mockResolvedValue({ automaticProcessing: true });
     render(<RecorderPanel />);
 
-    fireEvent.click(await screen.findByRole('button', { name: /save & real transcribe/i }));
+    fireEvent.click(screen.getByRole('button', { name: /save recording/i }));
 
-    expect(screen.getByRole('dialog')).toHaveTextContent(/audio recording/i);
-    expect(screen.getByRole('dialog')).toHaveTextContent(/OpenAI-compatible transcription/i);
-    expect(saveRecording).not.toHaveBeenCalled();
-
-    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
-
-    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    expect(saveRecording).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(saveRecording).toHaveBeenCalledWith({ draft, processingPreference: 'automatic' }),
+    );
+    expect(push).toHaveBeenCalledWith('/idea/capture-1');
   });
 });

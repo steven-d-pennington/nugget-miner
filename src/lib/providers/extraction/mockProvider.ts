@@ -1,13 +1,13 @@
 import { ProviderError } from '@/lib/errors';
 import { parseExtractionResult } from '@/lib/validation/extractionResult';
-import type { ExtractionActionSuggestion, ExtractionNuggetSuggestion, ExtractionPreset, ExtractionQuestionSuggestion, SourceSpan, Transcript } from '@/types';
+import type { ExtractionActionSuggestion, ExtractionNuggetSuggestion, ExtractionPreset, ExtractionQuestionSuggestion, LegacySourceSpan, Transcript } from '@/types';
 import type { ExtractionProvider } from './types';
 
 const PROMPT_VERSION = 'mock-extraction-v1';
 
 interface SentenceSpan {
   text: string;
-  span: SourceSpan;
+  span: LegacySourceSpan;
 }
 
 function clampText(text: string) {
@@ -28,7 +28,7 @@ function firstSpan(transcript: Transcript) {
   return sentenceSpans(transcript.text)[0] ?? { text: transcript.text, span: { start: 0, end: transcript.text.length } };
 }
 
-function spanSnippet(transcript: Transcript, span: SourceSpan) {
+function spanSnippet(transcript: Transcript, span: LegacySourceSpan) {
   return clampText(transcript.text.slice(span.start, span.end));
 }
 

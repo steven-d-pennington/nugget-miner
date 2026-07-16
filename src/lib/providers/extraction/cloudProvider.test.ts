@@ -5,10 +5,12 @@ import { createCloudExtractionProvider } from './cloudProvider';
 
 const transcript: Transcript = {
   id: 'transcript-1',
-  ideaId: 'idea-1',
+  captureSessionId: 'idea-1',
+  version: 1,
   text: 'We should build a better review flow.',
   provider: 'cloud',
-  edited: false,
+  source: 'transcription',
+  contentHash: 'hash-1',
   createdAt: 1,
   updatedAt: 1,
 };

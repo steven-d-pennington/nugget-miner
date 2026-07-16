@@ -5,10 +5,12 @@ import type { Transcript } from '@/types';
 function transcript(text: string): Transcript {
   return {
     id: 'transcript-1',
-    ideaId: 'idea-1',
+    captureSessionId: 'idea-1',
+    version: 1,
     text,
     provider: 'mock',
-    edited: false,
+    source: 'transcription',
+    contentHash: 'hash-1',
     createdAt: 1,
     updatedAt: 1,
   };

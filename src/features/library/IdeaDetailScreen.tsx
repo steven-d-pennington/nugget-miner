@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { AudioPlayer } from '@/components/AudioPlayer';
 import { ConsentSheet } from '@/components/ConsentSheet';
-import { ideaRepository, recordingRepository, transcriptRepository } from '@/lib/repositories';
+import { captureRepository, recordingRepository, transcriptRepository } from '@/lib/repositories';
 import { ReviewService } from '@/lib/services/ReviewService';
-import type { Idea, Recording, Transcript } from '@/types';
+import type { CaptureSession, Recording, Transcript } from '@/types';
 
 function formatDuration(durationMs: number) {
   const seconds = Math.max(0, Math.round(durationMs / 1000));
@@ -24,8 +24,9 @@ function formatDate(timestamp: number) {
 }
 
 export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
+  const captureSessionId = ideaId;
   const router = useRouter();
-  const [idea, setIdea] = useState<Idea | null>(null);
+  const [capture, setCapture] = useState<CaptureSession | null>(null);
   const [recording, setRecording] = useState<Recording | undefined>();
   const [transcript, setTranscript] = useState<Transcript | undefined>();
   const [draftText, setDraftText] = useState('');
@@ -37,36 +38,36 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [nextIdea, nextRecording, nextTranscript] = await Promise.all([
-      ideaRepository.getById(ideaId),
-      recordingRepository.getByIdeaId(ideaId),
-      transcriptRepository.getByIdeaId(ideaId),
+    const [nextCapture, nextRecording, nextTranscript] = await Promise.all([
+      captureRepository.getById(captureSessionId),
+      recordingRepository.getByCaptureId(captureSessionId),
+      transcriptRepository.getCurrent(captureSessionId),
     ]);
-    setIdea(nextIdea ?? null);
+    setCapture(nextCapture ?? null);
     setRecording(nextRecording);
     setTranscript(nextTranscript);
     setDraftText(nextTranscript?.text ?? '');
     setLoading(false);
-  }, [ideaId]);
+  }, [captureSessionId]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
   async function saveTranscript() {
-    await transcriptRepository.updateText(ideaId, draftText);
+    await transcriptRepository.updateText(captureSessionId, draftText);
     setSaved(true);
     await load();
-    window.setTimeout(() => setSaved(false), 1600);
+    window.setTimeout(() => setSaved(false), 1_600);
   }
 
   async function extractMockNuggets() {
     setExtracting(true);
     setExtractionError(null);
     try {
-      await transcriptRepository.updateText(ideaId, draftText);
-      await ReviewService.runMockExtraction({ ideaId, preset: 'general-thought' });
-      router.push(`/review/${ideaId}`);
+      await transcriptRepository.updateText(captureSessionId, draftText);
+      await ReviewService.runMockExtraction({ captureSessionId, preset: 'general-thought' });
+      router.push(`/review/${captureSessionId}`);
     } catch (error) {
       setExtractionError(error instanceof Error ? error.message : 'Extraction failed.');
     } finally {
@@ -84,13 +85,13 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
     setExtracting(true);
     setExtractionError(null);
     try {
-      await transcriptRepository.updateText(ideaId, draftText);
+      await transcriptRepository.updateText(captureSessionId, draftText);
       await ReviewService.runCloudExtraction({
-        ideaId,
+        captureSessionId,
         preset: 'general-thought',
         requestConsent: async () => true,
       });
-      router.push(`/review/${ideaId}`);
+      router.push(`/review/${captureSessionId}`);
     } catch (error) {
       setExtractionError(error instanceof Error ? error.message : 'Cloud extraction failed.');
     } finally {
@@ -99,16 +100,16 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
   }
 
   if (loading) {
-    return <main className="mx-auto min-h-screen max-w-4xl px-4 py-8 text-muted">Loading idea…</main>;
+    return <main className="mx-auto min-h-screen max-w-4xl px-4 py-8 text-muted">Loading capture...</main>;
   }
 
-  if (!idea) {
+  if (!capture) {
     return (
       <main className="mx-auto min-h-screen max-w-4xl px-4 py-8">
-        <Link className="text-accent" href="/">← Back home</Link>
+        <Link className="text-accent" href="/">Back home</Link>
         <div className="mt-6 rounded-[var(--radius)] border border-danger/40 bg-danger/10 p-6">
-          <h1 className="text-2xl font-semibold">Idea not found</h1>
-          <p className="mt-2 text-muted">This local idea may have been deleted or belongs to another browser profile.</p>
+          <h1 className="text-2xl font-semibold">Capture not found</h1>
+          <p className="mt-2 text-muted">This local capture may have been deleted or belongs to another browser profile.</p>
         </div>
       </main>
     );
@@ -116,14 +117,14 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 px-4 py-8 sm:px-6">
-      <Link className="text-accent" href="/">← Back home</Link>
+      <Link className="text-accent" href="/">Back home</Link>
 
       <header className="rounded-[var(--radius)] border border-white/10 bg-surface p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.25em] text-accent">Idea detail</p>
-            <h1 className="mt-2 text-3xl font-bold">{idea.title}</h1>
-            <p className="mt-2 text-muted">{formatDate(idea.createdAt)} · {formatDuration(idea.durationMs)} · {idea.status}</p>
+            <p className="text-sm uppercase tracking-[0.25em] text-accent">Capture detail</p>
+            <h1 className="mt-2 text-3xl font-bold">{capture.source === 'audio' ? 'Audio capture' : 'Text capture'}</h1>
+            <p className="mt-2 text-muted">{formatDate(capture.createdAt)} - {formatDuration(capture.durationMs)} - {capture.processingState}</p>
           </div>
           <span className="w-fit rounded-full border border-success/40 px-3 py-1 text-sm text-success">Stored on this device</span>
         </div>
@@ -135,7 +136,7 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
           <AudioPlayer recording={recording} />
         </div>
         {recording ? (
-          <p className="mt-3 text-sm text-muted">{recording.mimeType} · {(recording.sizeBytes / 1024).toFixed(1)} KB · {formatDuration(recording.durationMs)}</p>
+          <p className="mt-3 text-sm text-muted">{recording.mimeType} - {(recording.sizeBytes / 1_024).toFixed(1)} KB - {formatDuration(recording.durationMs)}</p>
         ) : null}
       </section>
 
@@ -157,7 +158,7 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
                 Save transcript edit
               </button>
               <button className="rounded-full bg-success px-5 py-3 font-semibold text-black disabled:opacity-50" disabled={extracting} onClick={extractMockNuggets} type="button">
-                {extracting ? 'Extracting…' : 'Extract Nuggets'}
+                {extracting ? 'Extracting...' : 'Extract Nuggets'}
               </button>
               <button className="rounded-full border border-success/50 px-5 py-3 font-semibold text-success disabled:opacity-50" disabled={extracting} onClick={requestCloudExtraction} type="button">
                 Extract with LLM
@@ -165,11 +166,11 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
               {saved ? <span className="text-sm text-success">Saved</span> : null}
             </div>
             {extractionError ? <p className="mt-3 rounded-xl border border-danger/40 bg-danger/10 p-3 text-sm text-danger">{extractionError}</p> : null}
-            <p className="mt-3 text-sm text-muted">Provider: {transcript.provider}{transcript.model ? ` · Model: ${transcript.model}` : ''}{transcript.edited ? ' · edited' : ''}</p>
+            <p className="mt-3 text-sm text-muted">Provider: {transcript.provider}{transcript.model ? ` - Model: ${transcript.model}` : ''}{transcript.source === 'edited' ? ' - edited' : ''}</p>
           </>
         ) : (
           <div className="mt-4 rounded-2xl border border-dashed border-white/20 p-6 text-muted">
-            No transcript yet. Record again and choose Save & Mock Transcribe.
+            No transcript yet. The recording is saved locally and can be processed later.
           </div>
         )}
       </section>

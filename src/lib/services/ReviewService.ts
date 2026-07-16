@@ -1,19 +1,28 @@
 import { ProviderError } from '@/lib/errors';
 import { cloudExtractionProvider } from '@/lib/providers/extraction/cloudProvider';
 import { mockExtractionProvider } from '@/lib/providers/extraction/mockProvider';
-import { actionItemRepository, extractionRunRepository, ideaRepository, nuggetRepository, questionRepository, transcriptRepository } from '@/lib/repositories';
-import { parseExtractionResult } from '@/lib/validation/extractionResult';
-import type { ActionItem, ExtractionPreset, ExtractionRun, Nugget, Question } from '@/types';
+import type { ExtractionProviderOutput } from '@/lib/providers/extraction/types';
+import {
+  actionItemRepository,
+  captureRepository,
+  extractionRunRepository,
+  nuggetRepository,
+  questionRepository,
+  transcriptRepository,
+} from '@/lib/repositories';
+import { EXTRACTION_SCHEMA_VERSION, parseExtractionResult } from '@/lib/validation/extractionResult';
+import type { ActionItem, ExtractionPreset, ExtractionRun, Nugget, Question, Transcript } from '@/types';
 
 export interface ReviewSnapshot {
   run: ExtractionRun;
+  preset: ExtractionPreset;
   nuggets: Nugget[];
   questions: Question[];
   actions: ReturnType<typeof parseExtractionResult>['actions'];
 }
 
 export interface RunExtractionInput {
-  ideaId: string;
+  captureSessionId: string;
   preset?: ExtractionPreset;
 }
 
@@ -25,85 +34,123 @@ function defaultPreset(preset?: ExtractionPreset): ExtractionPreset {
   return preset ?? 'general-thought';
 }
 
-async function persistExtractionOutput(
-  ideaId: string,
-  transcriptId: string,
-  preset: ExtractionPreset,
-  output: Awaited<ReturnType<typeof mockExtractionProvider.extract>>,
-): Promise<ReviewSnapshot> {
-  const run = await extractionRunRepository.create({
-    ideaId,
-    transcriptId,
-    provider: output.provider,
-    preset,
-    promptVersion: output.promptVersion,
-    result: output.result,
-  });
-  const [nuggets, questions] = await Promise.all([
-    nuggetRepository.createMany(ideaId, run.id, output.result.nuggets),
-    questionRepository.createMany(ideaId, run.id, output.result.questions),
-  ]);
-  await ideaRepository.updateStatus(ideaId, 'reviewed');
-  return { run, nuggets, questions, actions: output.result.actions };
+function presetFromRun(run: ExtractionRun): ExtractionPreset {
+  const candidate = run.segmentationPromptVersion.replace('legacy-preset:', '');
+  if (candidate === 'product-idea' || candidate === 'work-reminder' || candidate === 'story-idea') return candidate;
+  return 'general-thought';
 }
 
-async function getTranscriptOrThrow(ideaId: string) {
-  const transcript = await transcriptRepository.getByIdeaId(ideaId);
-  if (!transcript) {
-    throw new ProviderError('A transcript is required before extraction.');
+async function snapshotForRun(run: ExtractionRun): Promise<ReviewSnapshot> {
+  const result = parseExtractionResult(JSON.parse(run.rawJson));
+  const [nuggets, questions] = await Promise.all([
+    nuggetRepository.listByRun(run.id),
+    questionRepository.listByRun(run.id),
+  ]);
+  return { run, preset: presetFromRun(run), nuggets, questions, actions: result.actions };
+}
+
+async function persistExtractionOutput(
+  captureSessionId: string,
+  transcript: Transcript,
+  preset: ExtractionPreset,
+  output: ExtractionProviderOutput,
+): Promise<ReviewSnapshot> {
+  const idempotencyKey = [captureSessionId, transcript.contentHash, 'organization', EXTRACTION_SCHEMA_VERSION].join(':');
+  const run = await extractionRunRepository.start({
+    captureSessionId,
+    transcriptId: transcript.id,
+    transcriptHash: transcript.contentHash,
+    provider: output.provider,
+    model: output.model ?? output.provider,
+    reasoningEffort: 'legacy',
+    segmentationPromptVersion: `legacy-preset:${preset}`,
+    organizationPromptVersion: output.promptVersion,
+    schemaVersion: EXTRACTION_SCHEMA_VERSION,
+    idempotencyKey,
+    stage: 'organizing',
+  });
+  if (run.status === 'succeeded') {
+    await captureRepository.transition(captureSessionId, 'ready_for_review', { activeExtractionRunId: run.id });
+    return snapshotForRun(run);
   }
+
+  const rawJson = JSON.stringify(output.result);
+  const [nuggets, questions] = await Promise.all([
+    nuggetRepository.createMany(captureSessionId, run.id, output.result.nuggets),
+    questionRepository.createMany(captureSessionId, run.id, output.result.questions),
+  ]);
+  await extractionRunRepository.complete(run.id, rawJson, 0);
+  await captureRepository.transition(captureSessionId, 'ready_for_review', { activeExtractionRunId: run.id });
+  const completed = await extractionRunRepository.getById(run.id);
+  if (!completed) throw new ProviderError('Completed extraction run not found.');
+  return { run: completed, preset, nuggets, questions, actions: output.result.actions };
+}
+
+async function getTranscriptOrThrow(captureSessionId: string) {
+  const transcript = await transcriptRepository.getCurrent(captureSessionId);
+  if (!transcript) throw new ProviderError('A transcript is required before extraction.');
   return transcript;
 }
 
-export const ReviewService = {
-  async runMockExtraction({ ideaId, preset }: RunExtractionInput): Promise<ReviewSnapshot> {
-    const resolvedPreset = defaultPreset(preset);
-    const transcript = await getTranscriptOrThrow(ideaId);
+async function markFailed(captureSessionId: string, error: unknown) {
+  await captureRepository.transition(captureSessionId, 'failed', {
+    recoverableStage: 'organization',
+    lastError: {
+      stage: 'organization',
+      code: 'legacy_extraction_failed',
+      message: error instanceof Error ? error.message : 'Extraction failed.',
+      retryable: true,
+      occurredAt: Date.now(),
+    },
+  });
+}
 
-    await ideaRepository.updateStatus(ideaId, 'extracting');
+export const ReviewService = {
+  async runMockExtraction({ captureSessionId, preset }: RunExtractionInput): Promise<ReviewSnapshot> {
+    const resolvedPreset = defaultPreset(preset);
+    const transcript = await getTranscriptOrThrow(captureSessionId);
+    await captureRepository.transition(captureSessionId, 'organizing');
 
     try {
       const output = await mockExtractionProvider.extract({
-        ideaId,
+        ideaId: captureSessionId,
         transcript,
         context: { preset: resolvedPreset },
       });
-      return await persistExtractionOutput(ideaId, transcript.id, resolvedPreset, output);
+      return await persistExtractionOutput(captureSessionId, transcript, resolvedPreset, output);
     } catch (error) {
-      await ideaRepository.updateStatus(ideaId, 'failed');
+      await markFailed(captureSessionId, error);
       throw error;
     }
   },
 
-  async runCloudExtraction({ ideaId, preset, requestConsent }: RunCloudExtractionInput): Promise<ReviewSnapshot> {
+  async runCloudExtraction({
+    captureSessionId,
+    preset,
+    requestConsent,
+  }: RunCloudExtractionInput): Promise<ReviewSnapshot> {
     const resolvedPreset = defaultPreset(preset);
-    const transcript = await getTranscriptOrThrow(ideaId);
-
-    await ideaRepository.updateStatus(ideaId, 'extracting');
+    const transcript = await getTranscriptOrThrow(captureSessionId);
+    await captureRepository.transition(captureSessionId, 'organizing');
 
     try {
       const output = await cloudExtractionProvider.extract({
-        ideaId,
+        ideaId: captureSessionId,
         transcript,
         context: { preset: resolvedPreset },
         requestConsent,
       });
-      return await persistExtractionOutput(ideaId, transcript.id, resolvedPreset, output);
+      return await persistExtractionOutput(captureSessionId, transcript, resolvedPreset, output);
     } catch (error) {
-      await ideaRepository.updateStatus(ideaId, 'failed');
+      await markFailed(captureSessionId, error);
       throw error;
     }
   },
 
-  async latestSnapshot(ideaId: string): Promise<ReviewSnapshot | undefined> {
-    const run = await extractionRunRepository.latestForIdea(ideaId);
-    if (!run) return undefined;
-    const result = parseExtractionResult(JSON.parse(run.rawJson));
-    const [nuggets, questions] = await Promise.all([
-      nuggetRepository.listByRun(run.id),
-      questionRepository.listByRun(run.id),
-    ]);
-    return { run, nuggets, questions, actions: result.actions };
+  async latestSnapshot(captureSessionId: string): Promise<ReviewSnapshot | undefined> {
+    const runs = await extractionRunRepository.listByCapture(captureSessionId);
+    const run = runs.filter((candidate) => candidate.status === 'succeeded').at(-1);
+    return run ? snapshotForRun(run) : undefined;
   },
 
   async acceptNugget(id: string) {
@@ -130,14 +177,16 @@ export const ReviewService = {
     await questionRepository.update(id, { text });
   },
 
-  async acceptAction(runId: string, actionIndex: number, edits?: Partial<Pick<ActionItem, 'title' | 'description' | 'priority' | 'dueDate'>>): Promise<ActionItem> {
+  async acceptAction(runId: string, actionIndex: number, text?: string): Promise<ActionItem> {
     const run = await extractionRunRepository.getById(runId);
     if (!run) throw new ProviderError('Extraction run not found.');
     const result = parseExtractionResult(JSON.parse(run.rawJson));
     const suggestion = result.actions[actionIndex];
     if (!suggestion) throw new ProviderError('Action suggestion not found.');
-    const action = await actionItemRepository.createFromSuggestion({ ideaId: run.ideaId, extractionRunId: run.id, suggestion, edits });
-    await ideaRepository.incrementActionCount(run.ideaId);
-    return action;
+    return actionItemRepository.acceptSuggestion({
+      ideaId: run.captureSessionId,
+      sourceSuggestionId: `${run.id}:${actionIndex}`,
+      text: text ?? suggestion.title,
+    });
   },
 };
