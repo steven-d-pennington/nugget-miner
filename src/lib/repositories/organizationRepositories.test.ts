@@ -36,6 +36,29 @@ describe('categoryRepository', () => {
     ).rejects.toThrow();
   });
 
+  it('rejects over-limit category fields without changing persisted data', async () => {
+    await categoryRepository.ensureDefaults();
+    const original = await db.categories.get(DEFAULT_CATEGORY_IDS.personal);
+
+    await expect(categoryRepository.create({
+      name: 'n'.repeat(41),
+      description: 'A valid category description with examples and boundaries.',
+    })).rejects.toThrow('Category name must be 40 characters or fewer.');
+    await expect(categoryRepository.create({
+      name: 'A valid name',
+      description: 'd'.repeat(801),
+    })).rejects.toThrow('Category description must be 800 characters or fewer.');
+    await expect(categoryRepository.update(DEFAULT_CATEGORY_IDS.personal, {
+      name: 'n'.repeat(41),
+    })).rejects.toThrow('Category name must be 40 characters or fewer.');
+    await expect(categoryRepository.update(DEFAULT_CATEGORY_IDS.personal, {
+      description: 'd'.repeat(801),
+    })).rejects.toThrow('Category description must be 800 characters or fewer.');
+
+    await expect(db.categories.get(DEFAULT_CATEGORY_IDS.personal)).resolves.toEqual(original);
+    await expect(db.categories.count()).resolves.toBe(5);
+  });
+
   it('reassigns matching ideas transactionally before deleting a custom category', async () => {
     await categoryRepository.ensureDefaults();
     const custom = await categoryRepository.create({

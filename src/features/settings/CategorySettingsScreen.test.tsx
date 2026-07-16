@@ -139,6 +139,18 @@ describe('CategorySettingsScreen', () => {
     expect(await screen.findByText('Community category updated.')).toBeInTheDocument();
   });
 
+  it('surfaces canonical repository limit errors without dismissing the editor', async () => {
+    create.mockRejectedValueOnce(new Error('Category name must be 40 characters or fewer.'));
+    render(<CategorySettingsScreen />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Add category' }));
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Valid local name' } });
+    fireEvent.change(screen.getByLabelText('Description'), { target: { value: 'A valid description with examples and clear category boundaries.' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save category' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Category name must be 40 characters or fewer.');
+    expect(screen.getByRole('heading', { name: 'Add category' })).toBeInTheDocument();
+  });
+
   it('defaults deletion replacement to Misc and announces the complete reassignment', async () => {
     render(<CategorySettingsScreen />);
     const communityRow = (await screen.findByRole('heading', { name: 'Community' })).closest('li');
@@ -146,12 +158,45 @@ describe('CategorySettingsScreen', () => {
 
     const dialog = screen.getByRole('dialog', { name: 'Delete Community?' });
     expect(within(dialog).getByText('3 ideas use this category. Choose where those ideas should move before deletion.')).toBeInTheDocument();
-    expect(within(dialog).getByLabelText('Replacement category')).toHaveValue(misc.id);
+    const replacement = within(dialog).getByLabelText('Replacement category');
+    expect(replacement).toHaveValue(misc.id);
     expect(within(dialog).getByRole('button', { name: 'Cancel' })).toHaveFocus();
 
+    fireEvent.change(replacement, { target: { value: '' } });
+    expect(within(dialog).getByRole('button', { name: 'Reassign and delete' })).toBeDisabled();
+    fireEvent.change(replacement, { target: { value: misc.id } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Reassign and delete' }));
     await waitFor(() => expect(removeAndReassign).toHaveBeenCalledWith(community.id, misc.id));
     expect(await screen.findByText('Reassigned 3 ideas to Misc and deleted Community.')).toBeInTheDocument();
+  });
+
+  it('isolates the background, traps focus, closes on Escape, and restores the exact trigger', async () => {
+    const { container } = render(<CategorySettingsScreen />);
+    const communityRow = (await screen.findByRole('heading', { name: 'Community' })).closest('li');
+    const trigger = within(communityRow!).getByRole('button', { name: 'Delete category' });
+    trigger.focus();
+    fireEvent.click(trigger);
+
+    const dialog = screen.getByRole('dialog', { name: 'Delete Community?' });
+    const backgroundContent = screen.getByTestId('category-settings-content');
+    expect(backgroundContent).toHaveAttribute('inert');
+    expect(backgroundContent).toHaveAttribute('aria-hidden', 'true');
+    expect(container).toHaveAttribute('inert');
+    expect(container).toHaveAttribute('aria-hidden', 'true');
+
+    const replacement = within(dialog).getByLabelText('Replacement category');
+    const deleteButton = within(dialog).getByRole('button', { name: 'Reassign and delete' });
+    deleteButton.focus();
+    fireEvent.keyDown(deleteButton, { key: 'Tab' });
+    expect(replacement).toHaveFocus();
+    fireEvent.keyDown(replacement, { key: 'Tab', shiftKey: true });
+    expect(deleteButton).toHaveFocus();
+
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Delete Community?' })).not.toBeInTheDocument());
+    expect(container).not.toHaveAttribute('inert');
+    expect(container).not.toHaveAttribute('aria-hidden');
+    expect(trigger).toHaveFocus();
   });
 });
 

@@ -18,6 +18,7 @@ export interface UpdateCategoryInput {
 function validatedName(value: string) {
   const name = value.trim().replace(/\s+/g, ' ');
   if (!name) throw new ValidationError('Category name is required.');
+  if (name.length > 40) throw new ValidationError('Category name must be 40 characters or fewer.');
   return { name, normalizedName: normalizeLabel(name) };
 }
 
@@ -25,6 +26,9 @@ function validatedDescription(value: string) {
   const description = value.trim();
   if (description.length < 20) {
     throw new ValidationError('Category description must be at least 20 characters.');
+  }
+  if (description.length > 800) {
+    throw new ValidationError('Category description must be 800 characters or fewer.');
   }
   return description;
 }
