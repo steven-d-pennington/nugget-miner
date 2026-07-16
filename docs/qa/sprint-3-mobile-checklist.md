@@ -24,6 +24,7 @@ Automated evidence does not substitute for a real-phone result where the checkli
 | Independent Task 5 review | Pass | Commits `af2c744`, `494d90e`, and `3b64ad9` were independently reviewed. The initial modal-retry finding was fixed in `3b64ad9`, and re-review approved the result. |
 | In-app mobile viewport | Pass | Sol verified the local app at 430 x 932 using `http://127.0.0.1:3011`. The Capture home put one-tap Record first and showed the zero-review queue link, typed fallback, recent captures, and persistent bottom navigation. `/ideas` showed the honest empty-library state with persistent navigation. Final screenshots were then recaptured from the production build server using `next start` at `http://127.0.0.1:3012`, without development controls. |
 | Synthetic typed save and reload | Pass | Sol saved a synthetic 369-character typed ramble. The app navigated to `/capture/47190cef-001c-46bf-835a-be162378c850`, displayed Transcript Version 1, the processing timeline, and the cloud disclosure. A full reload preserved the same capture and transcript, with no console errors observed. |
+| Synthetic multi-idea browser flow | Pass | On the production build at 430 x 932, a temporary local-only seed harness created fixed QA-prefixed records without live provider use. Sol verified a true `organizing` state, three draft ideas, independent edit persistence across Next/Previous, an exact source quote, discard-one/confirm-two, the completed review state, and two independent confirmed records in Ideas. The harness was removed before the final build and is not committed. |
 | Real phone and HTTPS preview | Blocked | No real phone connected to an HTTPS-capable deployed preview was available during the overnight run. Plain LAN HTTP is not sufficient evidence for mobile `getUserMedia`. |
 | Microphone authority | Blocked | Microphone acceptance requires explicit permission confirmation and a supported secure browser context. That confirmation was unavailable for this documentation pass. |
 | Live GPT/OpenAI processing | Blocked | No live provider run was performed for Sprint 3. Overnight API usage remains $0. Deterministic and mocked processing checks do not prove a live GPT-5.6 flow. |
@@ -53,9 +54,9 @@ Automated evidence does not substitute for a real-phone result where the checkli
 | Automatic processing after consent | Blocked | The consent and ordering UI is covered automatically, but no live OpenAI call was made. API usage remains $0. |
 | Manual Process now after consent | Blocked | Sol verified that Process now opened the explicit **Send for cloud processing?** dialog and that Cancel closed it without sending content. Sending after consent and completing a live provider run were not performed; API usage remains $0. |
 | App hidden during processing and resumed when visible | Not run | Automated visibility/resume listeners pass. A completed browser lifecycle observation has not yet been supplied. |
-| Multi-idea review and independent editing | Not run | Automated Task 5 tests pass for three candidates and edit persistence across next/back. Awaiting Sol's mobile browser observation. |
-| Source excerpt accuracy | Not run | Automated form tests preserve exact stored quotes and render transcript content as text. Awaiting comparison against a visible sample capture. |
-| Discard one idea and confirm two | Not run | Transactional discard and multi-confirmation paths pass automated tests. Awaiting the manual three-idea browser flow. |
+| Multi-idea review and independent editing | Pass | The synthetic production-browser flow rendered **3 ideas found**; an edited first title remained intact after Next and Previous navigation. |
+| Source excerpt accuracy | Pass | Expanding **View source excerpt** displayed the exact seeded transcript quote for the current explicit summary. |
+| Discard one idea and confirm two | Pass | The real discard modal removed the first draft, review advanced to **1 of 2**, and **Confirm all ready ideas (2)** completed with **2 ideas added to your library**. Ideas then listed the two independent confirmed records with category, summary, and source links. |
 | Repeated confirmation does not duplicate actions | Not run | Automated repository/service tests pass. Awaiting a manual visible Actions/library confirmation once the downstream surface is available. |
 | Keyboard focus and screen-reader labels | Not run | Automated tests cover control names, modal focus, and retry focus. No manual screen-reader or keyboard-only audit has been supplied. |
 | Reduced-motion state | Not run | The global reduced-motion CSS fallback exists. No browser emulation or physical-device observation has been supplied. |
@@ -75,20 +76,20 @@ Automated evidence does not substitute for a real-phone result where the checkli
 | Multiple ideas confirm independently; discards and failures preserve other work | Pass | Task 5 focused tests and transactional service tests pass; independent review approved the final recovery behavior. |
 | A real phone completes capture through confirmation | Blocked | No real phone on an HTTPS-capable preview was available overnight. This remains a Sprint 3 exit-gate blocker. |
 | Full `npm run check` passes | Pass | Sol reported 42 test files / 292 tests, typecheck, lint, and production build passing. |
-| Sprint 3 evidence row is complete | Pass | The ledger records verified automation, browser QA, two confirmed assets, two unavailable assets, and all remaining blockers without claiming the Sprint exit gate is fully satisfied. |
+| Sprint 3 evidence row is complete | Pass | The ledger records verified automation, browser QA, three confirmed assets, one unavailable asset, and all remaining blockers without claiming the Sprint exit gate is fully satisfied. |
 
 ## Screenshot evidence
 
 | Path | Evidence | Status |
 |---|---|---|
 | `docs/hackathon/evidence/sprint-3/capture-idle.png` | Capture home at 430 x 932 from the production build server; 34,904 bytes; SHA-256 `136897526830656452505A90B81BE567B68405F1A5FC1C8D45B5A55D201CFDFD` | Pass |
-| `docs/hackathon/evidence/sprint-3/processing.png` | Saved synthetic typed capture with manual processing pending, recaptured from the production build server. This is not evidence of active provider processing; 31,563 bytes; SHA-256 `0DA4AFA1861955334CB25D51EE5EB6ED834F091C4B0C06CCF51F7B71FF67C303` | Pass |
+| `docs/hackathon/evidence/sprint-3/processing.png` | Active synthetic `organizing` state from the production build, with the organizing control disabled; no live provider result is claimed. 33,098 bytes; SHA-256 `2F791561AD25BEA3CD90EE5242ED976CF1D16788D6B329ECAA0B38237605AE1B` | Pass |
 | `docs/hackathon/evidence/sprint-3/capture-recording.png` | Not produced. Active microphone recording requires explicit permission acceptance and a real phone/HTTPS-capable preview. | Blocked |
-| `docs/hackathon/evidence/sprint-3/three-idea-confirmation.png` | Not produced. The live GPT/evaluation run was deferred under the overnight cost ceiling; API usage remains $0. | Blocked |
+| `docs/hackathon/evidence/sprint-3/three-idea-confirmation.png` | Three editable synthetic drafts in the production review UI. This proves the local UI flow, not live GPT output. 37,233 bytes; SHA-256 `7877475EB1CD467C411FAFDC1DAED1824548121023B5639CCF7ACE962956A81C` | Pass |
 
 ## Open verification work
 
 1. Run the microphone-denied and 30-second Stop & save/refresh/playback flow on a real phone using an HTTPS-capable preview, then produce `capture-recording.png`.
-2. Run one authorized live transcription and GPT-5.6 organization flow, recording actual API usage separately, then produce `three-idea-confirmation.png` from synthetic content.
+2. Run one authorized live transcription and GPT-5.6 organization flow and record actual API usage separately; local three-idea UI evidence is now complete, but live-model quality remains an MVP validation gap.
 3. Exercise visibility resume, reduced motion, keyboard-only navigation, and a screen reader in a real browser.
 4. Re-run the full gate if additional code changes land after the evidence pass.
