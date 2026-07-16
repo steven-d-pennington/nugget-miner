@@ -38,7 +38,7 @@ describe('SettingsScreen', () => {
   it('preserves category navigation and renders truthful, sanitized processing evidence', async () => {
     render(<SettingsPage />);
     expect(screen.getByRole('link', { name: 'Manage categories' })).toHaveAttribute('href', '/settings/categories');
-    expect(screen.getByText(/audio is sent securely for transcription/)).toBeInTheDocument();
+    expect(screen.getByText(/When processing runs, audio is sent securely for transcription/)).toBeInTheDocument();
     expect(screen.getByText('Recordings remain in this browser until you delete the capture or erase all local data.')).toBeInTheDocument();
     expect(await screen.findByText('gpt-5.6-terra (available)')).toBeInTheDocument();
     expect(screen.getByText('Built with GPT-5.6 and Codex')).toBeInTheDocument();
@@ -87,7 +87,8 @@ describe('SettingsScreen', () => {
     expect(deleteAll).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Erase all local data now' }));
     await waitFor(() => expect(deleteAll).toHaveBeenCalledTimes(1));
-    expect(screen.getByText('All local Nugget data was erased.')).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent('All local Nugget data was erased.');
+    expect(navigate).not.toHaveBeenCalled();
     await waitFor(() => expect(navigate).toHaveBeenCalledWith());
   });
 

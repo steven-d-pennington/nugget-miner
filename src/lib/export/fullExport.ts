@@ -49,21 +49,25 @@ async function blobToBytes(blob: Blob) {
 }
 
 function byId<T extends { id: string }>(rows: T[]) {
-  return rows.sort((left, right) => left.id.localeCompare(right.id));
+  return rows.sort((left, right) => left.id < right.id ? -1 : left.id > right.id ? 1 : 0);
 }
 
 export async function buildFullExport(now: Date = new Date()): Promise<NuggetFullExport> {
-  const [captures, recordings, transcripts, extractionRuns, ideas, categories, tags, actions, settingsRow] = await Promise.all([
-    db.captureSessions.toArray(),
-    db.recordings.toArray(),
-    db.transcripts.toArray(),
-    db.extractionRuns.toArray(),
-    db.ideas.toArray(),
-    db.categories.toArray(),
-    db.tags.toArray(),
-    db.actionItems.toArray(),
-    db.settings.get('app'),
-  ]);
+  const [captures, recordings, transcripts, extractionRuns, ideas, categories, tags, actions, settingsRow] = await db.transaction(
+    'r',
+    [db.captureSessions, db.recordings, db.transcripts, db.extractionRuns, db.ideas, db.categories, db.tags, db.actionItems, db.settings],
+    () => Promise.all([
+      db.captureSessions.toArray(),
+      db.recordings.toArray(),
+      db.transcripts.toArray(),
+      db.extractionRuns.toArray(),
+      db.ideas.toArray(),
+      db.categories.toArray(),
+      db.tags.toArray(),
+      db.actionItems.toArray(),
+      db.settings.get('app'),
+    ]),
+  );
 
   const exportedRecordings = await Promise.all(byId(recordings).map(async ({ blob, ...recording }) => ({
     ...recording,

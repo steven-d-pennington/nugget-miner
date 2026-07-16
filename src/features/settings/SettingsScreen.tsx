@@ -143,7 +143,7 @@ export function SettingsScreen({ navigateToCapture = () => globalThis.location.a
         <p className="mb-0 mt-4 max-w-2xl leading-7 text-[#6E6B67]">Shape how Nugget organizes your thoughts and review how local data and cloud processing work.</p>
       </header>
 
-      {message ? <p aria-live="polite" className="m-0 border-l-4 border-[#247A55] bg-white p-4 text-[#101D36]">{message}</p> : null}
+      {message ? <p className="m-0 border-l-4 border-[#247A55] bg-white p-4 text-[#101D36]" role="alert">{message}</p> : null}
       {error ? <p role="alert" className="m-0 border-l-4 border-red-700 bg-red-50 p-4 text-red-800">{error}</p> : null}
 
       <div className="grid border-b border-[#E8DDCE]">
@@ -160,7 +160,7 @@ export function SettingsScreen({ navigateToCapture = () => globalThis.location.a
             <input checked={settings?.automaticProcessing ?? false} disabled={!settings} onChange={(event) => void toggleAutomatic(event.target.checked)} type="checkbox" />
             Automatic organization
           </label>
-          <p className="mb-0 mt-2 leading-6 text-[#6E6B67]">When you start processing, audio is sent securely for transcription and transcript text is sent securely for GPT-5.6 organization. Nugget does not cloud-sync your saved recordings or ideas.</p>
+          <p className="mb-0 mt-2 leading-6 text-[#6E6B67]">When processing runs, audio is sent securely for transcription and transcript text is sent securely for GPT-5.6 organization. Nugget does not cloud-sync your saved recordings or ideas.</p>
           <p className="mb-0 mt-2 leading-6 text-[#6E6B67]">Recordings remain in this browser until you delete the capture or erase all local data.</p>
           <p className="mb-0 mt-3 text-sm text-[#6E6B67]">Cloud processing consent: <strong className="capitalize text-[#101D36]">{consentLabel}</strong></p>
           {settings?.cloudProcessingConsent === 'granted' ? <button className="mt-3 min-h-12 font-extrabold text-[#101D36] underline decoration-[#E5A11A] decoration-2 underline-offset-4" onClick={() => void revokeConsent()} type="button">Revoke cloud processing consent</button> : null}
