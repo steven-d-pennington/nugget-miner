@@ -10,6 +10,7 @@ export interface ProcessingFingerprintInput {
   organizationPromptVersion: string;
   stage: 'segmentation' | 'organization';
   schemaVersion: string;
+  classificationContextFingerprint?: string;
 }
 
 export function processingFingerprint(input: ProcessingFingerprintInput): string {
@@ -26,5 +27,29 @@ export function processingFingerprint(input: ProcessingFingerprintInput): string
     organizationPromptVersion: input.organizationPromptVersion,
     stage: input.stage,
     schemaVersion: input.schemaVersion,
+    ...(input.classificationContextFingerprint === undefined
+      ? {}
+      : { classificationContextFingerprint: input.classificationContextFingerprint }),
   });
+}
+
+export interface ClassificationContextCategory {
+  id: string;
+  name: string;
+  description: string;
+  isFallback: boolean;
+}
+
+/**
+ * Produces an order-independent representation of every classifier-relevant
+ * category field. This value is folded into organization idempotency only.
+ */
+export function classificationContextFingerprint(
+  categories: readonly ClassificationContextCategory[],
+): string {
+  return JSON.stringify(
+    [...categories]
+      .map(({ id, name, description, isFallback }) => ({ id, name, description, isFallback }))
+      .sort((left, right) => left.id.localeCompare(right.id)),
+  );
 }

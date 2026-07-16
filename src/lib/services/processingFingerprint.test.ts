@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { processingFingerprint, type ProcessingFingerprintInput } from './processingFingerprint';
+import {
+  classificationContextFingerprint,
+  processingFingerprint,
+  type ProcessingFingerprintInput,
+} from './processingFingerprint';
 
 const base: ProcessingFingerprintInput = {
   captureSessionId: 'capture-1',
@@ -41,5 +45,30 @@ describe('processingFingerprint', () => {
   ] satisfies Array<[keyof ProcessingFingerprintInput, string]>)('changes when %s changes', (field, value) => {
     const changed = { ...base, [field]: value } as ProcessingFingerprintInput;
     expect(processingFingerprint(changed)).not.toBe(processingFingerprint(base));
+  });
+
+  it('changes organization reuse when category descriptions change without changing segmentation', () => {
+    const firstContext = classificationContextFingerprint([
+      { id: 'work', name: 'Work', description: 'Professional projects.', isFallback: false },
+      { id: 'misc', name: 'Misc', description: 'Everything else.', isFallback: true },
+    ]);
+    const changedContext = classificationContextFingerprint([
+      { id: 'misc', name: 'Misc', description: 'Everything else.', isFallback: true },
+      { id: 'work', name: 'Work', description: 'Client and team projects.', isFallback: false },
+    ]);
+
+    const segmentation = processingFingerprint({ ...base, stage: 'segmentation' });
+    const organization = processingFingerprint({
+      ...base,
+      classificationContextFingerprint: firstContext,
+    });
+    const changedOrganization = processingFingerprint({
+      ...base,
+      classificationContextFingerprint: changedContext,
+    });
+
+    expect(firstContext).not.toBe(changedContext);
+    expect(processingFingerprint({ ...base, stage: 'segmentation' })).toBe(segmentation);
+    expect(changedOrganization).not.toBe(organization);
   });
 });

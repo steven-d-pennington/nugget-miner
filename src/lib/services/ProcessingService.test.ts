@@ -24,6 +24,22 @@ describe('createProcessingService', () => {
     await Promise.all([first, second]);
   });
 
+  it('never overlaps same-capture processing even when the second request is forced', async () => {
+    let resolveRun: (() => void) | undefined;
+    const deferred = new Promise<void>((resolve) => {
+      resolveRun = resolve;
+    });
+    const pipeline = { run: vi.fn(() => deferred) };
+    const service = createProcessingService(pipeline);
+
+    const first = service.process('capture-1');
+    const forced = service.process('capture-1', { force: true });
+
+    expect(pipeline.run).toHaveBeenCalledTimes(1);
+    resolveRun?.();
+    await Promise.all([first, forced]);
+  });
+
   it('resumes persisted queued work after the service instance is recreated', async () => {
     const capture = await captureRepository.create({
       source: 'audio',

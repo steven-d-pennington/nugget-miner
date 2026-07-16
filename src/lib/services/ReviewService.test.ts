@@ -4,11 +4,13 @@ import {
   actionItemRepository,
   captureRepository,
   extractionRunRepository,
+  ideaRepository,
   nuggetRepository,
   questionRepository,
   transcriptRepository,
 } from '@/lib/repositories';
-import { ReviewService } from './ReviewService';
+import { createMockCapturePipeline } from './CapturePipeline';
+import { createReviewService, ReviewService } from './ReviewService';
 
 const cloudResult = {
   summary: 'Cloud summary',
@@ -212,5 +214,68 @@ describe('ReviewService compatibility bridge', () => {
     });
     expect(snapshot.nuggets[0]).toMatchObject({ title: 'Cloud nugget', status: 'pending' });
     await expect(captureRepository.getById(capture.id)).resolves.toMatchObject({ processingState: 'ready_for_review' });
+  });
+});
+
+describe('ReviewService canonical review operations', () => {
+  it('loads the current organized revision with classifier-ready categories and tags', async () => {
+    const { capture } = await seedTranscriptCapture('Plan a neighborhood tool-sharing library for personal use.');
+    await createMockCapturePipeline().run(capture.id);
+
+    const snapshot = await ReviewService.load(capture.id);
+
+    expect(snapshot.capture.id).toBe(capture.id);
+    expect(snapshot.ideas).toHaveLength(1);
+    expect(snapshot.categories.map((category) => category.name)).toEqual(['Work', 'School', 'Personal', 'Family', 'Misc']);
+    expect(snapshot.tags.map((tag) => tag.id)).toEqual(expect.arrayContaining(snapshot.ideas[0]!.tagIds));
+    expect(snapshot.ideas.every((idea) => idea.extractionRunId === snapshot.capture.activeExtractionRunId)).toBe(true);
+  });
+
+  it('confirms only named action suggestions and creates one action across repeated confirmation', async () => {
+    const { capture } = await seedTranscriptCapture('Plan a work handoff checklist.');
+    await createMockCapturePipeline().run(capture.id);
+    const [draft] = await ideaRepository.listDraftsByCapture(capture.id);
+    expect(draft?.suggestedActions[0]).toBeDefined();
+    const input = {
+      title: draft!.title,
+      summary: draft!.summary,
+      purpose: draft!.purpose,
+      goals: draft!.goals,
+      problem: draft!.problem,
+      blockers: draft!.blockers,
+      questions: draft!.questions,
+      suggestedActions: draft!.suggestedActions,
+      research: draft!.research,
+      categoryId: draft!.categoryId,
+      tagIds: draft!.tagIds,
+    };
+    const suggestionId = draft!.suggestedActions[0]!.id;
+
+    await expect(ReviewService.confirm(draft!.id, input, ['invented-action-id'])).rejects.toThrow(
+      'Accepted action suggestion was not part of this idea.',
+    );
+    await ReviewService.confirm(draft!.id, input, [suggestionId, suggestionId]);
+    await ReviewService.confirm(draft!.id, input, [suggestionId]);
+
+    await expect(actionItemRepository.listByIdea(draft!.id)).resolves.toEqual([
+      expect.objectContaining({ sourceSuggestionId: suggestionId, text: draft!.suggestedActions[0]!.text }),
+    ]);
+    await expect(ideaRepository.getById(draft!.id)).resolves.toMatchObject({ status: 'confirmed' });
+  });
+
+  it('discards drafts only and delegates reprocessing through the duplicate-safe processing service', async () => {
+    const { capture } = await seedTranscriptCapture('Plan a family archive.');
+    await createMockCapturePipeline().run(capture.id);
+    const [draft] = await ideaRepository.listDraftsByCapture(capture.id);
+    const enqueue = vi.fn(async () => undefined);
+    const process = vi.fn(async () => undefined);
+    const service = createReviewService({ enqueue, process });
+
+    await service.reprocess(capture.id);
+    expect(enqueue).toHaveBeenCalledWith(capture.id);
+    expect(process).toHaveBeenCalledWith(capture.id);
+
+    await service.discard(draft!.id);
+    await expect(ideaRepository.getById(draft!.id)).resolves.toBeUndefined();
   });
 });

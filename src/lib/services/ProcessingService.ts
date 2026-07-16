@@ -1,20 +1,23 @@
 import { captureRepository } from '@/lib/repositories';
-
-export interface CapturePipeline {
-  run(captureSessionId: string, signal?: AbortSignal): Promise<void>;
-}
+import {
+  capturePipeline,
+  createMockCapturePipeline,
+  type CapturePipeline,
+} from './CapturePipeline';
 
 export interface ProcessCaptureOptions {
   force?: boolean;
   signal?: AbortSignal;
 }
 
-const inFlight = new Map<string, Promise<void>>();
-
 export function createProcessingService(pipeline: CapturePipeline) {
+  const inFlight = new Map<string, Promise<void>>();
+
   async function process(captureSessionId: string, options: ProcessCaptureOptions = {}) {
     const existing = inFlight.get(captureSessionId);
-    if (existing && !options.force) return existing;
+    // `force` may bypass persisted reuse decisions inside a future pipeline,
+    // but it must never create overlapping writes/model calls for one capture.
+    if (existing) return existing;
 
     const work = pipeline.run(captureSessionId, options.signal).finally(() => {
       if (inFlight.get(captureSessionId) === work) inFlight.delete(captureSessionId);
@@ -34,3 +37,9 @@ export function createProcessingService(pipeline: CapturePipeline) {
     },
   };
 }
+
+/** Production processing uses consent-gated cloud transcription and organization. */
+export const ProcessingService = createProcessingService(capturePipeline);
+
+/** Explicit deterministic service for demos, tests, and offline development. */
+export const MockProcessingService = createProcessingService(createMockCapturePipeline());

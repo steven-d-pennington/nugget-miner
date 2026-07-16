@@ -5,14 +5,115 @@ import type { ExtractionProviderOutput } from '@/lib/providers/extraction/types'
 import {
   actionItemRepository,
   captureRepository,
+  categoryRepository,
   extractionRunRepository,
+  ideaRepository,
   nuggetRepository,
   questionRepository,
+  tagRepository,
   transcriptRepository,
+  type ConfirmIdeaInput,
 } from '@/lib/repositories';
 import { EXTRACTION_SCHEMA_VERSION, parseExtractionResult } from '@/lib/validation/extractionResult';
-import type { ActionItem, ExtractionPreset, ExtractionRun, Nugget, Question, Transcript } from '@/types';
+import type {
+  ActionItem,
+  CaptureSession,
+  Category,
+  ExtractionPreset,
+  ExtractionRun,
+  Idea,
+  Nugget,
+  Question,
+  Tag,
+  Transcript,
+} from '@/types';
+import { ProcessingService } from './ProcessingService';
 import { processingFingerprint } from './processingFingerprint';
+
+export interface CanonicalReviewSnapshot {
+  capture: CaptureSession;
+  transcript: Transcript;
+  ideas: Idea[];
+  categories: Category[];
+  tags: Tag[];
+}
+
+export interface ReviewProcessingService {
+  enqueue(captureSessionId: string): Promise<void>;
+  process(captureSessionId: string): Promise<void>;
+}
+
+export function createReviewService(processingService: ReviewProcessingService = ProcessingService) {
+  return {
+    async load(captureSessionId: string): Promise<CanonicalReviewSnapshot> {
+      const capture = await captureRepository.getById(captureSessionId);
+      if (!capture) throw new ProviderError('Capture not found.');
+      const transcript = await transcriptRepository.getCurrent(captureSessionId);
+      if (!transcript) throw new ProviderError('A transcript is required before review.');
+      const [allIdeas, categories, runs] = await Promise.all([
+        ideaRepository.listByCapture(captureSessionId),
+        categoryRepository.ensureDefaults(),
+        extractionRunRepository.listByCapture(captureSessionId),
+      ]);
+      const currentOrganizationRuns = runs.filter(
+        (run) =>
+          run.status === 'succeeded' &&
+          run.stage === 'organizing' &&
+          run.transcriptId === transcript.id,
+      );
+      const preferredRunId = currentOrganizationRuns.some(
+        (run) => run.id === capture.activeExtractionRunId,
+      )
+        ? capture.activeExtractionRunId
+        : currentOrganizationRuns.at(-1)?.id;
+      const ideas = preferredRunId
+        ? allIdeas.filter((idea) => idea.extractionRunId === preferredRunId)
+        : allIdeas;
+      const tagIds = [...new Set(ideas.flatMap((idea) => idea.tagIds))];
+      const tags = await tagRepository.getByIds(tagIds);
+      return { capture, transcript, ideas, categories, tags };
+    },
+
+    async confirm(
+      ideaId: string,
+      input: ConfirmIdeaInput,
+      acceptedActionSuggestionIds: string[],
+    ): Promise<Idea> {
+      const idea = await ideaRepository.getById(ideaId);
+      if (!idea) throw new ProviderError('Idea not found.');
+      const originalSuggestionIds = new Set(idea.suggestedActions.map((suggestion) => suggestion.id));
+      const submittedSuggestions = new Map(input.suggestedActions.map((suggestion) => [suggestion.id, suggestion]));
+      const acceptedIds = [...new Set(acceptedActionSuggestionIds)];
+      for (const suggestionId of acceptedIds) {
+        if (!originalSuggestionIds.has(suggestionId) || !submittedSuggestions.has(suggestionId)) {
+          throw new ProviderError('Accepted action suggestion was not part of this idea.');
+        }
+      }
+
+      const confirmed = await ideaRepository.confirm(ideaId, input);
+      for (const suggestionId of acceptedIds) {
+        const suggestion = submittedSuggestions.get(suggestionId)!;
+        await actionItemRepository.acceptSuggestion({
+          ideaId,
+          sourceSuggestionId: suggestionId,
+          text: suggestion.text,
+        });
+      }
+      return confirmed;
+    },
+
+    async discard(ideaId: string): Promise<void> {
+      await ideaRepository.discardDraft(ideaId);
+    },
+
+    async reprocess(captureSessionId: string): Promise<void> {
+      await processingService.enqueue(captureSessionId);
+      await processingService.process(captureSessionId);
+    },
+  };
+}
+
+const canonicalReviewService = createReviewService();
 
 export interface ReviewSnapshot {
   run: ExtractionRun;
@@ -127,6 +228,7 @@ async function markFailed(captureSessionId: string, error: unknown) {
 }
 
 export const ReviewService = {
+  ...canonicalReviewService,
   async runMockExtraction({ captureSessionId, preset }: RunExtractionInput): Promise<ReviewSnapshot> {
     const resolvedPreset = defaultPreset(preset);
     const transcript = await getTranscriptOrThrow(captureSessionId);

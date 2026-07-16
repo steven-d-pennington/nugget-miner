@@ -66,6 +66,40 @@ export const ideaRepository = {
       .sortBy('createdAt');
   },
 
+  async listByCapture(captureSessionId: string): Promise<Idea[]> {
+    return db.ideas.where('captureSessionId').equals(captureSessionId).sortBy('createdAt');
+  },
+
+  async replaceDraftsForTranscript(
+    captureSessionId: string,
+    transcriptHash: string,
+    ideas: Idea[],
+  ): Promise<void> {
+    try {
+      await db.transaction('rw', db.ideas, db.extractionRuns, async () => {
+        const [drafts, runs] = await Promise.all([
+          db.ideas
+            .where('captureSessionId')
+            .equals(captureSessionId)
+            .filter((idea) => idea.status === 'draft')
+            .toArray(),
+          db.extractionRuns.where('captureSessionId').equals(captureSessionId).toArray(),
+        ]);
+        const matchingRunIds = new Set(
+          runs.filter((run) => run.transcriptHash === transcriptHash).map((run) => run.id),
+        );
+        const replacedIds = drafts
+          .filter((idea) => idea.extractionRunId && matchingRunIds.has(idea.extractionRunId))
+          .map((idea) => idea.id);
+
+        if (replacedIds.length > 0) await db.ideas.bulkDelete(replacedIds);
+        if (ideas.length > 0) await db.ideas.bulkAdd(ideas);
+      });
+    } catch (error) {
+      throw new StorageError(error instanceof Error ? error.message : undefined);
+    }
+  },
+
   async listConfirmed(): Promise<Idea[]> {
     return db.ideas
       .where('status')
