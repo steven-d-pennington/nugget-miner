@@ -64,18 +64,19 @@ export function ActionsScreen() {
 
   const changeStatus = useCallback(async (row: EnrichedAction, completed: boolean) => {
     const original = row.action;
-    const next: ActionItem = completed
-      ? { ...original, status: 'completed', completedAt: Date.now(), updatedAt: Date.now() }
-      : { ...original, status: 'open', completedAt: undefined, updatedAt: Date.now() };
     setFailure(undefined);
     setBusy(original.id, true);
-    setRows((current) => replaceAction(current, next));
     try {
-      await actionItemRepository.setStatus(original.id, next.status);
+      const status = completed ? 'completed' : 'open';
+      await actionItemRepository.setStatus(original.id, status);
+      const timestamp = Date.now();
+      const next: ActionItem = completed
+        ? { ...original, status, completedAt: timestamp, updatedAt: timestamp }
+        : { ...original, status, completedAt: undefined, updatedAt: timestamp };
+      setRows((current) => replaceAction(current, next));
     } catch (error) {
-      setRows((current) => replaceAction(current, original));
       const detail = error instanceof Error ? ` ${error.message}` : '';
-      setFailure(`The action status could not be updated. Your previous status was restored.${detail}`);
+      setFailure(`The action status could not be updated. Your previous status was kept.${detail}`);
       throw error;
     } finally {
       setBusy(original.id, false);
@@ -139,11 +140,11 @@ export function ActionsScreen() {
         </div>
       ) : null}
 
-      {loading ? <p aria-live="polite" className="text-sm font-semibold text-[#6E6B67]">Loading actionsâ€¦</p> : null}
+      {loading ? <p aria-live="polite" className="text-sm font-semibold text-[#6E6B67]">Loading actions...</p> : null}
 
       {!loading && !failure && rows.length === 0 ? (
         <section className="rounded-2xl border border-[#E8DDCE] bg-white px-6 py-10 text-center" aria-labelledby="actions-empty-heading">
-          <span aria-hidden="true" className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#FFF2D4] text-2xl text-[#B97700]">âœ“</span>
+          <span aria-hidden="true" className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#FFF2D4] text-sm font-extrabold text-[#B97700]">OK</span>
           <h2 className="mt-4 text-xl font-extrabold text-[#101D36]" id="actions-empty-heading">No actions yet</h2>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#5F5B56]">Accept a suggested next step while reviewing an idea, and it will appear here.</p>
           <Link className="mt-5 inline-flex min-h-12 items-center rounded-xl bg-[#E5A11A] px-5 font-extrabold text-[#101D36] no-underline" href="/ideas">Browse ideas</Link>

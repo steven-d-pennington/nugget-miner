@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ActionItem, Category, Idea } from '@/types';
 import { ActionsScreen } from './ActionsScreen';
@@ -53,7 +53,7 @@ const idea: Idea = {
 };
 
 const openOlder: ActionItem = {
-  id: 'open-older', ideaId: idea.id, text: 'Ask two neighbors', status: 'open', createdAt: 100, updatedAt: 100,
+  id: 'open-older', ideaId: idea.id, text: 'Ask two neighbors', status: 'open', createdAt: 100, updatedAt: 900,
 };
 const openNewer: ActionItem = {
   id: 'open-newer', ideaId: idea.id, text: 'Draft the survey', status: 'open', createdAt: 200, updatedAt: 200,
@@ -64,6 +64,16 @@ const completedOlder: ActionItem = {
 const completedNewer: ActionItem = {
   id: 'done-newer', ideaId: idea.id, text: 'Choose a pilot block', status: 'completed', createdAt: 300, updatedAt: 600, completedAt: 600,
 };
+
+function deferred<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((nextResolve, nextReject) => {
+    resolve = nextResolve;
+    reject = nextReject;
+  });
+  return { promise, reject, resolve };
+}
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -94,12 +104,20 @@ describe('ActionsScreen', () => {
     expect(listIdeas).toHaveBeenCalledWith(true);
   });
 
-  it('moves open actions to completed and completed actions back to open', async () => {
+  it('keeps status unchanged and prevents repeat interaction until persistence succeeds', async () => {
+    const pending = deferred<void>();
+    setStatus.mockReturnValueOnce(pending.promise);
     render(<ActionsScreen />);
     const complete = await screen.findByRole('checkbox', { name: `Mark ${openNewer.text} completed` });
 
     fireEvent.click(complete);
-    await waitFor(() => expect(setStatus).toHaveBeenCalledWith(openNewer.id, 'completed'));
+    expect(setStatus).toHaveBeenCalledWith(openNewer.id, 'completed');
+    expect(complete).not.toBeChecked();
+    expect(complete).toBeDisabled();
+    complete.click();
+    expect(setStatus).toHaveBeenCalledTimes(1);
+
+    await act(async () => pending.resolve());
     expect(await screen.findByRole('checkbox', { name: `Mark ${openNewer.text} open` })).toBeChecked();
 
     fireEvent.click(screen.getByRole('checkbox', { name: `Mark ${completedNewer.text} open` }));
@@ -107,16 +125,20 @@ describe('ActionsScreen', () => {
     expect(await screen.findByRole('checkbox', { name: `Mark ${completedNewer.text} completed` })).not.toBeChecked();
   });
 
-  it('rolls a checkbox back and announces preservation when status persistence fails', async () => {
-    setStatus.mockRejectedValueOnce(new Error('Local storage unavailable.'));
+  it('keeps the prior status and announces preservation when status persistence fails', async () => {
+    const pending = deferred<void>();
+    setStatus.mockReturnValueOnce(pending.promise);
     render(<ActionsScreen />);
     const checkbox = await screen.findByRole('checkbox', { name: `Mark ${openOlder.text} completed` });
 
     fireEvent.click(checkbox);
-    expect(checkbox).toBeChecked();
+    expect(checkbox).not.toBeChecked();
+    expect(checkbox).toBeDisabled();
+    await act(async () => pending.reject(new Error('Local storage unavailable.')));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Your previous status was restored. Local storage unavailable.');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Your previous status was kept. Local storage unavailable.');
     expect(screen.getByRole('checkbox', { name: `Mark ${openOlder.text} completed` })).not.toBeChecked();
+    expect(screen.getByRole('checkbox', { name: `Mark ${openOlder.text} completed` })).toBeEnabled();
   });
 
   it('edits action text inline and removes only after confirmation', async () => {
@@ -152,6 +174,17 @@ describe('ActionsScreen', () => {
     fireEvent.click(within(row).getByRole('button', { name: 'Cancel' }));
     fireEvent.click(within(row).getByRole('button', { name: 'Remove action' }));
     expect(remove).not.toHaveBeenCalled();
+    expect(within(row).getByText(openNewer.text)).toBeInTheDocument();
+  });
+
+  it('keeps an action and announces preservation when removal fails', async () => {
+    remove.mockRejectedValueOnce(new Error('Delete transaction failed.'));
+    render(<ActionsScreen />);
+    const row = within(await screen.findByRole('list', { name: 'Open actions' })).getAllByRole('listitem')[0]!;
+
+    fireEvent.click(within(row).getByRole('button', { name: 'Remove action' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Delete transaction failed.');
     expect(within(row).getByText(openNewer.text)).toBeInTheDocument();
   });
 
