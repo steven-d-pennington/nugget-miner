@@ -1516,6 +1516,63 @@ time {
   text-decoration: none;
 }
 
+.library-view-toggle {
+  display: inline-flex;
+  gap: 0.2rem;
+  padding: 0.2rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #f3ece1;
+}
+
+.library-view-toggle button {
+  min-height: 48px;
+  border: 0;
+  border-radius: 9px;
+  padding-inline: 0.75rem;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.library-view-toggle button[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 2px 8px rgb(16 29 54 / 0.1);
+}
+
+.idea-library {
+  display: grid;
+  gap: 1rem;
+  padding: 0;
+}
+
+.idea-library-row--compact {
+  display: grid;
+  min-height: 64px;
+  align-items: center;
+  gap: 0.75rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  border: 1px solid var(--line);
+  border-left-width: 4px;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.idea-library-row__compact-main strong,
+.idea-library-row__compact-main span {
+  display: block;
+}
+
+.idea-library-row__compact-main span {
+  margin-top: 0.25rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
 @media (max-width: 30rem) {
   .processing-timeline {
     grid-template-columns: 1fr;
@@ -1548,6 +1605,12 @@ time {
   .app-shell__header-inner {
     padding-right: max(2rem, env(safe-area-inset-right, 0px));
     padding-left: max(2rem, env(safe-area-inset-left, 0px));
+  }
+}
+
+@media (min-width: 56rem) {
+  .idea-library--cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

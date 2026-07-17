@@ -8,6 +8,8 @@ import { LibraryService, type IdeaLibraryRow as LibraryRow } from '@/lib/service
 import type { CaptureSession, Category, Tag } from '@/types';
 import { IdeaFilters } from './IdeaFilters';
 import { IdeaLibraryRow } from './IdeaLibraryRow';
+import { LibraryViewToggle } from './LibraryViewToggle';
+import { readLibraryView, type IdeaLibraryView, writeLibraryView } from './libraryViewPreference';
 
 interface FilterState {
   query: string;
@@ -62,6 +64,7 @@ export function IdeaLibraryScreen() {
   const [metadataFailure, setMetadataFailure] = useState<string>();
   const [searchFailure, setSearchFailure] = useState<string>();
   const [refreshVersion, setRefreshVersion] = useState(0);
+  const [view, setView] = useState<IdeaLibraryView>('cards');
   const searchParamsKey = searchParams.toString();
   const currentFilters: FilterState = { query, categoryId, tagIds, includeArchived };
   const filtersRef = useRef(currentFilters);
@@ -72,6 +75,10 @@ export function IdeaLibraryScreen() {
     const timer = window.setTimeout(() => setDebouncedQuery(query), 150);
     return () => window.clearTimeout(timer);
   }, [query]);
+
+  useEffect(() => {
+    setView(readLibraryView());
+  }, []);
 
   useEffect(() => {
     const nextFilters = filtersFromParams(new URLSearchParams(searchParamsKey));
@@ -97,6 +104,11 @@ export function IdeaLibraryScreen() {
   const updateFilters = useCallback((patch: Partial<FilterState>) => {
     applyFilters({ ...filtersRef.current, ...patch });
   }, [applyFilters]);
+
+  const changeView = useCallback((nextView: IdeaLibraryView) => {
+    setView(nextView);
+    writeLibraryView(nextView);
+  }, []);
 
   useEffect(() => {
     const onFocus = () => setRefreshVersion((version) => version + 1);
@@ -200,8 +212,9 @@ export function IdeaLibraryScreen() {
       />
 
       <section aria-labelledby="library-results-heading" aria-busy={loading}>
-        <div className="mb-4 flex items-center justify-between gap-4">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
           <h2 className="text-lg font-extrabold text-[#101D36]" id="library-results-heading">Library</h2>
+          <LibraryViewToggle disabled={loading} onChange={changeView} value={view} />
           <p aria-live="polite" className="metadata text-xs font-semibold uppercase tracking-wider text-[#6E6B67]">{loading ? 'Loading ideas…' : resultLabel}</p>
         </div>
 
@@ -227,7 +240,7 @@ export function IdeaLibraryScreen() {
             </div>
           )
         ) : (
-          <ul aria-label="Ideas" className="space-y-4 p-0">{rows.map((row) => <IdeaLibraryRow key={row.idea.id} row={row} />)}</ul>
+          <ul aria-label="Ideas" className={view === 'cards' ? 'idea-library idea-library--cards' : 'idea-library idea-library--compact'}>{rows.map((row) => <IdeaLibraryRow key={row.idea.id} row={row} view={view} />)}</ul>
         )}
       </section>
     </div>
