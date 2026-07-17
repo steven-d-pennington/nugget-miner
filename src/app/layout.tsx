@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Fraunces, IBM_Plex_Mono, Manrope } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 import { InstallAppProvider } from '@/components/InstallAppButton';
 import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration';
 import './globals.css';
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <ServiceWorkerRegistration />
           {children}
         </InstallAppProvider>
+        <Analytics />
       </body>
     </html>
   );

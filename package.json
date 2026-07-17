@@ -11,6 +11,7 @@
     "check": "npm run typecheck && npm run lint && npm test && npm run build"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "dexie": "^4.4.4",
     "next": "^16.2.9",
     "openai": "^6.47.0",
