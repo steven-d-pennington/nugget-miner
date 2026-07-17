@@ -78,7 +78,7 @@ Processing can resume from durable state when the app is reopened and connected.
 
 Codex supported Build Week through a repository audit and sprint specification; architecture and migration implementation support; focused test and evaluation generation; code review and debugging; and deployment verification. The primary implementation work was coordinated sprint-by-sprint through the project-scoped Terra worker, with plans and evidence retained in this repository.
 
-The primary implementation Session ID is not established. It will be added in Sprint 6 Task 5 after primary-session verification; no Session ID is inferred or substituted here.
+See the [Codex Build Week collaboration record](./docs/hackathon/CODEX_COLLABORATION.md) for dated commits, roles, human decisions, and verification examples. The primary implementation Session ID remains pending; no Session ID is inferred or substituted here.
 
 ## Human decisions
 

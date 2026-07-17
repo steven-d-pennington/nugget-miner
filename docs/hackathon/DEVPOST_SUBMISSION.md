@@ -4,7 +4,7 @@
 
 - **Project name:** Nugget
 - **Track:** Apps for Your Life
-- **Repository:** [steven-d-pennington/nugget-miner](https://github.com/steven-d-pennington/nugget-miner)
+- **Repository:** [steven-d-pennington/nugget-miner](https://github.com/steven-d-pennington/nugget-miner) is public. The current MVP is directly available on the [public `codex/mvp-overnight-2026-07-15` branch](https://github.com/steven-d-pennington/nugget-miner/tree/codex/mvp-overnight-2026-07-15); the public default `main` branch remains older and is not the current MVP.
 - **Short description:** Nugget is a mobile-first voice capture app that turns unstructured rambles into distinct, organized ideas. Record while you are moving, leave as soon as the audio is saved locally, then return to review GPT-5.6-generated idea records with editable titles, summaries, goals, blockers, research needs, categories, tags, and next actions.
 
 ### Required fields that remain open
@@ -42,7 +42,7 @@ A deterministic evaluation harness covers structured-output, grounding, category
 
 ## How Codex was used
 
-Codex supported the Build Week work through planning, implementation, focused tests and browser checks, debugging, documentation, and verification. The project evidence and dated commits are retained in the repository. The primary implementation Session ID must still be obtained through `/feedback`; this submission does not invent or substitute one.
+Codex supported the Build Week work through planning, implementation, focused tests and browser checks, debugging, documentation, and verification. The [Codex collaboration record](CODEX_COLLABORATION.md) links dated sprint history, roles, human decisions, and verification examples. The primary implementation Session ID must still be obtained through `/feedback`; this submission does not invent or substitute one.
 
 ## Human product and design decisions
 
