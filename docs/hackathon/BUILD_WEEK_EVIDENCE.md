@@ -154,3 +154,18 @@ screen-reader, and keyboard-only checks were not reported and are not inferred.
 At `2026-07-17T12:39:48-07:00`, Sol correlated the report with a fresh public
 smoke: root HTTP 200/title **Nugget** and health `ok`, `whisper-1`, and
 `gpt-5.6-terra`.
+
+The owner subsequently identified Chrome as the iPhone browser. Sol then ran
+the complete fast judge path against public production in a clean 430 x 932
+mobile Chrome context. Sample loading, `community` search, Personal filtering,
+structured idea/source inspection, action completion, return navigation, and
+Markdown export all passed. The export contained the title, Personal category,
+`community` tag, and completed action and omitted the transcript. The final
+gate exited 0 with no console errors, page errors, HTTP errors, or unexpected
+failed requests. The rehearsal used local sample data and made zero provider
+calls. Full evidence and the retained harness-diagnostic notes are in
+[`JUDGING_TEST_PATH.md`](JUDGING_TEST_PATH.md).
+
+A follow-up clean-context idempotency check loaded the sample library twice;
+the Ideas list remained exactly three items after both loads with zero console
+errors.

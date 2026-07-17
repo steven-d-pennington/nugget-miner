@@ -62,10 +62,10 @@
 
 | Field | Verified result |
 | --- | --- |
-| Device and authority | Steven reported testing the requested production durability flow on a physical iPhone 14 Pro Max and reported that all requested checks looked good. The browser name was not reported. |
+| Device and authority | Steven reported testing the requested production durability flow on a physical iPhone 14 Pro Max in Chrome and reported that all requested checks looked good. |
 | Capture durability | Owner-confirmed: record on the public production URL, Stop & save, fully close and reopen, then confirm that the saved recording remains available and plays. |
 | Installed/offline behavior | Owner-confirmed: Add to Home Screen/installed-app use plus offline-to-online resume completed successfully, processing resumed, and no duplicate result was observed. |
-| Evidence boundary | This is a dated owner attestation, not an independently instrumented device run or screenshot. It closes the requested physical-phone/PWA durability check but does not claim an unreported secondary desktop-browser, microphone-denial, screen-reader, or keyboard-only audit. |
+| Evidence boundary | This is a dated owner attestation, not an independently instrumented device run or screenshot. It closes the requested physical-phone/PWA durability check but does not claim a secondary desktop-browser, microphone-denial, screen-reader, or keyboard-only audit. |
 | Correlated public smoke | At `2026-07-17T12:39:48-07:00`, Sol independently rechecked the canonical production root (HTTP 200, title **Nugget**) and health (`ok`, `whisper-1`, `gpt-5.6-terra`). |
 
 ## Clean engineering evidence
@@ -104,13 +104,13 @@
 
 | Requirement | Status | Precise evidence or blocker |
 | --- | --- | --- |
-| Clean install, checks, E2E, live eval, and production smoke all pass | Partial | Install, check, E2E, audit, canonical live eval, anonymous production infrastructure smoke, and the owner-confirmed iPhone 14 Pro Max durability/PWA flow passed. The specific iPhone browser and a secondary desktop-browser pass were not reported. |
+| Clean install, checks, E2E, live eval, and production smoke all pass | Verified | Install, check, E2E, audit, canonical live eval, anonymous production infrastructure smoke, owner-confirmed iPhone 14 Pro Max Chrome durability/PWA flow, and the automated public fast judge rehearsal passed. |
 | Logged-out HTTPS root and `/api/health` | Verified | Public root returned HTTP 200 and health reported `whisper-1` plus `gpt-5.6-terra` without deployment authentication. |
-| PWA fast path and live two-idea judge path | Partial | The owner-confirmed iPhone installed/offline/reopen path passed, and a two-call production smoke returned two organized ideas. The final interactive sample path and complete judge rehearsal remain pending. |
+| PWA fast path and live two-idea judge path | Partial | The owner-confirmed iPhone installed/offline/reopen path and the complete public sample-library judge rehearsal passed. A two-call production smoke returned two organized ideas; the full interactive live-provider UI path was not rerun in this zero-provider-cost rehearsal. |
 | Public repository and README links open in the external judge path | Verified | The public production URL and public MVP branch are now available without Vercel deployment authentication. |
 | Public YouTube end-to-end playback | Blocked-Pending | No video URL exists. |
 | Every screenshot asset opened against deployed production | Not Run | Prepared images exist, but no owner-approved public production comparison was run. |
-| Sample library is useful, local, idempotent, and clearly labeled | Not Run | This gate reverified only the Settings action. Earlier focused evidence is retained in the [evidence ledger](BUILD_WEEK_EVIDENCE.md), but was not re-executed now. |
+| Sample library is useful, local, idempotent, and clearly labeled | Verified | In a clean mobile Chrome context, Load sample library navigated to Ideas; `community` plus Personal returned exactly the tool-sharing sample. Goal, blocker, research, suggested action, sample transcript drawer, action completion, return navigation, and Markdown export all passed without provider use. |
 | Devpost copy contains only shipped behavior | Verified | The narrative and claim-boundary checklist align with the app and documentation surfaces reviewed below. |
 | Submission completed and reverified before the internal deadline | Not Run | Devpost not submitted. |
 | Confirmation evidence and annotated tag are pushed | Not Run | No confirmation evidence or tag exists; this task has no authority to create either. |
@@ -138,7 +138,7 @@ rg -n -i -e 'self-learning|live research|cloud sync|fully closed|background proc
 GPT-5.6-terra is the organization model, transcription has a separate model,
 review is mandatory, durable user records stay browser-local, cloud processing
 is disclosed, and deferred capabilities are not claimed. This conclusion does
-not replace the remaining secondary-browser, interactive judge-path, or
+not replace the remaining interactive live-provider judge-path or
 submission gates. The canonical v2 report is
 [`../evals/latest.json`](../evals/latest.json); the distinct two-call production
 smoke remains in [`../evals/production-smoke-2026-07-17.json`](../evals/production-smoke-2026-07-17.json).
@@ -151,5 +151,5 @@ separately in `docs/evals/latest.json`; this document does not infer a cost from
 that report.
 
 The single best remaining sequence is: record and publish the video; perform
-the final comparison and judge rehearsal; submit and reverify; then
+the final claim comparison; submit and reverify; then
 commit the real confirmation evidence and create the tag.

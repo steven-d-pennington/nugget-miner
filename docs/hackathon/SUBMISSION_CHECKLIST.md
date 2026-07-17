@@ -62,8 +62,7 @@ and [Build Week evidence ledger](BUILD_WEEK_EVIDENCE.md).
   health, headers, manifest, and service-worker checks pass at
   `https://nugget-miner-kappa.vercel.app`. Steven also owner-confirmed the
   requested capture/save/close/reopen/playback and installed offline/reconnect
-  path on an iPhone 14 Pro Max with resumed processing and no duplicate. The
-  specific iPhone browser and a secondary desktop-browser pass were not reported.
+  path in Chrome on an iPhone 14 Pro Max with resumed processing and no duplicate.
 
 ### Safe engineering commands
 
@@ -101,10 +100,11 @@ git diff --check
   demo script, and app source. Its claims preserve required review, local
   browser storage with opt-in cloud processing, and the exclusions for
   self-learning, live research, sync, and fully-closed-browser processing.
-- [ ] The sample library's usefulness, local behavior, idempotency, and labels
-  are re-executed for this final gate. This gate only reverified that Settings
-  exposes **Load sample library**; see the earlier [judge test path](JUDGING_TEST_PATH.md)
-  and evidence ledger for the prior focused evidence.
+- [x] The sample library's usefulness, local behavior, idempotency, and labels
+  were re-executed against public production in a clean mobile Chrome context.
+  The complete [judge test path](JUDGING_TEST_PATH.md) passed through Markdown
+  export with zero provider calls, console errors, page errors, HTTP errors, or
+  unexpected failed requests.
 - [ ] Five final screenshots are uploaded to Devpost in the planned order. Five
   prepared assets are recorded in [SCREENSHOT_PLAN.md](SCREENSHOT_PLAN.md), but
   no Devpost upload or public-production image comparison occurred here.
@@ -123,13 +123,14 @@ git diff --check
   authentication and at `/api/health`. `https://nugget-miner-kappa.vercel.app`
   returned HTTP 200; health reported `whisper-1` and `gpt-5.6-terra`.
 - [x] On that public URL, install/open the PWA and complete the requested physical
-  capture durability path. Steven confirmed success on an iPhone 14 Pro Max,
+  capture durability path. Steven confirmed success in Chrome on an iPhone 14 Pro Max,
   including save/playback after close/reopen and offline/reconnect processing
   resume without a duplicate.
-- [ ] Complete the remaining fast sample-library judge rehearsal, record the
-  specific iPhone browser, and optionally run the available secondary desktop
-  browser. The owner-confirmed phone result does not claim an unreported
-  microphone-denial, screen-reader, or keyboard-only audit.
+- [x] Complete the fast sample-library judge rehearsal on public production.
+  Search/filter, structured detail/source inspection, action completion, return
+  navigation, and Markdown export all passed in clean mobile Chrome automation.
+- [ ] Optionally run an available secondary desktop browser. The owner-confirmed
+  phone result does not claim a microphone-denial, screen-reader, or keyboard-only audit.
 - [x] Primary implementation `/feedback` Session ID verified and recorded in the
   README, Devpost draft, and evidence ledger: `019f66eb-7a90-7080-8667-b6ac77c45a23`.
 - [ ] Record an owner-approved public YouTube demo under three minutes, then
@@ -172,16 +173,11 @@ Not created. These are status statements, not placeholders.
 
 ## Recommended remaining owner sequence
 
-1. Complete the fast judge path on the exact verified public production URL;
-   stop if the public judge path is not frictionless.
-2. Record the iPhone browser name and optionally run the available secondary
-   desktop browser; this is additional matrix evidence, not a blocker for the
-   owner-confirmed primary phone/PWA durability path.
-3. Retain the verified canonical v2 evaluation report with the submission
+1. Retain the verified canonical v2 evaluation report with the submission
    evidence; do not substitute the distinct two-call production smoke for it.
-4. Record and publish the truthful public YouTube demo, then verify playback
+2. Record and publish the truthful public YouTube demo, then verify playback
    while logged out.
-5. Perform the final app/README/Devpost/video/screenshot claim comparison.
-6. Submit Devpost and immediately reopen it to reverify persistence.
-7. Only then commit the real confirmation evidence and create/push the annotated
+3. Perform the final app/README/Devpost/video/screenshot claim comparison.
+4. Submit Devpost and immediately reopen it to reverify persistence.
+5. Only then commit the real confirmation evidence and create/push the annotated
    submission tag.

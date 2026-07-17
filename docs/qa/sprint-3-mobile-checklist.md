@@ -32,10 +32,10 @@ Automated evidence does not substitute for a real-phone result where the checkli
 ### Owner-confirmed physical-device follow-up — July 17, 2026
 
 Steven later ran the requested production durability/PWA flow on a physical
-iPhone 14 Pro Max and reported that all requested checks looked good: record,
+iPhone 14 Pro Max in Chrome and reported that all requested checks looked good: record,
 Stop & save, fully close/reopen, retained local playback, Add to Home Screen/
 installed use, offline-to-online processing resume, and no duplicate. The
-browser name, a microphone-denial run, and reusable screenshot/video evidence
+microphone-denial run and reusable screenshot/video evidence
 were not supplied, so this addendum records only the owner-attested scenarios.
 
 ## Automated verification

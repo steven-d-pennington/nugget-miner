@@ -119,7 +119,7 @@ $serviceWorker
 | Required work | Status and next action |
 | --- | --- |
 | Authorized public judging URL | **PASS.** Steven authorized production; the canonical URL and health endpoint respond anonymously. |
-| Real device/browser matrix | **PARTIAL PASS.** Steven owner-confirmed the requested production flow on a physical iPhone 14 Pro Max. The specific iPhone browser and a secondary desktop browser were not reported. |
+| Real device/browser matrix | **PASS for the primary device.** Steven owner-confirmed the requested production flow in Chrome on a physical iPhone 14 Pro Max. A secondary desktop browser remains optional additional evidence. |
 | Real microphone and offline flow | **PASS by owner attestation.** Record, Stop & save, full close/reopen, local playback, installed offline/reconnect resume, and no duplicate all looked good on the iPhone 14 Pro Max. |
 | PWA/manual privacy review | **PASS for the requested primary phone path.** Add to Home Screen/installed use and lifecycle recovery were owner-confirmed. No independent device instrumentation or screenshot was supplied. |
 
@@ -135,4 +135,4 @@ These gaps are retained intentionally; this Sprint 5 evidence pass does not eras
 
 ## Task 6 status
 
-The authenticated preview, completion-branch public production, environment-entry presence, local automated gate, headers, manifest, service-worker policy, and owner-confirmed iPhone 14 Pro Max durability/PWA path are documented. Task 6 remains incomplete for the final judge rehearsal, video, Devpost submission, and confirmation evidence; a named iPhone browser and secondary-browser pass would strengthen but do not replace the recorded primary-device evidence.
+The authenticated preview, completion-branch public production, environment-entry presence, local automated gate, headers, manifest, service-worker policy, owner-confirmed iPhone 14 Pro Max Chrome durability/PWA path, and public fast judge rehearsal are documented. Task 6 remains incomplete for the video, Devpost submission, and confirmation evidence; a secondary-browser pass would be optional additional evidence.
