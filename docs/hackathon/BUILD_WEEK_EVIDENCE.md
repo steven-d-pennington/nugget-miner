@@ -44,3 +44,17 @@ primary `/feedback` Session ID, Devpost submission/confirmation, August 5
 retention, and submission tag remain open. See
 [SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md) and
 [FINAL_VERIFICATION.md](FINAL_VERIFICATION.md).
+
+## Authorized production release
+
+On July 16, 2026, Steven explicitly authorized production. The canonical
+[public app](https://nugget-miner-kappa.vercel.app) is deployment
+`dpl_CZWcgTiGf3TaPyjfxDp59vg5zbqr`, READY. Anonymous verification returned HTTP
+200 for the root; `/api/health` reported `whisper-1` transcription and
+`gpt-5.6-terra` organization; the root capture UI, required security headers,
+standalone/portrait manifest, and service-worker API/non-GET exclusions passed.
+The first production check exposed a stale `gpt-4o-mini` production model and a
+subsequent stdin update exposed a trailing CRLF; both were rejected by the gate.
+The final value was set exactly with Vercel CLI `--value` before the passing
+redeploy. No live organization or transcription request was made during this
+infrastructure verification.

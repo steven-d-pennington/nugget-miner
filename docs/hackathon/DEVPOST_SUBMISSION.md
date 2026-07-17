@@ -9,12 +9,12 @@
 
 ### Required fields that remain open
 
-- **Public working URL:** Not available yet. The verified preview is [nugget-miner-782mixz1t-steven-penningtons-projects.vercel.app](https://nugget-miner-782mixz1t-steven-penningtons-projects.vercel.app), deployment `dpl_BRjPt1wGKEsxp6b1qbFF1KxgbDJu`, but Vercel Authentication protects it. It is not a public or account-free judging path. Production is an older `main` deployment and is not the current MVP.
+- **Public working URL:** [https://nugget-miner-kappa.vercel.app](https://nugget-miner-kappa.vercel.app). Production deployment `dpl_CZWcgTiGf3TaPyjfxDp59vg5zbqr` is READY and passed anonymous root, `/api/health`, security-header, manifest, and service-worker checks. Health reports `whisper-1` transcription and `gpt-5.6-terra` organization.
 - **Public video URL:** Not recorded yet. The recording-ready [demo script](DEMO_SCRIPT.md) and [demo recording checklist](DEMO_RECORDING_CHECKLIST.md) prepare this work, but no YouTube URL may be added until the owner authorizes publication and logged-out public playback is verified.
 - **Primary Codex implementation Session ID:** Not captured yet.
 - **Live evaluation report:** Not recorded yet. A live run was authorized within an approximately four-dollar ceiling, but a safe nonempty key injection was unavailable. This work made zero provider calls and incurred zero provider spend.
 
-Do not submit the protected preview as the public Devpost testing URL. See the [judge test path](JUDGING_TEST_PATH.md), [screenshot plan](SCREENSHOT_PLAN.md), [demo script](DEMO_SCRIPT.md), and [demo recording checklist](DEMO_RECORDING_CHECKLIST.md) for the current, truthful demonstration material and pending public-video gate.
+Use the public production URL above as the Devpost testing URL. See the [judge test path](JUDGING_TEST_PATH.md), [screenshot plan](SCREENSHOT_PLAN.md), [demo script](DEMO_SCRIPT.md), and [demo recording checklist](DEMO_RECORDING_CHECKLIST.md) for the current, truthful demonstration material and pending public-video gate.
 
 ## Inspiration
 
@@ -28,7 +28,7 @@ The MVP stores captures, recordings, transcripts, ideas, categories, tags, and a
 
 ## How we built it
 
-Nugget is a mobile-first web app and installable PWA with browser-local durable state. Its source defaults are `gpt-4o-mini-transcribe` for transcription and `gpt-5.6-terra` for organization. The verified protected preview currently reports the deployed overrides `whisper-1` for transcription and `gpt-5.6-terra` for organization.
+Nugget is a mobile-first web app and installable PWA with browser-local durable state. Its source defaults are `gpt-4o-mini-transcribe` for transcription and `gpt-5.6-terra` for organization. Verified public production reports the deployed overrides `whisper-1` for transcription and `gpt-5.6-terra` for organization.
 
 The organization flow is deliberately split into stages: identify source-grounded candidate ideas from the transcript, then organize each candidate against the allowed category descriptions. Structured responses, source spans, and category IDs are validated before draft records are written for review. The submission screenshots use deterministic safe fixtures or the clearly labeled local sample library; they do not represent a live provider result.
 
@@ -50,7 +50,7 @@ The human owner chose an on-the-go, mobile-first capture flow; local save before
 
 ## Challenges
 
-The difficult parts were preserving idea boundaries in a ramble, grounding structured fields in source text, making local capture durable before network work, and being precise about mobile-browser background limits. The project also had to separate verified deterministic behavior from cost-incurring live evaluation evidence and keep the submission honest while the only current preview remains Vercel-auth protected.
+The difficult parts were preserving idea boundaries in a ramble, grounding structured fields in source text, making local capture durable before network work, and being precise about mobile-browser background limits. The project also had to separate verified deterministic behavior from cost-incurring live evaluation evidence and catch a production-only model-variable mismatch before presenting the public judge path.
 
 ## Accomplishments
 
@@ -66,13 +66,13 @@ A useful AI organization experience needs clear boundaries and correction points
 
 ## What's next
 
-Potential future work includes self-learning from corrections, conversational onboarding, live research execution, and optional sync. None of those are shipped in this MVP. Before submission, the remaining delivery gates are a public account-free production URL, a public video URL, the primary Codex Session ID, and a recorded live evaluation report.
+Potential future work includes self-learning from corrections, conversational onboarding, live research execution, and optional sync. None of those are shipped in this MVP. Before submission, the remaining delivery gates are a public video URL, the primary Codex Session ID, a recorded live evaluation report, and final device/browser verification.
 
 ## Claim boundary checklist
 
 Use only claims supported by the current build and evidence:
 
-- Do not call the Vercel-auth-protected preview public or account-free.
+- Use only `https://nugget-miner-kappa.vercel.app` as the verified public judge URL; older preview URLs remain Vercel-auth protected.
 - Do not claim self-learning, live research execution, citations, sync, accounts, or cloud user-data persistence.
 - Do not claim all processing is local or fully on device; cloud processing is opt-in/initiated and transient.
 - Do not present the deterministic screenshots as a live GPT provider result.

@@ -4,7 +4,7 @@
 **Branch:** `codex/mvp-overnight-2026-07-15`
 **Verified HEAD:** `3c9fcbb182675a91f3ccfd32216770714787288d`
 
-## Deployment record and access boundary
+## Initial preview record and access boundary
 
 | Item | Verified result |
 | --- | --- |
@@ -12,6 +12,20 @@
 | Vercel deployment | `dpl_7wt1JTueTn4AH1thNuSWfKxSptqz` — preview, READY, 2026-07-16 15:05 PT |
 | Anonymous access | Vercel-auth protected. This is not yet the public judging URL. |
 | Production authority | A production deployment is not authorized. Task 6 and Sprint 5 remain incomplete. |
+
+### Authorized public-production addendum — July 16, 2026
+
+| Item | Verified result |
+| --- | --- |
+| Canonical public URL | `https://nugget-miner-kappa.vercel.app` |
+| Production deployment | `dpl_CZWcgTiGf3TaPyjfxDp59vg5zbqr` — production, READY |
+| Anonymous access | HTTP 200 without Vercel CLI authentication or a protection bypass |
+| Health | `status: ok`; transcription `whisper-1`; organization `gpt-5.6-terra` |
+| Public infrastructure smoke | Root capture UI, required security headers, standalone/portrait manifest, and service-worker API/non-GET exclusions passed |
+
+The initial production smoke correctly stopped on a production-only
+`gpt-4o-mini` organization value. After replacing `NUGGET_LLM_MODEL` with the
+exact `gpt-5.6-terra` value and rebuilding, the canonical public URL passed.
 
 ## Local automated proof
 
@@ -62,7 +76,7 @@ $serviceWorker
 
 | Required work | Status and next action |
 | --- | --- |
-| Authorized public judging URL | **Pending.** In the morning, obtain explicit owner authorization for the intended public judging deployment or public-production route. After that authorized change, verify anonymous access in a clean browser and with `curl.exe --head <public-url>`; it must not require Vercel authentication. Do not change Vercel settings as part of this checklist. |
+| Authorized public judging URL | **PASS.** Steven authorized production; the canonical URL and health endpoint respond anonymously. |
 | Real device/browser matrix | **Not performed.** No physical device, Edge/Safari, install/standalone/backgrounding matrix was performed. Run the Sprint 5 matrix on at least one physical phone plus the available desktop secondary browser. |
 | Real microphone and offline flow | **Pending.** On the authorized public HTTPS URL, record, save, reload/play back, reconnect an offline capture, and briefly background/reopen the installed app. |
 | PWA/manual privacy review | **Pending.** Confirm install, standalone launch, icon, privacy/error copy, and that no API response is served from service-worker cache on the actual device/browser matrix. |
@@ -76,4 +90,4 @@ These gaps are retained intentionally; this Sprint 5 evidence pass does not eras
 
 ## Task 6 status
 
-The authenticated preview, environment-entry presence, local automated gate, headers, manifest, and service-worker policy are documented. Task 6 and Sprint 5 remain incomplete until an authorized public judging URL and the required real-device/browser matrix are verified.
+The authenticated preview, public production, environment-entry presence, local automated gate, headers, manifest, and service-worker policy are documented. Task 6 and Sprint 5 remain incomplete until the required real-device/browser matrix and live judge path are verified.

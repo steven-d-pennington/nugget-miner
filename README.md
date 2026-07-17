@@ -4,7 +4,7 @@ Nugget is a mobile-first voice capture PWA that turns an unstructured ramble int
 
 **OpenAI Build Week track: Apps for Your Life**
 
-**Current verified preview:** [nugget-miner-782mixz1t-steven-penningtons-projects.vercel.app](https://nugget-miner-782mixz1t-steven-penningtons-projects.vercel.app) — deployment `dpl_BRjPt1wGKEsxp6b1qbFF1KxgbDJu`, READY. It is protected by Vercel Authentication; it is not a public or account-free judge path. Its health reports transcription model `whisper-1` and organization model `gpt-5.6-terra`. Final public production publication requires owner release approval.
+**Public demo:** [nugget-miner-kappa.vercel.app](https://nugget-miner-kappa.vercel.app) — production deployment `dpl_CZWcgTiGf3TaPyjfxDp59vg5zbqr`, READY and anonymously reachable. Its health endpoint reports transcription model `whisper-1` and organization model `gpt-5.6-terra`.
 
 ## The problem
 
@@ -18,7 +18,7 @@ Nugget records audio or accepts pasted text, saves the capture in the browser, t
 
 ### Fast sample path
 
-1. Open the verified preview with authorized Vercel access, or run Nugget locally.
+1. Open the [public production app](https://nugget-miner-kappa.vercel.app), or run Nugget locally.
 2. In **Settings**, choose **Load sample library**.
 3. Follow the two-minute [Judge Test Path](./docs/hackathon/JUDGING_TEST_PATH.md): search `community`, filter **Personal**, open the tool-sharing idea, complete its action, and export it.
 
@@ -119,7 +119,7 @@ Start from [`.env.example`](./.env.example) and keep `.env.local` out of Git. [`
 | `NUGGET_LLM_MAX_INPUT_CHARS` | Transcript input limit | `24000` |
 | `NUGGET_TRANSCRIPTION_TIMEOUT_MS` / `NUGGET_LLM_TIMEOUT_MS` | Server request timeouts | `60000` / `90000` ms |
 
-The current verified preview reports deployed overrides of `whisper-1` for transcription and `gpt-5.6-terra` for organization; do not assume its encrypted environment values from this repository.
+The verified production deployment reports overrides of `whisper-1` for transcription and `gpt-5.6-terra` for organization; do not infer encrypted environment values from this repository.
 
 ## Verification commands
 
@@ -146,10 +146,9 @@ npm run eval:live
 
 ## Known MVP boundaries
 
-- The current verified preview is Vercel-auth protected. A public, anonymous judge path has not been authorized; final public production publication requires owner release approval.
-- Production currently points to the older `main` commit `a668857`; it is not the current MVP preview.
+- Public production is available without Vercel Authentication and passed anonymous root, health, security-header, manifest, and service-worker checks on July 16, 2026.
 - The live evaluation report and a reusable live-result artifact are not yet recorded because the local evaluation process could not receive a safely injected nonempty `OPENAI_API_KEY`, despite authorization to make live OpenAI calls after deterministic checks within an approximate four-dollar ceiling.
-- Physical-device, secondary-browser, install/standalone, and mobile backgrounding verification remain incomplete.
+- Physical-device microphone, secondary-browser, install/standalone, and mobile background/reopen verification remain incomplete.
 - Nugget does not provide self-learning from corrections, live research, cloud sync, native apps, or guaranteed processing while a mobile browser is fully closed.
 
 ## Repository map and documentation

@@ -15,11 +15,23 @@
 | Preview deployment | `dpl_BRjPt1wGKEsxp6b1qbFF1KxgbDJu`, `READY`, Next.js; exact deployed source `f9bb639` |
 | Preview access boundary | Vercel-auth protected. It is not a logged-out, public, or account-free judge path. |
 | Public repository | Public; the current MVP branch is pushed and has MIT `LICENSE`. Default `main` is older `a668857` and does not contain the current MVP or license. |
-| Public production URL | **Not authorized / not verified.** Do not substitute the protected preview. |
+| Public production URL | **Authorized and verified in the release addendum below.** |
 | Public YouTube URL and duration | **Not recorded / not published.** |
 | Primary Codex implementation Session ID | **Pending / not captured.** No worker, wrapper, planning, or coordination ID is substituted. |
 | Devpost Submit actor | **Not submitted.** No person clicked Submit in this gate. |
 | Confirmation page or email | **Not captured.** |
+
+### Authorized production release addendum — July 16, 2026
+
+| Field | Verified result |
+| --- | --- |
+| Owner authority | Steven explicitly authorized the production deployment. |
+| Public URL | [https://nugget-miner-kappa.vercel.app](https://nugget-miner-kappa.vercel.app) |
+| Production deployment | `dpl_CZWcgTiGf3TaPyjfxDp59vg5zbqr`, READY |
+| Anonymous access | Root returned HTTP 200 without Vercel CLI authentication or a protection bypass. |
+| Runtime configuration | `/api/health` returned `status: ok`, transcription `whisper-1`, and organization `gpt-5.6-terra`. |
+| Infrastructure smoke | Root contained **Quick capture** and **Record**; required security headers, standalone/portrait manifest, and service-worker exclusions for non-GET and `/api/*` requests passed. |
+| Corrective evidence | The first production smoke exposed `gpt-4o-mini`; the production-only `NUGGET_LLM_MODEL` value was corrected. A PowerShell stdin attempt then exposed a trailing CRLF, so the value was replaced with Vercel CLI `--value` and the production source redeployed before the passing smoke. |
 
 ## Clean engineering evidence
 
@@ -41,7 +53,7 @@
 | --- | --- | --- |
 | Apps for Your Life track selected | Not Run | Devpost was not opened or submitted in this gate. |
 | Title and descriptions pasted from the final file | Not Run | [Devpost draft](DEVPOST_SUBMISSION.md) is ready for owner review; no external field was edited. |
-| Production URL opens logged out | Blocked-Pending | No authorized public production release exists. The verified preview is Vercel-auth protected. |
+| Production URL opens logged out | Verified | The canonical public URL returned HTTP 200 without deployment authentication; `/api/health` reported the expected models. |
 | Public/private repository access verified | Verified | Repository is public; current public MVP branch is pushed. Default `main` is older and must not be represented as the current MVP. |
 | MIT license present | Verified | Current public MVP branch contains `LICENSE`; default-branch GitHub license metadata remains absent because `main` is older. |
 | README setup, sample, testing, GPT, Codex, and human decisions complete | Verified | [README](../../README.md) was read, searched, and link-audited in this gate; it contains each required surface and preserves known boundaries. |
@@ -57,17 +69,17 @@
 
 | Requirement | Status | Precise evidence or blocker |
 | --- | --- | --- |
-| Clean install, checks, E2E, live eval, and production smoke all pass | Blocked-Pending | Install, check, E2E, audit, and authenticated preview smoke passed. Live eval has no key/report, and public production smoke is not authorized. |
-| Logged-out HTTPS root and `/api/health` | Blocked-Pending | Requires owner-approved public URL; only authenticated preview evidence exists. |
-| PWA fast path and live two-idea judge path | Not Run | No public/logged-out or physical-device run was authorized. |
-| Public repository and README links open in the external judge path | Blocked-Pending | Branch publicity is verified, but the final public app path and its external review remain open. |
+| Clean install, checks, E2E, live eval, and production smoke all pass | Blocked-Pending | Install, check, E2E, audit, and anonymous production infrastructure smoke passed. Live eval still has no report, and physical-device/browser checks remain open. |
+| Logged-out HTTPS root and `/api/health` | Verified | Public root returned HTTP 200 and health reported `whisper-1` plus `gpt-5.6-terra` without deployment authentication. |
+| PWA fast path and live two-idea judge path | Not Run | Public production is authorized; the interactive sample/live and physical-device paths have not yet been run on it. |
+| Public repository and README links open in the external judge path | Verified | The public production URL and public MVP branch are now available without Vercel deployment authentication. |
 | Public YouTube end-to-end playback | Blocked-Pending | No video URL exists. |
 | Every screenshot asset opened against deployed production | Not Run | Prepared images exist, but no owner-approved public production comparison was run. |
 | Sample library is useful, local, idempotent, and clearly labeled | Not Run | This gate reverified only the Settings action. Earlier focused evidence is retained in the [evidence ledger](BUILD_WEEK_EVIDENCE.md), but was not re-executed now. |
 | Devpost copy contains only shipped behavior | Verified | The narrative and claim-boundary checklist align with the app and documentation surfaces reviewed below. |
 | Submission completed and reverified before the internal deadline | Not Run | Devpost not submitted. |
 | Confirmation evidence and annotated tag are pushed | Not Run | No confirmation evidence or tag exists; this task has no authority to create either. |
-| Deployment retention through August 5 recorded | Blocked-Pending | Requires the owner-approved public production deployment and retention confirmation. |
+| Deployment retention through August 5 recorded | Blocked-Pending | Public production exists, but retention through the required date still needs owner confirmation. |
 
 ## Claim-surface comparison
 
@@ -91,7 +103,8 @@ rg -n -i -e 'self-learning|live research|cloud sync|fully closed|background proc
 GPT-5.6-terra is the organization model, transcription has a separate model,
 review is mandatory, durable user records stay browser-local, cloud processing
 is disclosed, and deferred capabilities are not claimed. This conclusion does
-not replace the remaining public-production and live-provider evidence gates.
+not replace the remaining physical-device, interactive judge-path, and
+live-provider evidence gates.
 
 ## API usage and remaining owner sequence
 
@@ -99,8 +112,8 @@ not replace the remaining public-production and live-provider evidence gates.
 spend. The live evaluation stopped before provider-client use; no live report
 exists.
 
-The single best remaining sequence is: authorize public production; run the
-logged-out smoke and real-device check; run a safe live eval only if a key is
-available and budget is accepted; obtain the `/feedback` Session ID; record and
+The single best remaining sequence is: run the real-device check; run a safe
+live eval only if a key is available and budget is accepted; obtain the
+`/feedback` Session ID; record and
 publish the video; perform the final comparison; submit and reverify; then
 commit the real confirmation evidence and create the tag.

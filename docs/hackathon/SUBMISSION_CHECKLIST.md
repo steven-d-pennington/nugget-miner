@@ -40,8 +40,10 @@ and [Build Week evidence ledger](BUILD_WEEK_EVIDENCE.md).
   before provider-client use because `OPENAI_KEY_NONEMPTY=False` and
   `OPENAI_API_KEY is required for the live evaluation`; one eval file failed and
   13 tests were skipped. No provider call, report, or spend is claimed.
-- [ ] A logged-out public production/PWA smoke passes. The only verified MVP
-  deployment is Vercel-auth protected; it cannot satisfy this requirement.
+- [ ] The full logged-out public production/PWA smoke passes. Anonymous root,
+  health, headers, manifest, and service-worker checks pass at
+  `https://nugget-miner-kappa.vercel.app`; install/standalone and physical-device
+  interaction remain open.
 
 ### Safe engineering commands
 
@@ -98,11 +100,10 @@ git diff --check
 - [ ] Paste the title and descriptions from the final approved
   [Devpost draft](DEVPOST_SUBMISSION.md), then visually re-read the rendered
   fields for truncation or stale wording.
-- [ ] Authorize the exact public production release. This checklist grants no
-  deployment authority.
-- [ ] Verify the owner-approved public production HTTPS URL in a logged-out or
-  private browser and at `/api/health`; it must require no Vercel Authentication,
-  account, payment, invitation, or local setup.
+- [x] Steven explicitly authorized the production release on July 16, 2026.
+- [x] Verify the owner-approved production HTTPS URL without deployment
+  authentication and at `/api/health`. `https://nugget-miner-kappa.vercel.app`
+  returned HTTP 200; health reported `whisper-1` and `gpt-5.6-terra`.
 - [ ] On that public URL, install/open the PWA where available; load the sample
   library; complete the [fast judge path](JUDGING_TEST_PATH.md#fast-exploration-about-2-minutes);
   and complete a real pasted two-idea GPT path without exposing private data.
@@ -152,9 +153,9 @@ Not created. These are status statements, not placeholders.
 
 ## Recommended remaining owner sequence
 
-1. Authorize and make the current MVP available on the intended public
+1. Run the remaining physical-device/browser/PWA checks on the verified public
    production path.
-2. Run the logged-out smoke and physical-device/browser/PWA checks on that exact
+2. Complete the fast judge path on that exact
    URL; stop if the public judge path is not frictionless.
 3. If a safe nonempty key and an accepted budget are available, run the live
    evaluation and retain its result; otherwise keep that gate visibly open.
