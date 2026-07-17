@@ -46,6 +46,18 @@
 | Logged-out mobile Chromium | At 430 x 932, the public root returned HTTP 200 with title **Nugget**, meaningful content, **What’s on your mind?** as `h1`, visible **Record**, Capture/Ideas/Actions navigation, Settings navigation, **Load sample library**, manifest linkage, service-worker support, and zero framework overlays. |
 | Diagnostic caveat | The first browser pass observed one anonymous console 404 message. An immediate clean diagnostic rerun recorded no failed requests and no responses with status >=400. Both observations are retained; Vercel error-log query for the prior hour found no logs. |
 
+### Privacy-safe Vercel Web Analytics addendum — July 17, 2026
+
+| Field | Verified result |
+| --- | --- |
+| Implementation | `@vercel/analytics` 2.0.1 is rendered once at the root. The Vercel project Web Analytics setting is enabled. No custom events or user-content properties were added. |
+| Privacy boundary | The documented `beforeSend` hook removes query strings and fragments and replaces browser-local identifiers on `/capture/*`, `/idea/*`, `/ideas/*`, and `/review/*` with stable route placeholders. Settings discloses the anonymous page-view telemetry and its exclusions. |
+| Reviewed commits | Sol reviewed Terra commits `520ff31` (`feat: sanitize analytics page views`) and `7675528` (`fix: preserve sanitized analytics origins`). |
+| Local verification | 58 files / 402 tests passed before the narrow origin correction; the final focused privacy and Settings run passed 2 files / 15 tests. Typecheck, lint, the Next.js 16.2.9 13-page production build, all 3 E2E flows, `npm audit --omit=dev` (0 vulnerabilities), and diff checks passed. |
+| Preview wire proof | Preview `dpl_58jTxo3fDfM3rh3Hi42PVtvK95j9` was READY. A non-bot Chromium pageview for a synthetic dynamic capture URL reached the randomized v2 intake with HTTP 200. The POST contained only the preview origin plus `/capture/[capture]`; neither the synthetic record ID nor query marker appeared. |
+| Production promotion | The exact preview artifact was promoted under existing authority to production `dpl_BbBjNkew9j7gstAT2prrHSak62Fc`, READY, at [https://nugget-miner-kappa.vercel.app](https://nugget-miner-kappa.vercel.app). |
+| Public runtime proof | Logged-out mobile Chromium found root HTTP 200, Analytics script HTTP 200, Analytics pageview HTTP 200, health HTTP 200 with `whisper-1` and `gpt-5.6-terra`, and no failed requests. The captured production pageview contained `https://nugget-miner-kappa.vercel.app/capture/[capture]` with no synthetic local ID or query value. |
+
 ## Clean engineering evidence
 
 | Command or check | Result |

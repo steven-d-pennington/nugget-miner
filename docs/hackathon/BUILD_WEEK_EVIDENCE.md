@@ -119,3 +119,25 @@ a confirmed current failure.
 The completion deployment does not close physical phone/install/offline/
 backgrounding, Safari/Edge, Sprint 4 manual, video, Devpost, retention, tag, or
 full-submission gates.
+
+## July 17 privacy-safe Vercel Web Analytics
+
+Terra added Vercel Web Analytics in `2b745e4`, then implemented privacy
+redaction in `520ff31` and corrected the absolute event URL contract in
+`7675528`. Sol reviewed both privacy commits and independently verified the
+final behavior. The application uses the documented `beforeSend` boundary to
+strip query strings and fragments and replace browser-local identifiers on
+capture, idea, ideas-detail, and review routes. No recordings, transcripts,
+idea content, local record identifiers, or custom event properties are sent.
+
+The final focused run passed 2 files / 15 tests; typecheck, lint, the Next.js
+16.2.9 13-page build, and diff checks passed. The preceding complete gate also
+passed 58 files / 402 tests, all 3 E2E flows, and a zero-vulnerability
+production dependency audit. Preview `dpl_58jTxo3fDfM3rh3Hi42PVtvK95j9`
+accepted a sanitized synthetic dynamic-route pageview with HTTP 200 and no
+local ID or query marker. Its exact artifact was promoted under existing
+authority to production `dpl_BbBjNkew9j7gstAT2prrHSak62Fc`, READY. Public
+verification at <https://nugget-miner-kappa.vercel.app> returned HTTP 200 for
+the root, Analytics v2 script, Analytics pageview intake, and health endpoint;
+the captured pageview contained only the canonical origin plus
+`/capture/[capture]`, and no requests failed.

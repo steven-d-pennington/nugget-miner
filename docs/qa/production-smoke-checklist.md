@@ -58,6 +58,17 @@ two-call production smoke.
 | Logged-out mobile Chromium | 430 x 932: HTTP 200, title **Nugget**, meaningful content, `h1` **What’s on your mind?**, visible **Record**, Capture/Ideas/Actions navigation, Settings navigation, **Load sample library**, manifest linked, service-worker supported, and zero framework overlays. |
 | Console/network diagnostic | First browser pass saw one anonymous console 404. Immediate clean diagnostic rerun found no failed requests and no responses >=400. Vercel error-log query for the prior hour returned no logs. Both observations are retained. |
 
+### Privacy-safe Vercel Web Analytics verification — July 17, 2026
+
+| Item | Verified result |
+| --- | --- |
+| Package and project state | `@vercel/analytics` 2.0.1; Web Analytics enabled in the Vercel project; no custom events or user-content properties. |
+| Privacy behavior | `beforeSend` strips query strings and fragments and replaces local identifiers on capture, idea, ideas-detail, and review routes with stable placeholders. Unsafe or malformed URLs are dropped. |
+| Final preview | `dpl_58jTxo3fDfM3rh3Hi42PVtvK95j9`, READY; source `7675528`. |
+| Preview intake proof | Non-bot Chromium sent a synthetic `/capture/<local-id>?secret=<marker>` pageview. The v2 randomized intake returned HTTP 200 and received only the preview origin plus `/capture/[capture]`; neither marker was present. |
+| Production | The exact preview was promoted to `dpl_BbBjNkew9j7gstAT2prrHSak62Fc`, READY. Canonical URL: `https://nugget-miner-kappa.vercel.app`. |
+| Production smoke | Root, Analytics script, Analytics pageview intake, and `/api/health` each returned HTTP 200. The captured pageview contained only `https://nugget-miner-kappa.vercel.app/capture/[capture]`; health reported `whisper-1` and `gpt-5.6-terra`; no failed requests occurred. |
+
 ## Local automated proof
 
 | Check | Result |
