@@ -17,3 +17,30 @@ Blank evidence cells are intentional collection fields. Fill each sprint row at 
 - Session ID from `/feedback`: **Pending.** Do not infer or substitute a worker, wrapper, planning, or coordination thread ID.
 - Required action: in the original task containing most core MVP implementation, run `/feedback` and copy only the returned ID here, to the README, and to the Devpost draft.
 - Why this was the primary implementation task: This continuous overnight Codex goal coordinates sprint-by-sprint MVP implementation and verification through the planned exit gates.
+
+## Sprint 6 Task 6 pre-submission engineering gate
+
+Pre-submission evidence only; it does not authorize production release,
+provider use, publication, Devpost submission, tagging, or pushing. Sol's July
+16, 2026 verification window began clean and synchronized at `5f7cf46`.
+`npm ci` exited 0 (313 packages added; 314 audited; 0 vulnerabilities) with a
+non-blocking `sharp@0.34.5` allow-scripts warning retained. The first
+`npm run check` exposed an ignored temporary Task 3 Playwright capture spec
+that Vitest discovered as an extra failing suite; Sol removed only that ignored
+helper and its ignored config, with no Git diff. The clean rerun passed
+typecheck, lint, 57 normal test files / 394 tests, and the 13-page Next.js
+production build. `npm run test:e2e` passed 3/3 in 36.7 seconds and
+`npm audit --omit=dev` found 0 vulnerabilities. Authenticated smoke of
+`dpl_BRjPt1wGKEsxp6b1qbFF1KxgbDJu` (source `f9bb639`) found health `ok`,
+`whisper-1`, `gpt-5.6-terra`, **Quick capture**, **Record**, and **Load sample
+library**; it remains Vercel-auth protected, not a public judge path.
+
+`npm run eval:live` stopped before provider-client use because
+`OPENAI_KEY_NONEMPTY=False` and `OPENAI_API_KEY` was required; one eval file
+failed, 13 tests skipped, `docs/evals/latest.json` remains absent, and this
+gate made zero provider calls with zero spend. Public production, logged-out
+PWA/live-GPT judge-path, real-device/browser matrix, public YouTube video,
+primary `/feedback` Session ID, Devpost submission/confirmation, August 5
+retention, and submission tag remain open. See
+[SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md) and
+[FINAL_VERIFICATION.md](FINAL_VERIFICATION.md).
