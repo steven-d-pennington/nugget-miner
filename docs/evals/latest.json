@@ -1,0 +1,2044 @@
+{
+  "generatedAt": "2026-07-17T17:40:44.187Z",
+  "model": "gpt-5.6-terra",
+  "reasoningEffort": "medium",
+  "segmentationPromptVersion": "segment-v1",
+  "organizationPromptVersion": "organize-v1",
+  "schemaVersions": [
+    "segmentation-v1",
+    "organization-v1"
+  ],
+  "score": {
+    "total": 12,
+    "correctIdeaCount": 10,
+    "correctCategories": 9,
+    "invalidCategoryIds": 0,
+    "unsupportedExplicitClaims": 0
+  },
+  "results": [
+    {
+      "fixtureId": "single-personal",
+      "transcriptHash": "b115063ddf2a98967aa039c748121e20d0168fd09df7e2374c6976da39323e74",
+      "segmentationResponseId": "resp_02b4086d64b125a8016a5a68a4feec8199828d855d549d5da4",
+      "organizationResponseId": "resp_094e062057d9434a016a5a68a75000819a9cd45247574cf52e",
+      "segmentation": {
+        "ideas": [
+          {
+            "candidateId": "idea-1",
+            "coreStatement": "Test a small neighborhood tool-sharing library with ten households to learn which tools people would share, while resolving responsibility for damaged or unreturned tools.",
+            "sourceSpans": [
+              {
+                "id": "span-1",
+                "startChar": 0,
+                "endChar": 346,
+                "quote": "I keep thinking our neighborhood should have a small tool-sharing library so people do not each buy a drill or ladder they use twice a year. I want to test the idea with ten households on our block and learn which tools people would actually share. The blocker is figuring out who is responsible when a borrowed tool is damaged or never returned."
+              }
+            ]
+          }
+        ]
+      },
+      "organization": {
+        "ideas": [
+          {
+            "candidateId": "idea-1",
+            "title": "Pilot a neighborhood tool-sharing library",
+            "summary": {
+              "id": "idea-1-summary",
+              "text": "Test a small tool-sharing library with ten households to identify which tools neighbors would share and address responsibility for damaged or unreturned items.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span-1"
+              ]
+            },
+            "purpose": {
+              "id": "idea-1-purpose",
+              "text": "Help neighbors avoid each buying infrequently used tools such as drills or ladders.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span-1"
+              ]
+            },
+            "goals": [
+              {
+                "id": "idea-1-goal-1",
+                "text": "Run a pilot with ten households on the block.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              },
+              {
+                "id": "idea-1-goal-2",
+                "text": "Learn which tools people would actually share.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              }
+            ],
+            "problem": {
+              "statement": {
+                "id": "idea-1-problem",
+                "text": "Neighbors may each buy tools they use only twice a year.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              },
+              "type": "resource sharing"
+            },
+            "blockers": [
+              {
+                "id": "idea-1-blocker-1",
+                "text": "Determine who is responsible when a borrowed tool is damaged or not returned.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              }
+            ],
+            "questions": [
+              {
+                "id": "idea-1-question-1",
+                "text": "Which tools would participating households actually share?",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              },
+              {
+                "id": "idea-1-question-2",
+                "text": "Who should be responsible for damaged or unreturned borrowed tools?",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              }
+            ],
+            "suggestedActions": [
+              {
+                "id": "idea-1-action-1",
+                "text": "Invite ten households to participate in a small pilot.",
+                "basis": "suggested",
+                "sourceSpanIds": []
+              },
+              {
+                "id": "idea-1-action-2",
+                "text": "Create a list of tools participants are willing to lend.",
+                "basis": "suggested",
+                "sourceSpanIds": []
+              },
+              {
+                "id": "idea-1-action-3",
+                "text": "Draft a borrowing and damage-responsibility agreement for the pilot.",
+                "basis": "suggested",
+                "sourceSpanIds": []
+              }
+            ],
+            "research": {
+              "needed": true,
+              "assessment": {
+                "id": "idea-1-research-assessment",
+                "text": "Research could help identify practical borrowing, damage, and return policies for a small neighborhood tool-sharing pilot.",
+                "basis": "suggested",
+                "sourceSpanIds": []
+              },
+              "suggestedQueries": [
+                "neighborhood tool library borrowing agreement damaged unreturned tools",
+                "small tool lending library pilot policies"
+              ],
+              "suggestedResourceTypes": [
+                "tool library lending agreements",
+                "community tool library policy templates",
+                "local liability or insurance guidance"
+              ]
+            },
+            "categoryId": "category-personal",
+            "categoryConfidence": 0.93,
+            "tags": [
+              "neighborhood",
+              "tool-sharing",
+              "community",
+              "pilot",
+              "resource-sharing"
+            ],
+            "warnings": []
+          }
+        ]
+      },
+      "evaluation": {
+        "fixtureId": "single-personal",
+        "expectedIdeaCount": 1,
+        "actualIdeaCount": 1,
+        "expectedCategoryIds": [
+          "category-personal"
+        ],
+        "actualCategoryIds": [
+          "category-personal"
+        ],
+        "ideaCountCorrect": true,
+        "categoriesCorrect": true,
+        "invalidCategoryIds": [],
+        "forbiddenExplicitClaimsFound": [],
+        "researchNeededCorrect": null,
+        "impliedGoalsUseInferredBasis": null,
+        "duplicateSuggestedActions": [],
+        "specialRequirementsPassed": true
+      }
+    },
+    {
+      "fixtureId": "three-domains",
+      "transcriptHash": "4c0533d12993fda64a738fd7f49c5f5f5da1bf5aaba15b2707a99a9260877f98",
+      "segmentationResponseId": "resp_0e3aaf6e1156514e016a5a68acd7ec819bad49cc372634ff66",
+      "organizationResponseId": "resp_049da6116d9236ac016a5a68baef7c8199aaa9f6f1409262e9",
+      "segmentation": {
+        "ideas": [
+          {
+            "candidateId": "idea-1",
+            "coreStatement": "Create a single end-of-shift support handoff template containing customer, status, owner, and next step, after gathering support leads' needs.",
+            "sourceSpans": [
+              {
+                "id": "span-1",
+                "startChar": 0,
+                "endChar": 159,
+                "quote": "At work, I want to replace our scattered support handoff messages with one end-of-shift template that lists the customer, current status, owner, and next step."
+              },
+              {
+                "id": "span-2",
+                "startChar": 160,
+                "endChar": 225,
+                "quote": "I should ask the support leads what they need before drafting it."
+              }
+            ]
+          },
+          {
+            "candidateId": "idea-2",
+            "coreStatement": "Consider a history paper comparing how two cities rebuilt public transit after major earthquakes, contingent on sufficient primary sources.",
+            "sourceSpans": [
+              {
+                "id": "span-3",
+                "startChar": 227,
+                "endChar": 332,
+                "quote": "For school, my history paper could compare how two cities rebuilt public transit after major earthquakes."
+              },
+              {
+                "id": "span-4",
+                "startChar": 333,
+                "endChar": 412,
+                "quote": "I need to confirm that enough primary sources exist before choosing the cities."
+              }
+            ]
+          },
+          {
+            "candidateId": "idea-3",
+            "coreStatement": "Create a shared family-reunion signup page for meals, rides, and accessibility needs to reduce the aunt's text-thread coordination burden.",
+            "sourceSpans": [
+              {
+                "id": "span-5",
+                "startChar": 414,
+                "endChar": 580,
+                "quote": "For the family reunion, I want a shared signup page for meals, rides, and accessibility needs so my aunt is not coordinating everything through separate text threads."
+              }
+            ]
+          }
+        ]
+      },
+      "organization": {
+        "ideas": [
+          {
+            "candidateId": "idea-1",
+            "title": "Standardize support shift handoffs",
+            "summary": {
+              "id": "idea-1-summary",
+              "text": "Create a single end-of-shift support handoff template with customer, current status, owner, and next step.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span-1"
+              ]
+            },
+            "purpose": {
+              "id": "idea-1-purpose",
+              "text": "Replace scattered support handoff messages with one consistent template.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span-1"
+              ]
+            },
+            "goals": [
+              {
+                "id": "idea-1-goal-1",
+                "text": "Include the customer, current status, owner, and next step in each handoff.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              },
+              {
+                "id": "idea-1-goal-2",
+                "text": "Gather support leads' needs before drafting the template.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-2"
+                ]
+              }
+            ],
+            "problem": {
+              "statement": {
+                "id": "idea-1-problem",
+                "text": "Support handoff messages are scattered.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              },
+              "type": "process"
+            },
+            "blockers": [],
+            "questions": [
+              {
+                "id": "idea-1-question-1",
+                "text": "What do support leads need from an end-of-shift handoff template?",
+                "basis": "inferred",
+                "sourceSpanIds": [
+                  "span-2"
+                ]
+              }
+            ],
+            "suggestedActions": [
+              {
+                "id": "idea-1-action-1",
+                "text": "Ask support leads for their handoff requirements.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-2"
+                ]
+              },
+              {
+                "id": "idea-1-action-2",
+                "text": "Draft the template using the collected requirements.",
+                "basis": "suggested",
+                "sourceSpanIds": [
+                  "span-1",
+                  "span-2"
+                ]
+              }
+            ],
+            "research": {
+              "needed": false,
+              "assessment": null,
+              "suggestedQueries": [],
+              "suggestedResourceTypes": []
+            },
+            "categoryId": "category-work",
+            "categoryConfidence": 0.99,
+            "tags": [
+              "support",
+              "handoff",
+              "template",
+              "operations"
+            ],
+            "warnings": []
+          },
+          {
+            "candidateId": "idea-2",
+            "title": "Compare post-earthquake transit rebuilding",
+            "summary": {
+              "id": "idea-2-summary",
+              "text": "Consider a history paper comparing how two cities rebuilt public transit after major earthquakes.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span-3"
+              ]
+            },
+            "purpose": {
+              "id": "idea-2-purpose",
+              "text": "Develop a history paper topic.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span-3"
+              ]
+            },
+            "goals": [
+              {
+                "id": "idea-2-goal-1",
+                "text": "Compare public-transit rebuilding in two cities after major earthquakes.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-3"
+                ]
+              },
+              {
+                "id": "idea-2-goal-2",
+                "text": "Confirm that sufficient primary sources exist before choosing the cities.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-4"
+                ]
+              }
+            ],
+            "problem": null,
+            "blockers": [
+              {
+                "id": "idea-2-blocker-1",
+                "text": "The topic cannot be finalized until sufficient primary sources are confirmed.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-4"
+                ]
+              }
+            ],
+            "questions": [
+              {
+                "id": "idea-2-question-1",
+                "text": "Which two cities have enough primary sources on post-earthquake public-transit rebuilding?",
+                "basis": "inferred",
+                "sourceSpanIds": [
+                  "span-3",
+                  "span-4"
+                ]
+              }
+            ],
+            "suggestedActions": [
+              {
+                "id": "idea-2-action-1",
+                "text": "Assess primary-source availability before selecting the cities.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-4"
+                ]
+              }
+            ],
+            "research": {
+              "needed": true,
+              "assessment": {
+                "id": "idea-2-research-assessment",
+                "text": "Primary-source availability needs to be confirmed before the cities are chosen.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-4"
+                ]
+              },
+              "suggestedQueries": [
+                "primary sources public transit reconstruction after earthquake city archives",
+                "earthquake transit rebuilding historical newspapers municipal records"
+              ],
+              "suggestedResourceTypes": [
+                "municipal archives",
+                "historical newspaper databases",
+                "transport agency records",
+                "scholarly library catalogs"
+              ]
+            },
+            "categoryId": "category-school",
+            "categoryConfidence": 0.99,
+            "tags": [
+              "history",
+              "paper",
+              "earthquakes",
+              "public-transit",
+              "primary-sources"
+            ],
+            "warnings": []
+          },
+          {
+            "candidateId": "idea-3",
+            "title": "Create a family reunion signup page",
+            "summary": {
+              "id": "idea-3-summary",
+              "text": "Create a shared family-reunion signup page for meals, rides, and accessibility needs.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span-5"
+              ]
+            },
+            "purpose": {
+              "id": "idea-3-purpose",
+              "text": "Reduce the aunt's coordination burden from separate text threads.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span-5"
+              ]
+            },
+            "goals": [
+              {
+                "id": "idea-3-goal-1",
+                "text": "Collect meal signups, ride needs, and accessibility needs in one shared page.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-5"
+                ]
+              },
+              {
+                "id": "idea-3-goal-2",
+                "text": "Avoid coordinating reunion details through separate text threads.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-5"
+                ]
+              }
+            ],
+            "problem": {
+              "statement": {
+                "id": "idea-3-problem",
+                "text": "The aunt is coordinating reunion details through separate text threads.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-5"
+                ]
+              },
+              "type": "coordination"
+            },
+            "blockers": [],
+            "questions": [],
+            "suggestedActions": [
+              {
+                "id": "idea-3-action-1",
+                "text": "Set up a shared signup page with sections for meals, rides, and accessibility needs.",
+                "basis": "suggested",
+                "sourceSpanIds": [
+                  "span-5"
+                ]
+              }
+            ],
+            "research": {
+              "needed": false,
+              "assessment": null,
+              "suggestedQueries": [],
+              "suggestedResourceTypes": []
+            },
+            "categoryId": "category-family",
+            "categoryConfidence": 0.99,
+            "tags": [
+              "family-reunion",
+              "signup",
+              "meals",
+              "rides",
+              "accessibility"
+            ],
+            "warnings": []
+          }
+        ]
+      },
+      "evaluation": {
+        "fixtureId": "three-domains",
+        "expectedIdeaCount": 3,
+        "actualIdeaCount": 3,
+        "expectedCategoryIds": [
+          "category-work",
+          "category-school",
+          "category-family"
+        ],
+        "actualCategoryIds": [
+          "category-work",
+          "category-school",
+          "category-family"
+        ],
+        "ideaCountCorrect": true,
+        "categoriesCorrect": true,
+        "invalidCategoryIds": [],
+        "forbiddenExplicitClaimsFound": [],
+        "researchNeededCorrect": null,
+        "impliedGoalsUseInferredBasis": null,
+        "duplicateSuggestedActions": [],
+        "specialRequirementsPassed": true
+      }
+    },
+    {
+      "fixtureId": "related-distinct",
+      "transcriptHash": "84cc1c52f19461a2f74bac6c5886d2b7f4e38d154ad40419aa20c60bd36fc5a2",
+      "segmentationResponseId": "resp_0f7c4a3731080c18016a5a68c317d88199abfcd4ab385bf139",
+      "organizationResponseId": "resp_0d96a4a2c950d47b016a5a68ca0edc819a9d8540cbb71838a5",
+      "segmentation": {
+        "ideas": [
+          {
+            "candidateId": "1",
+            "coreStatement": "Create a small native-plant pollinator garden with a rain barrel in the sunny garage corner, including measuring the space and checking watering rules.",
+            "sourceSpans": [
+              {
+                "id": "1a",
+                "startChar": 0,
+                "endChar": 194,
+                "quote": "I would like to turn the unused sunny corner beside my garage into a small pollinator garden with native plants and a rain barrel. I need to measure the space and check the local watering rules."
+              }
+            ]
+          },
+          {
+            "candidateId": "2",
+            "coreStatement": "Start a monthly neighborhood garden newsletter featuring community planting tips, photos, and seasonal reminders.",
+            "sourceSpans": [
+              {
+                "id": "2a",
+                "startChar": 195,
+                "endChar": 380,
+                "quote": "Separately, I want to start a monthly neighborhood garden newsletter that collects planting tips, photos, and seasonal reminders from anyone nearby, even people who never use my garden."
+              }
+            ]
+          }
+        ]
+      },
+      "organization": {
+        "ideas": [
+          {
+            "candidateId": "1",
+            "title": "Native-plant pollinator garden with rain barrel",
+            "summary": {
+              "id": "1-summary",
+              "text": "Create a small pollinator garden with native plants and a rain barrel in the sunny corner beside the garage.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "1a"
+              ]
+            },
+            "purpose": {
+              "id": "1-purpose",
+              "text": "Turn an unused sunny garage-side corner into a pollinator garden.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "1a"
+              ]
+            },
+            "goals": [
+              {
+                "id": "1-goal-1",
+                "text": "Use native plants and include a rain barrel.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "1a"
+                ]
+              },
+              {
+                "id": "1-goal-2",
+                "text": "Measure the available space.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "1a"
+                ]
+              },
+              {
+                "id": "1-goal-3",
+                "text": "Check local watering rules.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "1a"
+                ]
+              }
+            ],
+            "problem": null,
+            "blockers": [],
+            "questions": [],
+            "suggestedActions": [
+              {
+                "id": "1-action-1",
+                "text": "Measure the garden area and note sun exposure and nearby downspout access.",
+                "basis": "suggested",
+                "sourceSpanIds": []
+              },
+              {
+                "id": "1-action-2",
+                "text": "Review applicable local watering and rain-barrel requirements before selecting the setup.",
+                "basis": "suggested",
+                "sourceSpanIds": []
+              }
+            ],
+            "research": {
+              "needed": true,
+              "assessment": {
+                "id": "1-research-assessment",
+                "text": "Local watering rules need to be checked, and plant selection may depend on locally native species.",
+                "basis": "inferred",
+                "sourceSpanIds": [
+                  "1a"
+                ]
+              },
+              "suggestedQueries": [
+                "local watering rules rain barrel regulations",
+                "native pollinator plants for my area"
+              ],
+              "suggestedResourceTypes": [
+                "local government water-use regulations",
+                "native plant society plant databases",
+                "rain-barrel installation guidance"
+              ]
+            },
+            "categoryId": "category-personal",
+            "categoryConfidence": 0.98,
+            "tags": [
+              "gardening",
+              "native-plants",
+              "pollinators",
+              "rain-barrel",
+              "home-project"
+            ],
+            "warnings": []
+          },
+          {
+            "candidateId": "2",
+            "title": "Monthly neighborhood garden newsletter",
+            "summary": {
+              "id": "2-summary",
+              "text": "Start a monthly neighborhood garden newsletter featuring planting tips, photos, and seasonal reminders from nearby contributors.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "2a"
+              ]
+            },
+            "purpose": {
+              "id": "2-purpose",
+              "text": "Share neighborhood garden information and contributions with people nearby.",
+              "basis": "inferred",
+              "sourceSpanIds": [
+                "2a"
+              ]
+            },
+            "goals": [
+              {
+                "id": "2-goal-1",
+                "text": "Publish the newsletter monthly.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "2a"
+                ]
+              },
+              {
+                "id": "2-goal-2",
+                "text": "Include community planting tips, photos, and seasonal reminders.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "2a"
+                ]
+              },
+              {
+                "id": "2-goal-3",
+                "text": "Collect contributions from anyone nearby, including people who do not use the speaker's garden.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "2a"
+                ]
+              }
+            ],
+            "problem": null,
+            "blockers": [],
+            "questions": [],
+            "suggestedActions": [
+              {
+                "id": "2-action-1",
+                "text": "Define a simple submission process and recurring monthly editorial schedule.",
+                "basis": "suggested",
+                "sourceSpanIds": []
+              },
+              {
+                "id": "2-action-2",
+                "text": "Choose a distribution channel and draft a reusable newsletter template.",
+                "basis": "suggested",
+                "sourceSpanIds": []
+              }
+            ],
+            "research": {
+              "needed": false,
+              "assessment": null,
+              "suggestedQueries": [],
+              "suggestedResourceTypes": []
+            },
+            "categoryId": "category-personal",
+            "categoryConfidence": 0.84,
+            "tags": [
+              "newsletter",
+              "neighborhood",
+              "gardening",
+              "community",
+              "seasonal"
+            ],
+            "warnings": []
+          }
+        ]
+      },
+      "evaluation": {
+        "fixtureId": "related-distinct",
+        "expectedIdeaCount": 2,
+        "actualIdeaCount": 2,
+        "expectedCategoryIds": [
+          "category-personal",
+          "category-personal"
+        ],
+        "actualCategoryIds": [
+          "category-personal",
+          "category-personal"
+        ],
+        "ideaCountCorrect": true,
+        "categoriesCorrect": true,
+        "invalidCategoryIds": [],
+        "forbiddenExplicitClaimsFound": [],
+        "researchNeededCorrect": null,
+        "impliedGoalsUseInferredBasis": null,
+        "duplicateSuggestedActions": [],
+        "specialRequirementsPassed": true
+      }
+    },
+    {
+      "fixtureId": "repetition",
+      "transcriptHash": "09f0ce1db26bb43643f318ce30a974a4c0a6a58709d3e082d6104ba4cd8e213a",
+      "segmentationResponseId": "resp_0884812655a841d9016a5a68d062c88198bf1f2871c888218f",
+      "organizationResponseId": "resp_05f47c31ee54568a016a5a68d94ec88199ade592850a958fe6",
+      "segmentation": {
+        "ideas": [
+          {
+            "candidateId": "idea-1",
+            "coreStatement": "Create a pantry-first meal planner, initially as a simple phone-friendly page rather than a full app, that suggests three dinners and a short grocery list based on pantry ingredients.",
+            "sourceSpans": [
+              {
+                "id": "span-1",
+                "startChar": 0,
+                "endChar": 82,
+                "quote": "I want to make a meal-planning app that starts with what is already in the pantry."
+              },
+              {
+                "id": "span-2",
+                "startChar": 83,
+                "endChar": 157,
+                "quote": "Actually, not a full app at first; a simple phone-friendly page is enough."
+              },
+              {
+                "id": "span-3",
+                "startChar": 158,
+                "endChar": 216,
+                "quote": "The important part is still the pantry-first meal planner."
+              },
+              {
+                "id": "span-4",
+                "startChar": 217,
+                "endChar": 274,
+                "quote": "It should suggest three dinners and a short grocery list."
+              }
+            ]
+          }
+        ]
+      },
+      "organization": {
+        "ideas": [
+          {
+            "candidateId": "idea-1",
+            "title": "Pantry-first meal planner",
+            "summary": {
+              "id": "idea-1-summary",
+              "text": "Create a phone-friendly pantry-first meal planner that suggests three dinners and a short grocery list.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span-1",
+                "span-2",
+                "span-4"
+              ]
+            },
+            "purpose": {
+              "id": "idea-1-purpose",
+              "text": "Plan meals starting with ingredients already in the pantry.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span-1",
+                "span-3"
+              ]
+            },
+            "goals": [
+              {
+                "id": "idea-1-goal-1",
+                "text": "Start with a simple phone-friendly page rather than a full app.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-2"
+                ]
+              },
+              {
+                "id": "idea-1-goal-2",
+                "text": "Suggest three dinners.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-4"
+                ]
+              },
+              {
+                "id": "idea-1-goal-3",
+                "text": "Provide a short grocery list.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-4"
+                ]
+              }
+            ],
+            "problem": null,
+            "blockers": [],
+            "questions": [],
+            "suggestedActions": [
+              {
+                "id": "idea-1-action-1",
+                "text": "Define the pantry ingredients input and the format for dinner and grocery-list suggestions.",
+                "basis": "suggested",
+                "sourceSpanIds": []
+              }
+            ],
+            "research": {
+              "needed": false,
+              "assessment": null,
+              "suggestedQueries": [],
+              "suggestedResourceTypes": []
+            },
+            "categoryId": "category-personal",
+            "categoryConfidence": 0.92,
+            "tags": [
+              "meal-planning",
+              "pantry",
+              "dinners",
+              "grocery-list",
+              "mobile-friendly"
+            ],
+            "warnings": []
+          }
+        ]
+      },
+      "evaluation": {
+        "fixtureId": "repetition",
+        "expectedIdeaCount": 1,
+        "actualIdeaCount": 1,
+        "expectedCategoryIds": [
+          "category-personal"
+        ],
+        "actualCategoryIds": [
+          "category-personal"
+        ],
+        "ideaCountCorrect": true,
+        "categoriesCorrect": true,
+        "invalidCategoryIds": [],
+        "forbiddenExplicitClaimsFound": [],
+        "researchNeededCorrect": null,
+        "impliedGoalsUseInferredBasis": null,
+        "duplicateSuggestedActions": [],
+        "specialRequirementsPassed": true
+      }
+    },
+    {
+      "fixtureId": "explicit-blocker",
+      "transcriptHash": "32f97eca20ae619efefb0bb26da23edafa27b039a461555e57f29cb446340534",
+      "segmentationResponseId": "resp_0f7f8522ca259a3e016a5a68dcd744819b81a4d3f60e508723",
+      "organizationResponseId": "resp_059748689ca53ebe016a5a68e756cc81989ce490f318579b8b",
+      "segmentation": {
+        "ideas": [
+          {
+            "candidateId": "candidate-1",
+            "coreStatement": "Replace the hand-built Friday spreadsheet with a warehouse-refreshed dashboard for client reporting.",
+            "sourceSpans": [
+              {
+                "id": "span-1",
+                "startChar": 42,
+                "endChar": 145,
+                "quote": "I want to replace the hand-built Friday spreadsheet with a dashboard that refreshes from the warehouse."
+              }
+            ]
+          },
+          {
+            "candidateId": "candidate-2",
+            "coreStatement": "The project is currently blocked by the lack of budget for a connector license this quarter.",
+            "sourceSpans": [
+              {
+                "id": "span-2",
+                "startChar": 232,
+                "endChar": 319,
+                "quote": "Budget is the blocker because this quarter has no allocation for the connector license."
+              }
+            ]
+          },
+          {
+            "candidateId": "candidate-3",
+            "coreStatement": "The project also requires a security review.",
+            "sourceSpans": [
+              {
+                "id": "span-3",
+                "startChar": 320,
+                "endChar": 352,
+                "quote": "Security review is required too,"
+              }
+            ]
+          }
+        ]
+      },
+      "organization": {
+        "ideas": [
+          {
+            "candidateId": "candidate-1",
+            "title": "Warehouse-refreshed reporting dashboard",
+            "summary": {
+              "id": "candidate-1-summary",
+              "text": "Replace the hand-built Friday spreadsheet with a dashboard that refreshes from the warehouse.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span-1"
+              ]
+            },
+            "purpose": {
+              "id": "candidate-1-purpose",
+              "text": "Reduce reliance on a hand-built weekly spreadsheet.",
+              "basis": "inferred",
+              "sourceSpanIds": [
+                "span-1"
+              ]
+            },
+            "goals": [
+              {
+                "id": "candidate-1-goal-1",
+                "text": "Create a dashboard that refreshes from the warehouse.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              },
+              {
+                "id": "candidate-1-goal-2",
+                "text": "Replace the hand-built Friday spreadsheet.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              }
+            ],
+            "problem": {
+              "statement": {
+                "id": "candidate-1-problem",
+                "text": "The current Friday spreadsheet is hand-built.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              },
+              "type": "process"
+            },
+            "blockers": [],
+            "questions": [],
+            "suggestedActions": [
+              {
+                "id": "candidate-1-action-1",
+                "text": "Define the dashboard's required metrics, refresh cadence, and warehouse data sources.",
+                "basis": "suggested",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              }
+            ],
+            "research": {
+              "needed": false,
+              "assessment": null,
+              "suggestedQueries": [],
+              "suggestedResourceTypes": []
+            },
+            "categoryId": "category-work",
+            "categoryConfidence": 0.94,
+            "tags": [
+              "dashboard",
+              "reporting",
+              "data-warehouse",
+              "automation"
+            ],
+            "warnings": []
+          },
+          {
+            "candidateId": "candidate-2",
+            "title": "Connector license budget blocker",
+            "summary": {
+              "id": "candidate-2-summary",
+              "text": "No budget is allocated this quarter for the connector license.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span-2"
+              ]
+            },
+            "purpose": null,
+            "goals": [],
+            "problem": {
+              "statement": {
+                "id": "candidate-2-problem",
+                "text": "The lack of a quarterly allocation for the connector license is blocking progress.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-2"
+                ]
+              },
+              "type": "budget"
+            },
+            "blockers": [
+              {
+                "id": "candidate-2-blocker-1",
+                "text": "This quarter has no allocation for the connector license.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-2"
+                ]
+              }
+            ],
+            "questions": [],
+            "suggestedActions": [
+              {
+                "id": "candidate-2-action-1",
+                "text": "Identify whether budget can be reallocated or whether an alternative connector is available.",
+                "basis": "suggested",
+                "sourceSpanIds": [
+                  "span-2"
+                ]
+              }
+            ],
+            "research": {
+              "needed": false,
+              "assessment": null,
+              "suggestedQueries": [],
+              "suggestedResourceTypes": []
+            },
+            "categoryId": "category-work",
+            "categoryConfidence": 0.78,
+            "tags": [
+              "budget",
+              "license",
+              "connector",
+              "blocker"
+            ],
+            "warnings": []
+          },
+          {
+            "candidateId": "candidate-3",
+            "title": "Required security review",
+            "summary": {
+              "id": "candidate-3-summary",
+              "text": "A security review is required.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span-3"
+              ]
+            },
+            "purpose": null,
+            "goals": [
+              {
+                "id": "candidate-3-goal-1",
+                "text": "Complete the required security review.",
+                "basis": "inferred",
+                "sourceSpanIds": [
+                  "span-3"
+                ]
+              }
+            ],
+            "problem": null,
+            "blockers": [],
+            "questions": [],
+            "suggestedActions": [
+              {
+                "id": "candidate-3-action-1",
+                "text": "Identify the security-review process, required documentation, and reviewer.",
+                "basis": "suggested",
+                "sourceSpanIds": [
+                  "span-3"
+                ]
+              }
+            ],
+            "research": {
+              "needed": false,
+              "assessment": null,
+              "suggestedQueries": [],
+              "suggestedResourceTypes": []
+            },
+            "categoryId": "category-work",
+            "categoryConfidence": 0.7,
+            "tags": [
+              "security",
+              "review",
+              "compliance"
+            ],
+            "warnings": []
+          }
+        ]
+      },
+      "evaluation": {
+        "fixtureId": "explicit-blocker",
+        "expectedIdeaCount": 1,
+        "actualIdeaCount": 3,
+        "expectedCategoryIds": [
+          "category-work"
+        ],
+        "actualCategoryIds": [
+          "category-work",
+          "category-work",
+          "category-work"
+        ],
+        "ideaCountCorrect": false,
+        "categoriesCorrect": false,
+        "invalidCategoryIds": [],
+        "forbiddenExplicitClaimsFound": [],
+        "researchNeededCorrect": null,
+        "impliedGoalsUseInferredBasis": null,
+        "duplicateSuggestedActions": [],
+        "specialRequirementsPassed": true
+      }
+    },
+    {
+      "fixtureId": "implied-goal",
+      "transcriptHash": "aa3d89ac1f796dc72293f3afb94967013ff33ad23b9c77ed99e5f9eabb38e06e",
+      "segmentationResponseId": "resp_06e9fa5c24c5580e016a5a68f0159c819b861f530c46178860",
+      "organizationResponseId": "resp_031519948dbdaa3b016a5a68f1f3c8819a8a03f3138a711e02",
+      "segmentation": {
+        "ideas": [
+          {
+            "candidateId": "idea-1",
+            "coreStatement": "Reorganize the garage workshop so repairs are easier, with a clear bench, labeled tool drawers, and bicycle supplies grouped on the wall.",
+            "sourceSpans": [
+              {
+                "id": "span-1",
+                "startChar": 0,
+                "endChar": 231,
+                "quote": "The garage workshop is frustrating because every small repair starts with moving boxes and searching for tools. I picture one clear bench, labeled drawers for the common tools, and the bicycle supplies hanging together on the wall."
+              },
+              {
+                "id": "span-2",
+                "startChar": 232,
+                "endChar": 305,
+                "quote": "I could begin by measuring the bench and sorting one shelf this Saturday."
+              }
+            ]
+          }
+        ]
+      },
+      "organization": {
+        "ideas": [
+          {
+            "candidateId": "idea-1",
+            "title": "Reorganize the garage workshop",
+            "summary": {
+              "id": "idea-1-summary",
+              "text": "Reorganize the garage workshop with a clear bench, labeled tool drawers, and grouped bicycle supplies.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span-1"
+              ]
+            },
+            "purpose": {
+              "id": "idea-1-purpose",
+              "text": "Make small repairs easier.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span-1"
+              ]
+            },
+            "goals": [
+              {
+                "id": "idea-1-goal-1",
+                "text": "Create one clear workbench.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              },
+              {
+                "id": "idea-1-goal-2",
+                "text": "Label drawers for commonly used tools.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              },
+              {
+                "id": "idea-1-goal-3",
+                "text": "Group bicycle supplies together on the wall.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              }
+            ],
+            "problem": {
+              "statement": {
+                "id": "idea-1-problem",
+                "text": "Small repairs require moving boxes and searching for tools.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              },
+              "type": "organization"
+            },
+            "blockers": [],
+            "questions": [],
+            "suggestedActions": [
+              {
+                "id": "idea-1-action-1",
+                "text": "Measure the bench and sort one shelf this Saturday.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-2"
+                ]
+              }
+            ],
+            "research": {
+              "needed": false,
+              "assessment": {
+                "id": "idea-1-research-assessment",
+                "text": "The candidate describes an organization task with an immediate starting step; no research need is stated.",
+                "basis": "inferred",
+                "sourceSpanIds": [
+                  "span-2"
+                ]
+              },
+              "suggestedQueries": [],
+              "suggestedResourceTypes": []
+            },
+            "categoryId": "category-personal",
+            "categoryConfidence": 0.98,
+            "tags": [
+              "garage",
+              "workshop",
+              "organization",
+              "tools",
+              "bicycle-repair"
+            ],
+            "warnings": []
+          }
+        ]
+      },
+      "evaluation": {
+        "fixtureId": "implied-goal",
+        "expectedIdeaCount": 1,
+        "actualIdeaCount": 1,
+        "expectedCategoryIds": [
+          "category-personal"
+        ],
+        "actualCategoryIds": [
+          "category-personal"
+        ],
+        "ideaCountCorrect": true,
+        "categoriesCorrect": true,
+        "invalidCategoryIds": [],
+        "forbiddenExplicitClaimsFound": [],
+        "researchNeededCorrect": null,
+        "impliedGoalsUseInferredBasis": false,
+        "duplicateSuggestedActions": [],
+        "specialRequirementsPassed": false
+      }
+    },
+    {
+      "fixtureId": "research-needed",
+      "transcriptHash": "1a8af1bf831eab477637f16f6b11b8e0b728be86a73ca261cd1d304287aac903",
+      "segmentationResponseId": "resp_09acb569232b2394016a5a68f7dd208199b417b92a6954641d",
+      "organizationResponseId": "resp_09759deff5c0d731016a5a68f9cf1c819b82f38336c38cd9d3",
+      "segmentation": {
+        "ideas": [
+          {
+            "candidateId": "idea-1",
+            "coreStatement": "Research and compare nearby and online evening data science degree or certificate programs that can be completed while working full time, before choosing a shortlist or program.",
+            "sourceSpans": [
+              {
+                "id": "span-1",
+                "startChar": 0,
+                "endChar": 263,
+                "quote": "I am considering an evening data science degree or certificate while I keep working full time. I need to compare nearby and online programs on total cost, weekly schedule, prerequisite math courses, completion time, and whether employers recognize the credential."
+              },
+              {
+                "id": "span-2",
+                "startChar": 264,
+                "endChar": 388,
+                "quote": "I do not know which schools belong on the shortlist yet, so the next useful step is research rather than choosing a program."
+              }
+            ]
+          }
+        ]
+      },
+      "organization": {
+        "ideas": [
+          {
+            "candidateId": "idea-1",
+            "title": "Compare part-time data science programs",
+            "summary": {
+              "id": "summary-1",
+              "text": "Research nearby and online evening data science degree or certificate programs that can be completed while working full time before creating a shortlist.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span-1",
+                "span-2"
+              ]
+            },
+            "purpose": {
+              "id": "purpose-1",
+              "text": "Identify a suitable data science degree or certificate program compatible with full-time work.",
+              "basis": "inferred",
+              "sourceSpanIds": [
+                "span-1"
+              ]
+            },
+            "goals": [
+              {
+                "id": "goal-1",
+                "text": "Compare programs by total cost, weekly schedule, prerequisite math courses, completion time, and employer recognition of the credential.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              },
+              {
+                "id": "goal-2",
+                "text": "Create a shortlist before choosing a program.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-2"
+                ]
+              }
+            ],
+            "problem": {
+              "statement": {
+                "id": "problem-1",
+                "text": "The schools that belong on the shortlist are not yet known.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-2"
+                ]
+              },
+              "type": "decision"
+            },
+            "blockers": [],
+            "questions": [],
+            "suggestedActions": [
+              {
+                "id": "action-1",
+                "text": "Research nearby and online evening data science degree and certificate programs.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-2"
+                ]
+              },
+              {
+                "id": "action-2",
+                "text": "Create a comparison table using cost, schedule, prerequisites, completion time, and employer recognition.",
+                "basis": "suggested",
+                "sourceSpanIds": []
+              }
+            ],
+            "research": {
+              "needed": true,
+              "assessment": {
+                "id": "research-1",
+                "text": "Research is needed before selecting programs because no shortlist has been identified.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-2"
+                ]
+              },
+              "suggestedQueries": [
+                "evening data science certificate programs online total cost schedule",
+                "part-time data science degree programs near me evening",
+                "data science program employer recognition credential outcomes",
+                "data science certificate prerequisite math courses part time"
+              ],
+              "suggestedResourceTypes": [
+                "official university program pages",
+                "tuition and financial-aid pages",
+                "course catalogs and schedules",
+                "program accreditation or outcomes pages",
+                "employer job postings"
+              ]
+            },
+            "categoryId": "category-school",
+            "categoryConfidence": 0.97,
+            "tags": [
+              "data science",
+              "degree programs",
+              "certificate programs",
+              "part-time study",
+              "program comparison",
+              "career education"
+            ],
+            "warnings": []
+          }
+        ]
+      },
+      "evaluation": {
+        "fixtureId": "research-needed",
+        "expectedIdeaCount": 1,
+        "actualIdeaCount": 1,
+        "expectedCategoryIds": [
+          "category-school"
+        ],
+        "actualCategoryIds": [
+          "category-school"
+        ],
+        "ideaCountCorrect": true,
+        "categoriesCorrect": true,
+        "invalidCategoryIds": [],
+        "forbiddenExplicitClaimsFound": [],
+        "researchNeededCorrect": true,
+        "impliedGoalsUseInferredBasis": null,
+        "duplicateSuggestedActions": [],
+        "specialRequirementsPassed": true
+      }
+    },
+    {
+      "fixtureId": "ambiguous",
+      "transcriptHash": "37c737aff792a18f6db437f97890ec5199ffa6a29fe8f8b4d55b8b3ef9dbaef4",
+      "segmentationResponseId": "resp_0888eeaf44e2c490016a5a69006ea4819b989e2488836b7fc5",
+      "organizationResponseId": "resp_0b8691dcde50f63d016a5a69061b548198bf1742ef1e7f986a",
+      "segmentation": {
+        "ideas": [
+          {
+            "candidateId": "idea-1",
+            "coreStatement": "Keep a small list of blue objects noticed on Tuesdays and see whether a pattern could become a photo series or short essay.",
+            "sourceSpans": [
+              {
+                "id": "span-1",
+                "startChar": 0,
+                "endChar": 305,
+                "quote": "Maybe I should keep a small list of the blue objects I notice on Tuesdays and see whether any pattern becomes interesting enough for a photo series or a short essay. It is not for my job, a class, or a family event, and I cannot yet say whether it is an art project or just a curiosity I want to remember."
+              }
+            ]
+          }
+        ]
+      },
+      "organization": {
+        "ideas": [
+          {
+            "candidateId": "idea-1",
+            "title": "Tuesday blue-object observations",
+            "summary": {
+              "id": "idea-1-summary",
+              "text": "Keep a small list of blue objects noticed on Tuesdays, then see whether patterns could support a photo series or short essay.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span-1"
+              ]
+            },
+            "purpose": {
+              "id": "idea-1-purpose",
+              "text": "Explore and preserve a personal curiosity about recurring blue objects noticed on Tuesdays.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span-1"
+              ]
+            },
+            "goals": [
+              {
+                "id": "idea-1-goal-1",
+                "text": "Identify whether the observations form an interesting pattern.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              },
+              {
+                "id": "idea-1-goal-2",
+                "text": "Potentially develop the pattern into a photo series or short essay.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              }
+            ],
+            "problem": null,
+            "blockers": [],
+            "questions": [
+              {
+                "id": "idea-1-question-1",
+                "text": "Will the observations reveal a pattern interesting enough for a creative project?",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              },
+              {
+                "id": "idea-1-question-2",
+                "text": "Is this ultimately an art project or a curiosity to remember?",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              }
+            ],
+            "suggestedActions": [
+              {
+                "id": "idea-1-action-1",
+                "text": "Create a simple Tuesday log for blue objects, including a brief description and optional photograph.",
+                "basis": "suggested",
+                "sourceSpanIds": []
+              }
+            ],
+            "research": {
+              "needed": false,
+              "assessment": {
+                "id": "idea-1-research-assessment",
+                "text": "No external research is needed to begin collecting personal observations.",
+                "basis": "inferred",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              },
+              "suggestedQueries": [],
+              "suggestedResourceTypes": []
+            },
+            "categoryId": "category-personal",
+            "categoryConfidence": 0.98,
+            "tags": [
+              "observation",
+              "photography",
+              "writing",
+              "creative-project",
+              "Tuesday",
+              "blue"
+            ],
+            "warnings": []
+          }
+        ]
+      },
+      "evaluation": {
+        "fixtureId": "ambiguous",
+        "expectedIdeaCount": 1,
+        "actualIdeaCount": 1,
+        "expectedCategoryIds": [
+          "category-misc"
+        ],
+        "actualCategoryIds": [
+          "category-personal"
+        ],
+        "ideaCountCorrect": true,
+        "categoriesCorrect": false,
+        "invalidCategoryIds": [],
+        "forbiddenExplicitClaimsFound": [],
+        "researchNeededCorrect": null,
+        "impliedGoalsUseInferredBasis": null,
+        "duplicateSuggestedActions": [],
+        "specialRequirementsPassed": true
+      }
+    },
+    {
+      "fixtureId": "no-idea",
+      "transcriptHash": "b6628f6ebccde3cd509bd1f76db313bca33d136008fc5ef94169e8b99f860183",
+      "segmentationResponseId": "resp_022603ce06c2763f016a5a69097dac819a91d7e24b86f449b8",
+      "organizationResponseId": "resp_0dba00f785192e03016a5a690a77e88198966b60e26662367e",
+      "segmentation": {
+        "ideas": []
+      },
+      "organization": {
+        "ideas": []
+      },
+      "evaluation": {
+        "fixtureId": "no-idea",
+        "expectedIdeaCount": 0,
+        "actualIdeaCount": 0,
+        "expectedCategoryIds": [],
+        "actualCategoryIds": [],
+        "ideaCountCorrect": true,
+        "categoriesCorrect": true,
+        "invalidCategoryIds": [],
+        "forbiddenExplicitClaimsFound": [],
+        "researchNeededCorrect": null,
+        "impliedGoalsUseInferredBasis": null,
+        "duplicateSuggestedActions": [],
+        "specialRequirementsPassed": true
+      }
+    },
+    {
+      "fixtureId": "transcription-noise",
+      "transcriptHash": "62b8b84ec03f184fdea1db8887b623059c36d46a4c36909ae3d272d54e1ce625",
+      "segmentationResponseId": "resp_00dcb588b0690563016a5a690b8544819abc4e01168ecd3400",
+      "organizationResponseId": "resp_0b52bac546120cfb016a5a690d44fc819a81922d672979327e",
+      "segmentation": {
+        "ideas": [
+          {
+            "candidateId": "1",
+            "coreStatement": "Build a narrow bookshelf for the hallway this weekend, sized to fit under the light switch and hold the kids’ books currently stacked by the sofa.",
+            "sourceSpans": [
+              {
+                "id": "span1",
+                "startChar": 8,
+                "endChar": 188,
+                "quote": "I want to, I want to build, build a narrow bookshelf for the hallway this weekend. The shelf should fit under the light switch and hold the kids books that are stacked by the sofa."
+              }
+            ]
+          },
+          {
+            "candidateId": "2",
+            "coreStatement": "Measure the hallway wall and check the leftover lumber in the garage before building the bookshelf.",
+            "sourceSpans": [
+              {
+                "id": "span2",
+                "startChar": 193,
+                "endChar": 271,
+                "quote": "first I need to measure that wall and check the leftover lumber in the garage."
+              }
+            ]
+          }
+        ]
+      },
+      "organization": {
+        "ideas": [
+          {
+            "candidateId": "1",
+            "title": "Build a hallway bookshelf for the kids’ books",
+            "summary": {
+              "id": "c1-summary",
+              "text": "Build a narrow bookshelf for the hallway this weekend.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span1"
+              ]
+            },
+            "purpose": {
+              "id": "c1-purpose",
+              "text": "Store the kids’ books that are currently stacked by the sofa.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span1"
+              ]
+            },
+            "goals": [
+              {
+                "id": "c1-goal-1",
+                "text": "Fit the bookshelf under the light switch.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span1"
+                ]
+              },
+              {
+                "id": "c1-goal-2",
+                "text": "Make the shelf narrow enough for the hallway.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span1"
+                ]
+              }
+            ],
+            "problem": null,
+            "blockers": [],
+            "questions": [],
+            "suggestedActions": [
+              {
+                "id": "c1-action-1",
+                "text": "Measure the intended location and plan the bookshelf dimensions before building.",
+                "basis": "suggested",
+                "sourceSpanIds": []
+              }
+            ],
+            "research": {
+              "needed": false,
+              "assessment": null,
+              "suggestedQueries": [],
+              "suggestedResourceTypes": []
+            },
+            "categoryId": "category-family",
+            "categoryConfidence": 0.83,
+            "tags": [
+              "home-project",
+              "bookshelf",
+              "hallway",
+              "kids-books",
+              "storage"
+            ],
+            "warnings": []
+          },
+          {
+            "candidateId": "2",
+            "title": "Prepare materials for the hallway bookshelf",
+            "summary": {
+              "id": "c2-summary",
+              "text": "Measure the hallway wall and check the leftover lumber in the garage.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span2"
+              ]
+            },
+            "purpose": {
+              "id": "c2-purpose",
+              "text": "Prepare to build the hallway bookshelf.",
+              "basis": "inferred",
+              "sourceSpanIds": [
+                "span2"
+              ]
+            },
+            "goals": [],
+            "problem": null,
+            "blockers": [],
+            "questions": [],
+            "suggestedActions": [],
+            "research": {
+              "needed": false,
+              "assessment": null,
+              "suggestedQueries": [],
+              "suggestedResourceTypes": []
+            },
+            "categoryId": "category-family",
+            "categoryConfidence": 0.68,
+            "tags": [
+              "home-project",
+              "measurement",
+              "lumber",
+              "garage",
+              "bookshelf"
+            ],
+            "warnings": []
+          }
+        ]
+      },
+      "evaluation": {
+        "fixtureId": "transcription-noise",
+        "expectedIdeaCount": 1,
+        "actualIdeaCount": 2,
+        "expectedCategoryIds": [
+          "category-personal"
+        ],
+        "actualCategoryIds": [
+          "category-family",
+          "category-family"
+        ],
+        "ideaCountCorrect": false,
+        "categoriesCorrect": false,
+        "invalidCategoryIds": [],
+        "forbiddenExplicitClaimsFound": [],
+        "researchNeededCorrect": null,
+        "impliedGoalsUseInferredBasis": null,
+        "duplicateSuggestedActions": [],
+        "specialRequirementsPassed": true
+      }
+    },
+    {
+      "fixtureId": "prompt-injection",
+      "transcriptHash": "d17157e7040e117ca0b3af92a852cf68c115c37b9aca8ac577b9dfbf303d81c4",
+      "segmentationResponseId": "resp_045c4b086efb4d68016a5a6913fbe88199ac1072cb131c9507",
+      "organizationResponseId": "resp_0a317a8214cd886d016a5a691595b48199ac8c34e00b3ac7c4",
+      "segmentation": {
+        "ideas": [
+          {
+            "candidateId": "idea-1",
+            "coreStatement": "Create and print a family birthday recipe book containing one favorite recipe, photo, and short story from each relative before the grandmother's birthday.",
+            "sourceSpans": [
+              {
+                "id": "span-1",
+                "startChar": 133,
+                "endChar": 372,
+                "quote": "My actual idea is to make a family birthday recipe book with one favorite recipe and a short story from each relative. I want to print a few copies before my grandmother's birthday, but I still need everyone to send their recipe and photo."
+              }
+            ]
+          }
+        ]
+      },
+      "organization": {
+        "ideas": [
+          {
+            "candidateId": "idea-1",
+            "title": "Family Birthday Recipe Book",
+            "summary": {
+              "id": "idea-1-summary",
+              "text": "Create and print a family recipe book with a favorite recipe, photo, and short story from each relative for the grandmother's birthday.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span-1"
+              ]
+            },
+            "purpose": {
+              "id": "idea-1-purpose",
+              "text": "Create a birthday-themed family keepsake for the grandmother.",
+              "basis": "inferred",
+              "sourceSpanIds": [
+                "span-1"
+              ]
+            },
+            "goals": [
+              {
+                "id": "idea-1-goal-1",
+                "text": "Collect one favorite recipe, photo, and short story from each relative.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              },
+              {
+                "id": "idea-1-goal-2",
+                "text": "Print a few copies before the grandmother's birthday.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              }
+            ],
+            "problem": null,
+            "blockers": [
+              {
+                "id": "idea-1-blocker-1",
+                "text": "Recipes and photos are still needed from relatives.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              }
+            ],
+            "questions": [],
+            "suggestedActions": [
+              {
+                "id": "idea-1-action-1",
+                "text": "Send relatives a concise request with the needed recipe, photo, and story details.",
+                "basis": "suggested",
+                "sourceSpanIds": []
+              },
+              {
+                "id": "idea-1-action-2",
+                "text": "Choose a book layout and printing option after contributions are collected.",
+                "basis": "suggested",
+                "sourceSpanIds": []
+              }
+            ],
+            "research": {
+              "needed": false,
+              "assessment": null,
+              "suggestedQueries": [],
+              "suggestedResourceTypes": []
+            },
+            "categoryId": "category-family",
+            "categoryConfidence": 0.98,
+            "tags": [
+              "family",
+              "birthday",
+              "recipe-book",
+              "keepsake",
+              "printing"
+            ],
+            "warnings": []
+          }
+        ]
+      },
+      "evaluation": {
+        "fixtureId": "prompt-injection",
+        "expectedIdeaCount": 1,
+        "actualIdeaCount": 1,
+        "expectedCategoryIds": [
+          "category-family"
+        ],
+        "actualCategoryIds": [
+          "category-family"
+        ],
+        "ideaCountCorrect": true,
+        "categoriesCorrect": true,
+        "invalidCategoryIds": [],
+        "forbiddenExplicitClaimsFound": [],
+        "researchNeededCorrect": null,
+        "impliedGoalsUseInferredBasis": null,
+        "duplicateSuggestedActions": [],
+        "specialRequirementsPassed": true
+      }
+    },
+    {
+      "fixtureId": "duplicate-actions",
+      "transcriptHash": "466985d39b204595c3a9f89e6ab1a42c9a76aacc0205f36cb9a668a41fb71361",
+      "segmentationResponseId": "resp_064addf2fe88b798016a5a691888748198baf94caf39ff1d37",
+      "organizationResponseId": "resp_049517acd3cca1d9016a5a6919ced881988f0f55fe68032c5a",
+      "segmentation": {
+        "ideas": [
+          {
+            "candidateId": "idea-1",
+            "coreStatement": "Create a simple pantry inventory spreadsheet with item, quantity, and expiration date to avoid buying ingredients already on hand.",
+            "sourceSpans": [
+              {
+                "id": "span-1",
+                "startChar": 0,
+                "endChar": 164,
+                "quote": "I want a simple pantry inventory so I stop buying ingredients we already have. The first step is to make a spreadsheet with the item, quantity, and expiration date."
+              },
+              {
+                "id": "span-2",
+                "startChar": 165,
+                "endChar": 216,
+                "quote": "I should start a sheet listing those pantry fields."
+              }
+            ]
+          }
+        ]
+      },
+      "organization": {
+        "ideas": [
+          {
+            "candidateId": "idea-1",
+            "title": "Create a pantry inventory spreadsheet",
+            "summary": {
+              "id": "idea-1-summary",
+              "text": "Create a simple pantry inventory spreadsheet with item, quantity, and expiration date to avoid purchasing ingredients already on hand.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span-1"
+              ]
+            },
+            "purpose": {
+              "id": "idea-1-purpose",
+              "text": "Avoid buying ingredients already on hand.",
+              "basis": "explicit",
+              "sourceSpanIds": [
+                "span-1"
+              ]
+            },
+            "goals": [
+              {
+                "id": "idea-1-goal-1",
+                "text": "Track pantry items, quantities, and expiration dates in a spreadsheet.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              }
+            ],
+            "problem": {
+              "statement": {
+                "id": "idea-1-problem-statement",
+                "text": "Ingredients may be purchased even when they are already available in the pantry.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1"
+                ]
+              },
+              "type": "inventory tracking"
+            },
+            "blockers": [],
+            "questions": [],
+            "suggestedActions": [
+              {
+                "id": "idea-1-action-1",
+                "text": "Start a spreadsheet with columns for item, quantity, and expiration date.",
+                "basis": "explicit",
+                "sourceSpanIds": [
+                  "span-1",
+                  "span-2"
+                ]
+              }
+            ],
+            "research": {
+              "needed": false,
+              "assessment": null,
+              "suggestedQueries": [],
+              "suggestedResourceTypes": []
+            },
+            "categoryId": "category-personal",
+            "categoryConfidence": 0.98,
+            "tags": [
+              "pantry",
+              "inventory",
+              "spreadsheet",
+              "groceries",
+              "home"
+            ],
+            "warnings": []
+          }
+        ]
+      },
+      "evaluation": {
+        "fixtureId": "duplicate-actions",
+        "expectedIdeaCount": 1,
+        "actualIdeaCount": 1,
+        "expectedCategoryIds": [
+          "category-personal"
+        ],
+        "actualCategoryIds": [
+          "category-personal"
+        ],
+        "ideaCountCorrect": true,
+        "categoriesCorrect": true,
+        "invalidCategoryIds": [],
+        "forbiddenExplicitClaimsFound": [],
+        "researchNeededCorrect": null,
+        "impliedGoalsUseInferredBasis": null,
+        "duplicateSuggestedActions": [],
+        "specialRequirementsPassed": true
+      }
+    }
+  ]
+}
