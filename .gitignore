@@ -1,6 +1,7 @@
 node_modules
 .next
 .vercel
+.superpowers/
 out
 coverage
 playwright-report/
