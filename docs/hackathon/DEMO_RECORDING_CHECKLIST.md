@@ -141,7 +141,7 @@ intentional; they are not fake URLs, identifiers, scores, or placeholders.
 | Live capture shown | **Not recorded** | Record the prepared safe ramble and preserve truthful state. |
 | Fallback disclosure | **Not applicable until recording** | Retain exact preprocessed/sample wording if used. |
 | Live evaluation report | **Not available** | Do not claim a result or score; no report exists in this preparation pass. |
-| Primary Codex implementation Session ID | **Not captured** | Obtain through `/feedback`; do not infer one. |
+| Primary Codex implementation Session ID | **Verified** | `019f66eb-7a90-7080-8667-b6ac77c45a23`, owner-confirmed from `/feedback`. |
 | YouTube public URL | **Not uploaded** | Upload only with owner approval, then verify logged out. |
 | YouTube duration | **Not measured** | Record encoded runtime; it must be under 3:00. |
 | Captions, title, description | **Not reviewed** | Verify on the public watch page after upload. |

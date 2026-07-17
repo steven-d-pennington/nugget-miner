@@ -108,9 +108,8 @@ git diff --check
 - [ ] Complete the physical-device, Edge/Safari, install/standalone, microphone,
   offline/reopen, and background/reopen matrix described in the [production
   smoke checklist](../qa/production-smoke-checklist.md#manual-and-public-validation-work-pending).
-- [ ] Obtain the primary implementation `/feedback` Session ID from the original
-  core implementation task. Enter only that returned ID in the README, Devpost
-  draft, and evidence ledger; do not infer or substitute a worker or planning ID.
+- [x] Primary implementation `/feedback` Session ID verified and recorded in the
+  README, Devpost draft, and evidence ledger: `019f66eb-7a90-7080-8667-b6ac77c45a23`.
 - [ ] Record an owner-approved public YouTube demo under three minutes, then
   verify public logged-out playback, audio, captions, title, description, and
   runtime. Follow the [demo recording checklist](DEMO_RECORDING_CHECKLIST.md).
@@ -157,11 +156,9 @@ Not created. These are status statements, not placeholders.
    URL; stop if the public judge path is not frictionless.
 3. If a safe nonempty key and an accepted budget are available, run the live
    evaluation and retain its result; otherwise keep that gate visibly open.
-4. Obtain the primary `/feedback` Session ID from the genuine core implementation
-   task.
-5. Record and publish the truthful public YouTube demo, then verify playback
+4. Record and publish the truthful public YouTube demo, then verify playback
    while logged out.
-6. Perform the final app/README/Devpost/video/screenshot claim comparison.
-7. Submit Devpost and immediately reopen it to reverify persistence.
-8. Only then commit the real confirmation evidence and create/push the annotated
+5. Perform the final app/README/Devpost/video/screenshot claim comparison.
+6. Submit Devpost and immediately reopen it to reverify persistence.
+7. Only then commit the real confirmation evidence and create/push the annotated
    submission tag.

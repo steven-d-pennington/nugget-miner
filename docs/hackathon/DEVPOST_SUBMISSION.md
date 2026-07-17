@@ -4,14 +4,14 @@
 
 - **Project name:** Nugget
 - **Track:** Apps for Your Life
-- **Repository:** [steven-d-pennington/nugget-miner](https://github.com/steven-d-pennington/nugget-miner) is public. The current MVP is directly available on the [public `codex/mvp-overnight-2026-07-15` branch](https://github.com/steven-d-pennington/nugget-miner/tree/codex/mvp-overnight-2026-07-15); the public default `main` branch remains older and is not the current MVP.
+- **Repository:** [steven-d-pennington/nugget-miner](https://github.com/steven-d-pennington/nugget-miner) is public. The current MVP is on public `main` after merge commit `136cc47`.
 - **Short description:** Nugget is a mobile-first voice capture app that turns unstructured rambles into distinct, organized ideas. Record while you are moving, leave as soon as the audio is saved locally, then return to review GPT-5.6-generated idea records with editable titles, summaries, goals, blockers, research needs, categories, tags, and next actions.
 
 ### Required fields that remain open
 
 - **Public working URL:** [https://nugget-miner-kappa.vercel.app](https://nugget-miner-kappa.vercel.app). Production deployment `dpl_CZWcgTiGf3TaPyjfxDp59vg5zbqr` is READY and passed anonymous root, `/api/health`, security-header, manifest, and service-worker checks. Health reports `whisper-1` transcription and `gpt-5.6-terra` organization.
 - **Public video URL:** Not recorded yet. The recording-ready [demo script](DEMO_SCRIPT.md) and [demo recording checklist](DEMO_RECORDING_CHECKLIST.md) prepare this work, but no YouTube URL may be added until the owner authorizes publication and logged-out public playback is verified.
-- **Primary Codex implementation Session ID:** Not captured yet.
+- **Primary Codex implementation Session ID:** `019f66eb-7a90-7080-8667-b6ac77c45a23` (verified by the owner as the `/feedback` Session ID for the primary implementation task).
 - **Live evaluation report:** Not recorded yet. A live run was authorized within an approximately four-dollar ceiling, but a safe nonempty key injection was unavailable. This work made zero provider calls and incurred zero provider spend.
 
 Use the public production URL above as the Devpost testing URL. See the [judge test path](JUDGING_TEST_PATH.md), [screenshot plan](SCREENSHOT_PLAN.md), [demo script](DEMO_SCRIPT.md), and [demo recording checklist](DEMO_RECORDING_CHECKLIST.md) for the current, truthful demonstration material and pending public-video gate.
@@ -42,7 +42,7 @@ A deterministic evaluation harness covers structured-output, grounding, category
 
 ## How Codex was used
 
-Codex supported the Build Week work through planning, implementation, focused tests and browser checks, debugging, documentation, and verification. The [Codex collaboration record](CODEX_COLLABORATION.md) links dated sprint history, roles, human decisions, and verification examples. The primary implementation Session ID must still be obtained through `/feedback`; this submission does not invent or substitute one.
+Codex supported the Build Week work through planning, implementation, focused tests and browser checks, debugging, documentation, and verification. The [Codex collaboration record](CODEX_COLLABORATION.md) links dated sprint history, roles, human decisions, and verification examples. The verified primary implementation `/feedback` Session ID is `019f66eb-7a90-7080-8667-b6ac77c45a23`.
 
 ## Human product and design decisions
 
@@ -66,7 +66,7 @@ A useful AI organization experience needs clear boundaries and correction points
 
 ## What's next
 
-Potential future work includes self-learning from corrections, conversational onboarding, live research execution, and optional sync. None of those are shipped in this MVP. Before submission, the remaining delivery gates are a public video URL, the primary Codex Session ID, a recorded live evaluation report, and final device/browser verification.
+Potential future work includes self-learning from corrections, conversational onboarding, live research execution, and optional sync. None of those are shipped in this MVP. Before submission, the remaining delivery gates are a public video URL, a recorded live evaluation report, and final device/browser verification.
 
 ## Claim boundary checklist
 
@@ -76,4 +76,4 @@ Use only claims supported by the current build and evidence:
 - Do not claim self-learning, live research execution, citations, sync, accounts, or cloud user-data persistence.
 - Do not claim all processing is local or fully on device; cloud processing is opt-in/initiated and transient.
 - Do not present the deterministic screenshots as a live GPT provider result.
-- Do not supply a final public URL, video URL, Session ID, or live evaluation score until each exists and has been verified.
+- Do not supply a final public URL, video URL, or live evaluation score until each exists and has been verified. Use the verified Session ID above exactly as recorded.

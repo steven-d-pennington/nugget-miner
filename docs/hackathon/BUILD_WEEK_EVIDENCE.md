@@ -14,8 +14,8 @@ Blank evidence cells are intentional collection fields. Fill each sprint row at 
 
 ## Primary Codex Session
 
-- Session ID from `/feedback`: **Pending.** Do not infer or substitute a worker, wrapper, planning, or coordination thread ID.
-- Required action: in the original task containing most core MVP implementation, run `/feedback` and copy only the returned ID here, to the README, and to the Devpost draft.
+- Session ID from `/feedback`: **Verified by the owner on July 17, 2026:** `019f66eb-7a90-7080-8667-b6ac77c45a23`.
+- The verified value is recorded in the README and Devpost draft. It is not inferred from a worker, wrapper, planning, or coordination thread ID.
 - Why this was the primary implementation task: This continuous overnight Codex goal coordinates sprint-by-sprint MVP implementation and verification through the planned exit gates.
 
 ## Sprint 6 Task 6 pre-submission engineering gate
@@ -40,8 +40,9 @@ library**; it remains Vercel-auth protected, not a public judge path.
 failed, 13 tests skipped, `docs/evals/latest.json` remains absent, and this
 gate made zero provider calls with zero spend. Public production, logged-out
 PWA/live-GPT judge-path, real-device/browser matrix, public YouTube video,
-primary `/feedback` Session ID, Devpost submission/confirmation, August 5
-retention, and submission tag remain open. See
+Devpost submission/confirmation, August 5 retention, and submission tag remain
+open. The primary `/feedback` Session ID was subsequently verified in the
+Primary Codex Session record above. See
 [SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md) and
 [FINAL_VERIFICATION.md](FINAL_VERIFICATION.md).
 

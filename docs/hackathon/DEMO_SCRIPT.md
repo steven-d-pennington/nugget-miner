@@ -23,7 +23,7 @@ at or over 3:00.
 | 1:38-2:06 | 0:27 | **Ideas** at `/ideas`. Search `community`, select `Personal`, and open **Create a neighborhood tool-sharing library** at `/ideas/<ideaId>`. Prefer actual confirmed output. If using local samples, keep `Sample` visible and say so. | "Confirmed records are in Ideas, where search and category and tag filters retrieve them locally. I search community and select Personal. If this row says Sample, it is clearly labeled local demo data, not a live GPT result." | Standard library flow. Never remove a `Sample` chip or call a sample row the live result. | `Ideas`; `community`; `Personal`; category/tag filters; row title; `Sample` if applicable. |
 | 2:06-2:24 | 0:17 | **Idea** at `/ideas/<ideaId>`, then **Actions** at `/actions`. Show tool-sharing goal, blocker, `Research needed`, suggested action, `Linked actions`, then complete **Draft a one-page interest survey.** | "The detail keeps the goal, blocker, research need, and suggested action with the idea. Actions collects accepted next steps without losing their source idea." | Click once into Actions; retain the source title or link. | Goal; blocker; `Research needed`; suggested action; linked action; completion state. |
 | 2:24-2:44 | 0:19 | **Settings** at `/settings`, `About`. Show `Built with GPT-5.6 and Codex`, non-secret `Transcription` and `Organization` health, then brief README/source/test-fixture evidence. | "Settings exposes non-secret model health. On the currently verified preview, transcription reports whisper-1 and organization reports gpt-5.6-terra; verify the displayed values again on production. The repository shows schemas, focused tests, and fixtures. I do not show a live evaluation report because none exists yet." | Show actual displayed values only. Do not show credentials, a fake score, or a missing report. | About heading; actual health; structured-output/schema or focused-test evidence; no secret. |
-| 2:44-2:56 | 0:10 | Keep actual README or dated commit history in view; do not display or invent a primary implementation Session ID. | "Codex supported plans, implementation, focused tests, browser checks, debugging, and verification. The human owner made the product and release decisions. No Session ID is claimed here because one has not been captured." | Slow dissolve toward Capture or Ideas. | Actual history; no private task content; no fabricated Session ID. |
+| 2:44-2:56 | 0:10 | Keep actual README or dated commit history in view; do not display a Session ID in the recording. | "Codex supported plans, implementation, focused tests, browser checks, debugging, and verification. The human owner made the product and release decisions. The verified Session ID is recorded in the submission materials." | Slow dissolve toward Capture or Ideas. | Actual history; no private task content; no fabricated Session ID. |
 | 2:56-2:59 | 0:03 | Return to the Nugget mark and a clean Capture or Ideas screen. | "Nugget makes moving thoughts useful." | End cleanly; no fade beyond 2:59. | Nugget mark; no third-party logo or music issue. |
 
 ### GPT-5.6 explanation used by the recording
@@ -48,8 +48,8 @@ Codex supported sprint plans, implementation, focused tests, browser checks,
 debugging, and verification. The human owner chose the mobile-first capture
 flow, mandatory review, category and tag model, visual direction, scope cuts,
 and release boundaries. Do not imply that Codex independently made those
-product decisions or that a primary implementation Session ID exists before it
-is captured through `/feedback`.
+product decisions. The primary implementation `/feedback` Session ID is
+verified in the submission materials.
 
 ## Prepared two-idea ramble
 

@@ -17,7 +17,7 @@
 | Public repository | Public; `main` now contains the current MVP and MIT `LICENSE` after merge commit `136cc47`. |
 | Public production URL | **Authorized and verified in the release addendum below.** |
 | Public YouTube URL and duration | **Not recorded / not published.** |
-| Primary Codex implementation Session ID | **Pending / not captured.** No worker, wrapper, planning, or coordination ID is substituted. |
+| Primary Codex implementation Session ID | **Verified:** `019f66eb-7a90-7080-8667-b6ac77c45a23` (owner-confirmed `/feedback` ID for the primary implementation task). |
 | Devpost Submit actor | **Not submitted.** No person clicked Submit in this gate. |
 | Confirmation page or email | **Not captured.** |
 
@@ -59,7 +59,7 @@
 | README setup, sample, testing, GPT, Codex, and human decisions complete | Verified | [README](../../README.md) was read, searched, and link-audited in this gate; it contains each required surface and preserves known boundaries. |
 | Five screenshots uploaded and ordered | Blocked-Pending | Five prepared assets are documented in [SCREENSHOT_PLAN.md](SCREENSHOT_PLAN.md); no Devpost upload or public-production comparison was performed. |
 | Public YouTube URL opens logged out and is under three minutes | Blocked-Pending | Video not recorded or published; [recording checklist](DEMO_RECORDING_CHECKLIST.md) remains owner-executable. |
-| Primary `/feedback` Session ID entered | Blocked-Pending | The primary ID has not been captured from the core implementation task. |
+| Primary `/feedback` Session ID entered | Verified | `019f66eb-7a90-7080-8667-b6ac77c45a23`, confirmed by the owner as the primary-task `/feedback` value. |
 | No unsupported claims | Verified | Claim-surface comparison below reviewed README, Devpost, demo, and non-test app source; no contradiction found for the requested model, review, privacy, or deferred-feature claims. |
 | Deployment remains available through August 5 | Blocked-Pending | No public production release or retention confirmation is authorized. |
 | Submit completed before 2:00 PM Pacific | Not Run | No person clicked Submit. |
@@ -113,7 +113,6 @@ spend. The live evaluation stopped before provider-client use; no live report
 exists.
 
 The single best remaining sequence is: run the real-device check; run a safe
-live eval only if a key is available and budget is accepted; obtain the
-`/feedback` Session ID; record and
-publish the video; perform the final comparison; submit and reverify; then
-commit the real confirmation evidence and create the tag.
+live eval only if a key is available and budget is accepted; record and publish
+the video; perform the final comparison; submit and reverify; then commit the
+real confirmation evidence and create the tag.

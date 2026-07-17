@@ -5,6 +5,11 @@
 > **pending** and is intentionally not inferred from a worker, wrapper, or
 > coordination thread.
 >
+> **Current update (July 17, 2026):** The owner verified the primary
+> implementation `/feedback` Session ID as
+> `019f66eb-7a90-7080-8667-b6ac77c45a23`. This is not an inferred worker,
+> wrapper, planning, or coordination-thread identifier.
+>
 > **Verified repository facts:** the public repository is
 > [steven-d-pennington/nugget-miner](https://github.com/steven-d-pennington/nugget-miner);
 > the current MVP is the public
@@ -33,8 +38,10 @@
   is shown by the [public MVP branch](https://github.com/steven-d-pennington/nugget-miner/tree/codex/mvp-overnight-2026-07-15).
 - The protected preview is not a public, account-free judge URL, and no public
   production URL, YouTube URL, or live evaluation report is claimed here.
-- The primary implementation Session ID remains pending. This document records
-  collaboration evidence only; it does not close the Sprint 6 exit gate.
+- At Sprint 6 Task 5, the primary implementation Session ID was pending. The
+  July 17 update at the top of this document records the subsequently verified
+  value; this historical record still does not by itself close the other Sprint
+  6 exit gates.
 
 ## Meaningful extension after the baseline
 
@@ -80,7 +87,8 @@ retains authority for a production release, video publication, and submission.
 - **Terra worker:** performed bounded implementation and focused verification
   through explicit `gpt-5.6-terra` worker invocations configured for this
   project. This does not mean every internal task is a single public Codex
-  Session, nor does it supply the still-pending primary Session ID.
+  Session; the owner independently verified the primary `/feedback` value in
+  the current update above.
 
 ## Verification and defect-discovery examples
 
@@ -114,9 +122,10 @@ retains authority for a production release, video publication, and submission.
 - [Public repository](https://github.com/steven-d-pennington/nugget-miner) and
   [current public MVP branch](https://github.com/steven-d-pennington/nugget-miner/tree/codex/mvp-overnight-2026-07-15)
 
-## Final action: primary implementation Session ID
+## Primary implementation Session ID
 
-From the original task that contains most core MVP implementation, run
-`/feedback` and copy only its returned Session ID into this record, the README,
-the Devpost draft, and the evidence ledger. Do not substitute a Terra worker,
-wrapper, planning, or coordination thread ID.
+The owner verified the `/feedback` Session ID from the original core
+implementation task as `019f66eb-7a90-7080-8667-b6ac77c45a23`. It is recorded
+in this collaboration record, the README, the Devpost draft, and the evidence
+ledger; it is not an inferred Terra worker, wrapper, planning, or coordination
+thread ID.

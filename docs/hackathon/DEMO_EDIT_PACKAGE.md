@@ -21,7 +21,7 @@ and library portions below are deliberately disclosed fallback visuals.
 | Public origin shown at opening | `https://nugget-miner-kappa.vercel.app` |
 | Final runtime target | 2:52 |
 | Required visible labels | `Preprocessed safe capture` on review fallback; `Sample` on sample-library views. |
-| Do not show | API keys, terminal output, browser history, personal tabs, real captures, customer data, fake evaluation results, or an unverified Session ID. |
+| Do not show | API keys, terminal output, browser history, personal tabs, real captures, customer data, fake evaluation results, or a Session ID in the recording. |
 
 ## Asset manifest
 
@@ -88,5 +88,5 @@ Use these verbatim, in clear high-contrast text:
   browser.
 - Add that verified public URL to the Devpost draft, README, and submission
   evidence documents.
-- Obtain the actual Codex `/feedback` Session ID through the official flow;
-  do not substitute a technical thread ID.
+- The verified Codex `/feedback` Session ID is already recorded in the README,
+  Devpost draft, and evidence ledger; it does not need to appear on screen.
