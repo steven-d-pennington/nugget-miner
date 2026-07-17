@@ -82,6 +82,47 @@ a {
   font-family: var(--font-wordmark), Fraunces, Georgia, serif;
 }
 
+.screen-heading {
+  max-width: 42rem;
+}
+
+.screen-heading__eyebrow {
+  margin: 0;
+  color: #8a5700;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.screen-heading__title {
+  margin: 0.5rem 0 0;
+  color: var(--ink);
+  font-size: clamp(2.25rem, 10vw, 3.25rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.screen-heading__lede {
+  margin: 1rem 0 0;
+  color: #5f5b56;
+  line-height: 1.7;
+}
+
+.utility-section {
+  border-top: 1px solid var(--line);
+  padding-block: 1.5rem;
+}
+
+.danger-zone {
+  margin-top: 0.5rem;
+  border: 1px solid #e0b1a8;
+  border-radius: var(--radius-sm);
+  background: #fff5f3;
+  padding: 1.25rem;
+}
+
 .metadata,
 .font-mono,
 code,

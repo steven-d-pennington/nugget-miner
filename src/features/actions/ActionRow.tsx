@@ -53,7 +53,7 @@ export function ActionRow({ row, busy, onRemove, onStatusChange, onTextChange }:
   const completed = row.action.status === 'completed';
 
   return (
-    <li className="rounded-r-2xl border border-l-[5px] border-[#E8DDCE] border-l-[#D69A24] bg-white px-4 py-4 shadow-[0_8px_24px_rgba(16,29,54,0.05)] sm:px-5">
+    <li className="rounded-r-2xl border border-l-[5px] border-[#E8DDCE] border-l-[#D69A24] bg-white px-4 py-4 shadow-[var(--shadow-card)] sm:px-5">
       <div className="flex items-start gap-3">
         <label className="flex min-h-12 min-w-12 cursor-pointer items-center justify-center rounded-xl focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#315CBF]">
           <input

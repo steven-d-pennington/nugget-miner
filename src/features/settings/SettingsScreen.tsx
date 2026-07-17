@@ -206,10 +206,10 @@ export function SettingsScreen({
 
   return (
     <section className="mx-auto grid max-w-3xl gap-8" aria-labelledby="settings-heading">
-      <header>
-        <p className="m-0 text-xs font-extrabold uppercase tracking-[0.14em] text-[#A66700]">Preferences and trust</p>
-        <h1 className="mb-0 mt-2 text-4xl font-bold tracking-[-0.05em] text-[#101D36] sm:text-5xl" id="settings-heading">Settings</h1>
-        <p className="mb-0 mt-4 max-w-2xl leading-7 text-[#6E6B67]">Shape how Nugget organizes your thoughts and review how local data and cloud processing work.</p>
+      <header className="screen-heading">
+        <p className="screen-heading__eyebrow">Preferences and trust</p>
+        <h1 className="screen-heading__title" id="settings-heading">Settings</h1>
+        <p className="screen-heading__lede">Shape how Nugget organizes your thoughts and review how local data and cloud processing work.</p>
       </header>
 
       {message ? <p aria-live="polite" className="m-0 border-l-4 border-[#247A55] bg-white p-4 text-[#101D36]">{message}</p> : null}
@@ -222,14 +222,14 @@ export function SettingsScreen({
       ) : null}
 
       <div className="grid border-b border-[#E8DDCE]">
-        <section className="border-t border-[#E8DDCE] py-6" aria-labelledby="category-organization-heading">
+        <section className="utility-section" aria-labelledby="category-organization-heading">
           <p className="m-0 text-xs font-extrabold uppercase tracking-[0.12em] text-[#A66700]">Your vocabulary</p>
           <h2 className="mb-0 mt-2 text-xl font-bold text-[#101D36]" id="category-organization-heading">Category organization</h2>
           <p className="mb-0 mt-2 leading-6 text-[#6E6B67]">Give GPT-5.6 examples and boundaries for the themes that matter to you.</p>
           <Link className="mt-4 inline-flex min-h-12 items-center font-extrabold text-[#101D36] underline decoration-[#E5A11A] decoration-2 underline-offset-4" href="/settings/categories">Manage categories</Link>
         </section>
 
-        <section className="border-t border-[#E8DDCE] py-6" aria-labelledby="processing-privacy-heading">
+        <section className="utility-section" aria-labelledby="processing-privacy-heading">
           <h2 className="m-0 text-xl font-bold text-[#101D36]" id="processing-privacy-heading">Processing and privacy</h2>
           <label className="mt-4 flex min-h-12 cursor-pointer items-center gap-3 font-bold text-[#101D36]">
             <input checked={settings?.automaticProcessing ?? false} disabled={!settings} onChange={(event) => void toggleAutomatic(event.target.checked)} type="checkbox" />
@@ -254,7 +254,7 @@ export function SettingsScreen({
 
         <InstallAppButton />
 
-        <section className="border-t border-[#E8DDCE] py-6" aria-labelledby="offline-storage-heading">
+        <section className="utility-section" aria-labelledby="offline-storage-heading">
           <h2 className="m-0 text-xl font-bold text-[#101D36]" id="offline-storage-heading">Offline storage</h2>
           <p className="mb-0 mt-2 leading-6 text-[#6E6B67]">{storage ? storage.persisted ? 'This browser has granted persistent storage for Nugget.' : 'Persistent offline storage is not enabled. Nugget stores recordings and saved data locally in this browser.' : 'Checking browser storage availability…'}</p>
           {storage?.usage !== undefined && storage.quota !== undefined ? <p className="mb-0 mt-2 text-sm text-[#6E6B67]">Browser storage in use: {Math.round(storage.usage / 1_024)} KB of {Math.round(storage.quota / 1_024)} KB.</p> : null}
@@ -263,13 +263,13 @@ export function SettingsScreen({
           </button>
         </section>
 
-        <section className="border-t border-[#E8DDCE] py-6" aria-labelledby="data-export-heading">
+        <section className="utility-section" aria-labelledby="data-export-heading">
           <h2 className="m-0 text-xl font-bold text-[#101D36]" id="data-export-heading">Data export</h2>
           <p className="mb-0 mt-2 leading-6 text-[#6E6B67]">Download your captures, recordings, transcripts, ideas, organization, and settings as JSON. The export is built locally in this browser.</p>
           <button className="mt-4 min-h-12 rounded-full border border-[#E5A11A] px-5 font-extrabold text-[#101D36]" disabled={busy} onClick={() => void exportAll()} type="button">Export all local data</button>
         </section>
 
-        <section className="border-t border-[#E8DDCE] py-6" aria-labelledby="sample-library-heading">
+        <section className="utility-section" aria-labelledby="sample-library-heading">
           <p className="m-0 text-xs font-extrabold uppercase tracking-[0.12em] text-[#A66700]">Local demo data</p>
           <h2 className="mb-0 mt-2 text-xl font-bold text-[#101D36]" id="sample-library-heading">Sample library</h2>
           <p className="mb-0 mt-2 leading-6 text-[#6E6B67]">Adds three clearly labeled sample ideas to this browser so you can explore search, categories, actions, and export. It does not call GPT-5.6 and does not replace the live capture demo.</p>
@@ -278,20 +278,20 @@ export function SettingsScreen({
           </button>
         </section>
 
-        <section className="border-t border-[#E8DDCE] py-6" aria-labelledby="erase-heading">
+        <section className="utility-section danger-zone" aria-labelledby="erase-heading">
           <h2 className="m-0 text-xl font-bold text-red-800" id="erase-heading">Erase all local data</h2>
           <p className="mb-0 mt-2 leading-6 text-[#6E6B67]">This permanently removes every local capture, recording, transcript, idea, action, tag, and custom category from this browser.</p>
           <label className="mt-4 grid gap-2 font-bold text-[#101D36]" htmlFor="erase-confirmation">Type ERASE exactly to continue</label>
           <input className="mt-2 min-h-12 w-full border border-[#C9BBA9] bg-white px-3 text-[#101D36]" id="erase-confirmation" onChange={(event) => { setEraseText(event.target.value); setEraseArmed(false); }} value={eraseText} />
           {!eraseArmed ? <button className="mt-3 min-h-12 rounded-full border border-red-700 px-5 font-extrabold text-red-800 disabled:opacity-50" disabled={eraseText !== 'ERASE'} onClick={() => setEraseArmed(true)} type="button">Continue to erase</button> : (
-            <div className="mt-4 border border-red-300 bg-red-50 p-4">
+            <div className="danger-zone">
               <p className="m-0 font-bold text-red-900">This is the final confirmation. This action cannot be undone.</p>
               <button className="mt-3 min-h-12 rounded-full bg-red-800 px-5 font-extrabold text-white" disabled={busy} onClick={() => void eraseAll()} type="button">Erase all local data now</button>
             </div>
           )}
         </section>
 
-        <section className="border-t border-[#E8DDCE] py-6" aria-labelledby="about-heading">
+        <section className="utility-section" aria-labelledby="about-heading">
           <h2 className="m-0 text-xl font-bold text-[#101D36]" id="about-heading">About</h2>
           <p className="mb-0 mt-2 font-bold text-[#101D36]">Built with GPT-5.6 and Codex</p>
           <dl className="mt-4 grid gap-2 text-sm text-[#6E6B67]">
