@@ -1,4 +1,6 @@
 import type { Page, Route } from '@playwright/test';
+import { ORGANIZATION_PROMPT_VERSION } from '../../src/lib/llm/organizationPrompt';
+import { SEGMENTATION_PROMPT_VERSION } from '../../src/lib/llm/segmentationPrompt';
 import type { TranscriptResult } from '../../src/types/domain';
 import type {
   OrganizeProviderOutput,
@@ -50,7 +52,7 @@ const segmentationResponse = {
   provider: 'openai',
   model: ORGANIZATION_MODEL,
   responseId: 'e2e-segment-response',
-  promptVersion: 'segment-v1',
+  promptVersion: SEGMENTATION_PROMPT_VERSION,
   schemaVersion: 'segmentation-v1',
 } satisfies SegmentProviderOutput;
 
@@ -201,7 +203,7 @@ const organizationResponse = {
   provider: 'openai',
   model: ORGANIZATION_MODEL,
   responseId: 'e2e-organize-response',
-  promptVersion: 'organize-v1',
+  promptVersion: ORGANIZATION_PROMPT_VERSION,
   schemaVersion: 'organization-v1',
 } satisfies OrganizeProviderOutput;
 
