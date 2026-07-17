@@ -11,9 +11,20 @@ describe('sanitizeAnalyticsUrl', () => {
     expect(sanitizeAnalyticsUrl(input)).toBe(expected);
   });
 
-  it('preserves static route analytics while removing query strings and fragments', () => {
+  it('preserves relative static route analytics while removing query strings and fragments', () => {
     expect(sanitizeAnalyticsUrl('/settings?consent=granted#privacy')).toBe('/settings');
-    expect(sanitizeAnalyticsUrl('https://nugget-miner-kappa.vercel.app/actions?filter=open#today')).toBe('/actions');
+  });
+
+  it('keeps the origin for absolute analytics URLs while removing local IDs, query strings, and fragments', () => {
+    expect(
+      sanitizeAnalyticsUrl('https://nugget-miner-kappa.vercel.app/capture/capture-local-123?transcript=private#source'),
+    ).toBe('https://nugget-miner-kappa.vercel.app/capture/[capture]');
+    expect(sanitizeAnalyticsUrl('http://localhost:3000/review/idea-local-456?draft=private#summary')).toBe(
+      'http://localhost:3000/review/[idea]',
+    );
+    expect(sanitizeAnalyticsUrl('https://nugget-miner-kappa.vercel.app/actions?filter=open#today')).toBe(
+      'https://nugget-miner-kappa.vercel.app/actions',
+    );
   });
 
   it('drops malformed or unsafe input instead of forwarding it', () => {

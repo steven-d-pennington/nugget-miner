@@ -30,9 +30,12 @@ export function sanitizeAnalyticsUrl(value: unknown): string | null {
 
   const segments = parsed.pathname.split('/').filter(Boolean);
   const firstSegment = segments[0];
+  let sanitizedPathname: string;
   if (firstSegment && segments.length > 1 && dynamicRoutePlaceholders[firstSegment]) {
-    return `/${firstSegment}/${dynamicRoutePlaceholders[firstSegment]}`;
+    sanitizedPathname = `/${firstSegment}/${dynamicRoutePlaceholders[firstSegment]}`;
+  } else {
+    sanitizedPathname = parsed.pathname || '/';
   }
 
-  return parsed.pathname || '/';
+  return isHttpUrl ? `${parsed.origin}${sanitizedPathname}` : sanitizedPathname;
 }
