@@ -58,10 +58,12 @@ and [Build Week evidence ledger](BUILD_WEEK_EVIDENCE.md).
   ideas. See [`../evals/production-smoke-2026-07-17.json`](../evals/production-smoke-2026-07-17.json).
   This is not `npm run eval:live`, does not create `docs/evals/latest.json`,
   and does not replace the canonical 12-fixture evaluation gate recorded above.
-- [ ] The full logged-out public production/PWA smoke passes. Anonymous root,
+- [x] The primary logged-out public production/PWA smoke passes. Anonymous root,
   health, headers, manifest, and service-worker checks pass at
-  `https://nugget-miner-kappa.vercel.app`; install/standalone and physical-device
-  interaction remain open.
+  `https://nugget-miner-kappa.vercel.app`. Steven also owner-confirmed the
+  requested capture/save/close/reopen/playback and installed offline/reconnect
+  path on an iPhone 14 Pro Max with resumed processing and no duplicate. The
+  specific iPhone browser and a secondary desktop-browser pass were not reported.
 
 ### Safe engineering commands
 
@@ -120,12 +122,14 @@ git diff --check
 - [x] Verify the owner-approved production HTTPS URL without deployment
   authentication and at `/api/health`. `https://nugget-miner-kappa.vercel.app`
   returned HTTP 200; health reported `whisper-1` and `gpt-5.6-terra`.
-- [ ] On that public URL, install/open the PWA where available; load the sample
-  library; complete the [fast judge path](JUDGING_TEST_PATH.md#fast-exploration-about-2-minutes);
-  and complete a real pasted two-idea GPT path without exposing private data.
-- [ ] Complete the physical-device, Edge/Safari, install/standalone, microphone,
-  offline/reopen, and background/reopen matrix described in the [production
-  smoke checklist](../qa/production-smoke-checklist.md#manual-and-public-validation-work-pending).
+- [x] On that public URL, install/open the PWA and complete the requested physical
+  capture durability path. Steven confirmed success on an iPhone 14 Pro Max,
+  including save/playback after close/reopen and offline/reconnect processing
+  resume without a duplicate.
+- [ ] Complete the remaining fast sample-library judge rehearsal, record the
+  specific iPhone browser, and optionally run the available secondary desktop
+  browser. The owner-confirmed phone result does not claim an unreported
+  microphone-denial, screen-reader, or keyboard-only audit.
 - [x] Primary implementation `/feedback` Session ID verified and recorded in the
   README, Devpost draft, and evidence ledger: `019f66eb-7a90-7080-8667-b6ac77c45a23`.
 - [ ] Record an owner-approved public YouTube demo under three minutes, then
@@ -168,10 +172,11 @@ Not created. These are status statements, not placeholders.
 
 ## Recommended remaining owner sequence
 
-1. Run the remaining physical-device/browser/PWA checks on the verified public
-   production path.
-2. Complete the fast judge path on that exact
-   URL; stop if the public judge path is not frictionless.
+1. Complete the fast judge path on the exact verified public production URL;
+   stop if the public judge path is not frictionless.
+2. Record the iPhone browser name and optionally run the available secondary
+   desktop browser; this is additional matrix evidence, not a blocker for the
+   owner-confirmed primary phone/PWA durability path.
 3. Retain the verified canonical v2 evaluation report with the submission
    evidence; do not substitute the distinct two-call production smoke for it.
 4. Record and publish the truthful public YouTube demo, then verify playback

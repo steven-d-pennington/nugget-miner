@@ -141,3 +141,16 @@ verification at <https://nugget-miner-kappa.vercel.app> returned HTTP 200 for
 the root, Analytics v2 script, Analytics pageview intake, and health endpoint;
 the captured pageview contained only the canonical origin plus
 `/capture/[capture]`, and no requests failed.
+
+## July 17 owner-confirmed iPhone durability/PWA check
+
+Steven reported completing the requested public-production device flow on an
+iPhone 14 Pro Max: record, Stop & save, fully close/reopen, retained playback,
+Add to Home Screen/installed use, offline-to-online processing resume, and no
+duplicate. He reported that all requested checks looked good. This closes the
+primary physical-phone/PWA durability check as owner-attested evidence. The
+specific iPhone browser, a secondary desktop-browser run, microphone-denial,
+screen-reader, and keyboard-only checks were not reported and are not inferred.
+At `2026-07-17T12:39:48-07:00`, Sol correlated the report with a fresh public
+smoke: root HTTP 200/title **Nugget** and health `ok`, `whisper-1`, and
+`gpt-5.6-terra`.

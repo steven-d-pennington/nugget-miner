@@ -29,6 +29,15 @@ Automated evidence does not substitute for a real-phone result where the checkli
 | Microphone authority | Blocked | Microphone acceptance requires explicit permission confirmation and a supported secure browser context. That confirmation was unavailable for this documentation pass. |
 | Live GPT/OpenAI processing | Pass | On the deployed HTTPS preview, the user recorded audio, received the transcript, and then confirmed the GPT organization flow worked after commit `4c064e7` changed the API model default to `gpt-5.6-terra`. Vercel reported deployment `dpl_5Py2H5H6wuQJEaC9p5MMrHA8j4nt` READY. Exact API usage was not captured and is not estimated here. |
 
+### Owner-confirmed physical-device follow-up — July 17, 2026
+
+Steven later ran the requested production durability/PWA flow on a physical
+iPhone 14 Pro Max and reported that all requested checks looked good: record,
+Stop & save, fully close/reopen, retained local playback, Add to Home Screen/
+installed use, offline-to-online processing resume, and no duplicate. The
+browser name, a microphone-denial run, and reusable screenshot/video evidence
+were not supplied, so this addendum records only the owner-attested scenarios.
+
 ## Automated verification
 
 | Check | Status | Evidence |

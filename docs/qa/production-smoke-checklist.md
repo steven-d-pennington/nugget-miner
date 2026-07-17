@@ -119,9 +119,9 @@ $serviceWorker
 | Required work | Status and next action |
 | --- | --- |
 | Authorized public judging URL | **PASS.** Steven authorized production; the canonical URL and health endpoint respond anonymously. |
-| Real device/browser matrix | **Not performed.** No physical device, Edge/Safari, install/standalone/backgrounding matrix was performed. Run the Sprint 5 matrix on at least one physical phone plus the available desktop secondary browser. |
-| Real microphone and offline flow | **Pending.** On the authorized public HTTPS URL, record, save, reload/play back, reconnect an offline capture, and briefly background/reopen the installed app. |
-| PWA/manual privacy review | **Pending.** Confirm install, standalone launch, icon, privacy/error copy, and that no API response is served from service-worker cache on the actual device/browser matrix. |
+| Real device/browser matrix | **PARTIAL PASS.** Steven owner-confirmed the requested production flow on a physical iPhone 14 Pro Max. The specific iPhone browser and a secondary desktop browser were not reported. |
+| Real microphone and offline flow | **PASS by owner attestation.** Record, Stop & save, full close/reopen, local playback, installed offline/reconnect resume, and no duplicate all looked good on the iPhone 14 Pro Max. |
+| PWA/manual privacy review | **PASS for the requested primary phone path.** Add to Home Screen/installed use and lifecycle recovery were owner-confirmed. No independent device instrumentation or screenshot was supplied. |
 
 ## Retained prior-sprint gaps
 
@@ -135,4 +135,4 @@ These gaps are retained intentionally; this Sprint 5 evidence pass does not eras
 
 ## Task 6 status
 
-The authenticated preview, completion-branch public production, environment-entry presence, local automated gate, headers, manifest, and service-worker policy are documented. Task 6 and Sprint 5 remain incomplete until the required real-device/browser matrix and live judge path are verified.
+The authenticated preview, completion-branch public production, environment-entry presence, local automated gate, headers, manifest, service-worker policy, and owner-confirmed iPhone 14 Pro Max durability/PWA path are documented. Task 6 remains incomplete for the final judge rehearsal, video, Devpost submission, and confirmation evidence; a named iPhone browser and secondary-browser pass would strengthen but do not replace the recorded primary-device evidence.
