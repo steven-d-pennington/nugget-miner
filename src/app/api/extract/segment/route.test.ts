@@ -79,7 +79,7 @@ describe('POST /api/extract/segment', () => {
       provider: 'openai',
       model: 'gpt-route-test',
       responseId: 'resp_segment',
-      promptVersion: 'segment-v1',
+      promptVersion: 'segment-v2',
       schemaVersion: 'segmentation-v1',
     });
     expect(openAIMocks.parse).toHaveBeenCalledTimes(1);

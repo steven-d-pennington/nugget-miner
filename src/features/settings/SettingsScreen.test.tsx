@@ -57,7 +57,7 @@ describe('SettingsScreen', () => {
     expect(screen.getByText('Recordings remain in this browser until you delete the capture or erase all local data.')).toBeInTheDocument();
     expect(await screen.findByText('gpt-5.6-terra (available)')).toBeInTheDocument();
     expect(screen.getByText('Built with GPT-5.6 and Codex')).toBeInTheDocument();
-    expect(screen.getByText(/segment-v1, organize-v1/)).toBeInTheDocument();
+    expect(screen.getByText(/segment-v2, organize-v2/)).toBeInTheDocument();
     expect(document.body).not.toHaveTextContent('must-not-render');
     expect(document.body).not.toHaveTextContent('/server/private');
     expect(document.body).not.toHaveTextContent('secret');

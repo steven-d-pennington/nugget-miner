@@ -99,7 +99,7 @@ function segmentResponse(overrides: Record<string, unknown> = {}) {
     provider: 'openai',
     model: 'gpt-5.6-test',
     responseId: 'resp_segment',
-    promptVersion: 'segment-v1',
+    promptVersion: 'segment-v2',
     schemaVersion: 'segmentation-v1',
     ...overrides,
   };
@@ -111,7 +111,7 @@ function organizeResponse(overrides: Record<string, unknown> = {}) {
     provider: 'openai',
     model: 'gpt-5.6-test',
     responseId: 'resp_organize',
-    promptVersion: 'organize-v1',
+    promptVersion: 'organize-v2',
     schemaVersion: 'organization-v1',
     ...overrides,
   };
@@ -136,8 +136,8 @@ describe('cloud organization provider', () => {
       provider: 'openai',
       model: 'gpt-5.6-test',
       reasoningEffort: 'medium',
-      segmentationPromptVersion: 'segment-v1',
-      organizationPromptVersion: 'organize-v1',
+      segmentationPromptVersion: 'segment-v2',
+      organizationPromptVersion: 'organize-v2',
       segmentationSchemaVersion: 'segmentation-v1',
       organizationSchemaVersion: 'organization-v1',
     });

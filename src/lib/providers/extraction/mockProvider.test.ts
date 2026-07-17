@@ -49,8 +49,8 @@ describe('mockOrganizationProvider', () => {
       provider: 'mock',
       model: 'deterministic-organization-mock',
       reasoningEffort: 'deterministic',
-      segmentationPromptVersion: 'segment-v1',
-      organizationPromptVersion: 'organize-v1',
+      segmentationPromptVersion: 'segment-v2',
+      organizationPromptVersion: 'organize-v2',
       segmentationSchemaVersion: 'segmentation-v1',
       organizationSchemaVersion: 'organization-v1',
     });
@@ -80,7 +80,7 @@ describe('mockOrganizationProvider', () => {
     expect(first).toMatchObject({
       provider: 'mock',
       model: 'deterministic-organization-mock',
-      promptVersion: 'segment-v1',
+      promptVersion: 'segment-v2',
       schemaVersion: 'segmentation-v1',
     });
   });
@@ -154,7 +154,7 @@ describe('mockOrganizationProvider', () => {
     expect(first).toMatchObject({
       provider: 'mock',
       model: 'deterministic-organization-mock',
-      promptVersion: 'organize-v1',
+      promptVersion: 'organize-v2',
       schemaVersion: 'organization-v1',
     });
   });

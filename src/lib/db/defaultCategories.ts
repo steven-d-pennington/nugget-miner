@@ -40,7 +40,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
     name: 'Personal',
     normalizedName: 'personal',
     description:
-      'Individual projects, hobbies, health, finances, home, creativity, self-improvement, and personal errands that are not primarily about work, school, or family coordination. Examples: build a neighborhood tool library; train for a race; redesign a home office.',
+      'Individual projects, hobbies, health, finances, home, creativity, self-improvement, and personal errands that are not primarily about work, school, or family coordination. Speaker-led home projects are Personal even when family members benefit, such as a bookshelf for children. Examples: build a neighborhood tool library; train for a race; redesign a home office.',
     isDefault: true,
     isFallback: false,
     sortOrder: 30,
@@ -52,7 +52,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
     name: 'Family',
     normalizedName: 'family',
     description:
-      'Shared household or family responsibilities, relationships, caregiving, events, and plans involving relatives. Examples: organize a family reunion; create a chore schedule; research care options for a parent. Use Personal when the idea concerns only the speaker.',
+      'Shared household or family responsibilities, relationships, caregiving, events, and plans involving relatives. Examples: organize a family reunion; create a chore schedule; research care options for a parent. Use Personal for a speaker-led home project that merely benefits family members; use Family when family coordination, caregiving, or relatives are central to the outcome.',
     isDefault: true,
     isFallback: false,
     sortOrder: 40,
@@ -64,7 +64,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
     name: 'Misc',
     normalizedName: 'misc',
     description:
-      'Fallback for ideas that do not fit another category or are too ambiguous to classify confidently. Use only after comparing the idea against every other category description.',
+      'Fallback for ideas that do not fit another category or are too ambiguous to classify confidently. Deliberately undecided observations or curiosities without a defined outcome use Misc even when they might later become a creative project. Use only after comparing the idea against every other category description.',
     isDefault: true,
     isFallback: true,
     sortOrder: 50,
