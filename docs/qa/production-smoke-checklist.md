@@ -11,7 +11,7 @@
 | Preview URL | `https://nugget-miner-ig8utfq43-steven-penningtons-projects.vercel.app` |
 | Vercel deployment | `dpl_7wt1JTueTn4AH1thNuSWfKxSptqz` — preview, READY, 2026-07-16 15:05 PT |
 | Anonymous access | Vercel-auth protected. This is not yet the public judging URL. |
-| Production authority | A production deployment is not authorized. Task 6 and Sprint 5 remain incomplete. |
+| Production authority | Historical pre-authorization state. The July 16 addendum below records the subsequently authorized public deployment; Task 6 and Sprint 5 remain incomplete for the listed physical-device and live-evaluation gates. |
 
 ### Authorized public-production addendum — July 16, 2026
 
@@ -27,16 +27,34 @@ The initial production smoke correctly stopped on a production-only
 `gpt-4o-mini` organization value. After replacing `NUGGET_LLM_MODEL` with the
 exact `gpt-5.6-terra` value and rebuilding, the canonical public URL passed.
 
+### Two-call production organization smoke — July 17, 2026
+
+At `2026-07-17T17:11:13.3468501Z`, the public production URL completed one
+live segmentation call and one live organization call. Both reported
+`gpt-5.6-terra`. Segmentation response
+`resp_0c2907a3d0bba45a016a5a621a86bc819c8bcdcddab754c988` used `segment-v1` /
+`segmentation-v1` and returned two candidates. Organization response
+`resp_0fd62ea84151a9ac016a5a622a1088819288f0b671c67a1c15` used `organize-v1` /
+`organization-v1` and returned two ideas: the Personal **Neighborhood
+tool-sharing library** (one blocker, research needed, one action) and the Work
+**Automated weekly support handoff** (one blocker, no research needed, one
+action). Structured metadata is retained in
+[`../evals/production-smoke-2026-07-17.json`](../evals/production-smoke-2026-07-17.json).
+
+This is a production two-call smoke only. It is not the canonical 12-fixture
+live evaluation, does not create `docs/evals/latest.json`, and does not close
+the Sprint 2 live-evaluation gate.
+
 ## Local automated proof
 
 | Check | Result |
 | --- | --- |
 | `npm audit --omit=dev` | 0 vulnerabilities |
-| `npm run check` | Typecheck, lint, 56 files / 386 tests, and production build pass |
-| `npm run test:e2e` | Run twice; 3/3 passed on each run |
+| `npm run check` | July 17 coordinator verification: typecheck, lint, 57 files / 394 tests, and production build pass |
+| `npm run test:e2e` | July 17 coordinator verification: 3/3 passed |
 | Local production-mode Chromium E2E | Covers the critical flows with deterministic provider interception. It is browser automation proof, not physical-device proof. |
 
-No new live OpenAI call was made and no estimated spend was recorded for this evidence pass.
+The July 17 two-call production smoke above is the only new live organization evidence recorded here; it is intentionally not represented as a canonical live evaluation or score.
 
 ## Authenticated deployed smoke
 

@@ -3,8 +3,8 @@
 > **Status:** Incomplete pre-submission gate. This record reflects Sol's July 16,
 > 2026 engineering evidence window and this documentation claim-surface review.
 >
-> **Authority boundary:** This checklist does not authorize a production release,
-> Vercel setting change, provider call, YouTube publication, Devpost submission,
+> **Authority boundary:** This checklist does not authorize a Vercel setting
+> change, additional provider call, YouTube publication, Devpost submission,
 > tag, push, or any external publication. Checked boxes mean evidence was
 > verified in this gate; unchecked boxes require the named owner action and
 > fresh evidence.
@@ -40,6 +40,13 @@ and [Build Week evidence ledger](BUILD_WEEK_EVIDENCE.md).
   before provider-client use because `OPENAI_KEY_NONEMPTY=False` and
   `OPENAI_API_KEY is required for the live evaluation`; one eval file failed and
   13 tests were skipped. No provider call, report, or spend is claimed.
+- [x] A **two-call production smoke** at
+  `2026-07-17T17:11:13.3468501Z` completed one live `segment-v1` /
+  `segmentation-v1` request and one live `organize-v1` / `organization-v1`
+  request with `gpt-5.6-terra`, returning two candidates and two structured
+  ideas. See [`../evals/production-smoke-2026-07-17.json`](../evals/production-smoke-2026-07-17.json).
+  This is not `npm run eval:live`, does not create `docs/evals/latest.json`,
+  and does not close the canonical 12-fixture evaluation gate.
 - [ ] The full logged-out public production/PWA smoke passes. Anonymous root,
   health, headers, manifest, and service-worker checks pass at
   `https://nugget-miner-kappa.vercel.app`; install/standalone and physical-device

@@ -1,8 +1,9 @@
 # Nugget pre-submission verification — incomplete
 
 > **Gate status:** Pre-submission evidence only. The Sprint 6 submission exit
-> gate is incomplete. This record does not authorize production release,
-> provider use, publication, Devpost submission, tagging, or pushing.
+> gate is incomplete. This record does not authorize additional provider use,
+> publication, Devpost submission, tagging, or pushing. Production release is
+> separately authorized and recorded in the addendum below.
 
 ## Verification record
 
@@ -54,14 +55,14 @@
 | Apps for Your Life track selected | Not Run | Devpost was not opened or submitted in this gate. |
 | Title and descriptions pasted from the final file | Not Run | [Devpost draft](DEVPOST_SUBMISSION.md) is ready for owner review; no external field was edited. |
 | Production URL opens logged out | Verified | The canonical public URL returned HTTP 200 without deployment authentication; `/api/health` reported the expected models. |
-| Public/private repository access verified | Verified | Repository is public; current public MVP branch is pushed. Default `main` is older and must not be represented as the current MVP. |
-| MIT license present | Verified | Current public MVP branch contains `LICENSE`; default-branch GitHub license metadata remains absent because `main` is older. |
+| Public/private repository access verified | Verified | Repository is public; default `main` contains the current MVP after merge `136cc47`. |
+| MIT license present | Verified | Public default `main` contains `LICENSE`. |
 | README setup, sample, testing, GPT, Codex, and human decisions complete | Verified | [README](../../README.md) was read, searched, and link-audited in this gate; it contains each required surface and preserves known boundaries. |
 | Five screenshots uploaded and ordered | Blocked-Pending | Five prepared assets are documented in [SCREENSHOT_PLAN.md](SCREENSHOT_PLAN.md); no Devpost upload or public-production comparison was performed. |
 | Public YouTube URL opens logged out and is under three minutes | Blocked-Pending | Video not recorded or published; [recording checklist](DEMO_RECORDING_CHECKLIST.md) remains owner-executable. |
 | Primary `/feedback` Session ID entered | Verified | `019f66eb-7a90-7080-8667-b6ac77c45a23`, confirmed by the owner as the primary-task `/feedback` value. |
 | No unsupported claims | Verified | Claim-surface comparison below reviewed README, Devpost, demo, and non-test app source; no contradiction found for the requested model, review, privacy, or deferred-feature claims. |
-| Deployment remains available through August 5 | Blocked-Pending | No public production release or retention confirmation is authorized. |
+| Deployment remains available through August 5 | Blocked-Pending | Public production is authorized and live; retention through the required date still needs owner confirmation. |
 | Submit completed before 2:00 PM Pacific | Not Run | No person clicked Submit. |
 | Confirmation page/email saved | Not Run | No submission exists; no confirmation asset was created. |
 
@@ -71,7 +72,7 @@
 | --- | --- | --- |
 | Clean install, checks, E2E, live eval, and production smoke all pass | Blocked-Pending | Install, check, E2E, audit, and anonymous production infrastructure smoke passed. Live eval still has no report, and physical-device/browser checks remain open. |
 | Logged-out HTTPS root and `/api/health` | Verified | Public root returned HTTP 200 and health reported `whisper-1` plus `gpt-5.6-terra` without deployment authentication. |
-| PWA fast path and live two-idea judge path | Not Run | Public production is authorized; the interactive sample/live and physical-device paths have not yet been run on it. |
+| PWA fast path and live two-idea judge path | Partial | A two-call production smoke returned two organized ideas; the interactive sample path, full live judge path, and physical-device checks have not yet been run on it. |
 | Public repository and README links open in the external judge path | Verified | The public production URL and public MVP branch are now available without Vercel deployment authentication. |
 | Public YouTube end-to-end playback | Blocked-Pending | No video URL exists. |
 | Every screenshot asset opened against deployed production | Not Run | Prepared images exist, but no owner-approved public production comparison was run. |
@@ -94,7 +95,7 @@ rg -n -i -e 'self-learning|live research|cloud sync|fully closed|background proc
 
 | Surface | Comparison result |
 | --- | --- |
-| Model names | `src/lib/llm/modelConfig.ts` defaults organization to `gpt-5.6-terra`; `src/lib/server/transcriptionConfig.ts` defaults transcription to `gpt-4o-mini-transcribe`; the live-eval configuration is also `gpt-5.6-terra`. README, Devpost, and demo call out those source defaults, while separately and accurately identify the protected-preview overrides `whisper-1` and `gpt-5.6-terra`. None claims that production has been checked to match the preview. |
+| Model names | `src/lib/llm/modelConfig.ts` defaults organization to `gpt-5.6-terra`; `src/lib/server/transcriptionConfig.ts` defaults transcription to `gpt-4o-mini-transcribe`; the live-eval configuration is also `gpt-5.6-terra`. Public production health reports `whisper-1` and `gpt-5.6-terra`; the July 17 two-call production smoke also recorded `gpt-5.6-terra` for segmentation and organization. README, Devpost, and demo distinguish defaults, observed production models, and the still-open canonical evaluation gate. |
 | Mandatory review | `src/features/review/IdeaCandidateForm.tsx` requires reviewing highlighted fields before confirmation; `ReviewScreen.tsx` presents confirm/confirm-all controls; capture and library routes direct ready captures into review. README, Devpost, and demo consistently describe editable review and human confirmation before library use. |
 | Local/cloud boundary | `HomeScreen.tsx`, `ProcessCaptureButton.tsx`, and `SettingsScreen.tsx` state that audio/transcript content is sent for cloud processing when enabled or initiated, while saved records remain in the browser; Settings explicitly says saved recordings and ideas do not cloud-sync. README, Devpost, and demo describe browser IndexedDB/local save plus opt-in/initiated transient cloud processing without a local-only claim. |
 | Deferred and background-close claims | README and Devpost explicitly exclude self-learning, live research execution, sync, and guaranteed fully-closed-mobile-browser processing. The demo prohibits contrary narration. No reviewed app-source match advertises a conflicting capability. |
@@ -103,8 +104,9 @@ rg -n -i -e 'self-learning|live research|cloud sync|fully closed|background proc
 GPT-5.6-terra is the organization model, transcription has a separate model,
 review is mandatory, durable user records stay browser-local, cloud processing
 is disclosed, and deferred capabilities are not claimed. This conclusion does
-not replace the remaining physical-device, interactive judge-path, and
-live-provider evidence gates.
+not replace the remaining physical-device, interactive judge-path, or canonical
+12-fixture live-evaluation gates. The two-call production smoke is recorded
+separately in [`../evals/production-smoke-2026-07-17.json`](../evals/production-smoke-2026-07-17.json).
 
 ## API usage and remaining owner sequence
 

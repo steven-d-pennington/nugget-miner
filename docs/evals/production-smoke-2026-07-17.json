@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "nugget-production-smoke-v1",
+  "recordedAt": "2026-07-17T17:11:13.3468501Z",
+  "kind": "two-call-production-smoke",
+  "productionUrl": "https://nugget-miner-kappa.vercel.app",
+  "scope": "One production segmentation request followed by one production organization request. This is not the 12-fixture canonical live evaluation and does not produce a canonical score.",
+  "calls": [
+    {
+      "stage": "segment",
+      "model": "gpt-5.6-terra",
+      "responseId": "resp_0c2907a3d0bba45a016a5a621a86bc819c8bcdcddab754c988",
+      "promptVersion": "segment-v1",
+      "schemaVersion": "segmentation-v1",
+      "candidateCount": 2
+    },
+    {
+      "stage": "organize",
+      "model": "gpt-5.6-terra",
+      "responseId": "resp_0fd62ea84151a9ac016a5a622a1088819288f0b671c67a1c15",
+      "promptVersion": "organize-v1",
+      "schemaVersion": "organization-v1",
+      "ideaCount": 2,
+      "ideas": [
+        {
+          "category": "Personal",
+          "title": "Neighborhood tool-sharing library",
+          "blockerCount": 1,
+          "researchNeeded": true,
+          "suggestedActionCount": 1
+        },
+        {
+          "category": "Work",
+          "title": "Automated weekly support handoff",
+          "blockerCount": 1,
+          "researchNeeded": false,
+          "suggestedActionCount": 1
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "No raw user transcript or API credential is recorded.",
+    "This evidence does not replace docs/evals/latest.json or satisfy the canonical 12-fixture live-evaluation gate.",
+    "This evidence does not verify physical-device, PWA-install, or browser-matrix behavior."
+  ]
+}
