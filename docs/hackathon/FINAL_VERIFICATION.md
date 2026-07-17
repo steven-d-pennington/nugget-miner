@@ -153,3 +153,112 @@ that report.
 The single best remaining sequence is: record and publish the video; perform
 the final claim comparison; submit and reverify; then
 commit the real confirmation evidence and create the tag.
+
+## Visual polish gate — July 17, 2026
+
+**Gate result:** Passed on the preview artifact for `55ca334`. This visual gate
+used deterministic local sample data and a generated audio tone. It made no
+live OpenAI request and is not represented as live-provider evidence.
+
+### Accepted implementation commits
+
+| Commit | Accepted change |
+| --- | --- |
+| `20f7492` | `feat: polish mobile capture feedback` |
+| `4a33a57` | `feat: foreground organized idea review` |
+| `c2baf7d` | `feat: add compact idea library view` |
+| `4623bf9` | `fix: harden compact library preference` |
+| `c146b40` | `feat: add summary-first idea detail` |
+| `55ca334` | `style: align actions and settings surfaces` |
+
+Each bounded implementation task received an independent Terra review and an
+independent Sol focused-test, typecheck, and lint gate before acceptance. The
+aggregate branch diff passed `git diff --check`.
+
+### Automated gate
+
+| Command | Result |
+| --- | --- |
+| `npm run typecheck` | Passed with no TypeScript diagnostics. |
+| `npm run lint` | Passed with no ESLint diagnostics. |
+| `npm test` | Passed: 61 files, 415 tests. |
+| `npm run build` | Passed: Next.js 16.2.9 production build, 13 routes. |
+| `npm run test:e2e` | Passed: 3 Playwright scenarios (capture-to-library, retry idempotency, offline resume). |
+| `npm audit --audit-level=high` | Passed: 0 vulnerabilities. |
+
+`npm run eval:live` was intentionally not run for visual polish.
+
+### Verified preview
+
+| Field | Result |
+| --- | --- |
+| Preview deployment | `dpl_EAt7fRL6rQ94ppiveVo1HnjC5Ddx`, READY |
+| Exact source | `55ca334bcae3fe5394901650712a475b215c186f` |
+| Preview URL | [https://nugget-miner-hkeguic3w-steven-penningtons-projects.vercel.app](https://nugget-miner-hkeguic3w-steven-penningtons-projects.vercel.app) |
+| Branch | `codex/mvp-completion-2026-07-17` |
+
+The preview remains Vercel-protected. A temporary authenticated browser session
+was used for this gate; no share token, header, cookie, environment value, or
+secret is stored in the committed evidence.
+
+### Mobile responsive and functional smoke — 430 × 932
+
+- Capture showed one dominant concave amber microphone control, a flat idle
+  continuous line, three bottom tabs, and the separate Settings gear.
+- A generated safe audio tone exercised the real browser recording UI. The
+  line responded continuously, the timer advanced, **Stop & save** remained the
+  dominant action, and **Recording saved** appeared after local persistence.
+- Settings loaded the disclosed local sample library without a provider call.
+- Ideas opened in Cards mode. Compact toggled without changing the URL, survived
+  reload, and kept the active search/category filters in the live in-app-browser
+  smoke.
+- The tool-sharing sample opened summary-first with category, title, summary,
+  provenance, tags, goals, blocker/research organization, linked actions, and
+  source utilities. Edit then Cancel returned to reading mode without mutation.
+- The sample action completed and reopened while its source-idea link remained
+  available.
+- Settings retained the exact cloud-processing, local-storage, analytics, model,
+  prompt-version, and schema-version evidence without rendering secret fields.
+  The live About health display reached `whisper-1 (available)` and
+  `gpt-5.6-terra (available)`.
+- A separate deterministic review fixture used the shipped sample transcript,
+  ideas, and organization metadata in an isolated browser database. It verified
+  the three-candidate Nugget-first form and collapsed source drawer. It did not
+  call or simulate a live provider response.
+
+The live DOM smoke ran in the connected in-app browser. Its image-capture command
+timed out on two fresh tabs, so the same READY preview was captured through the
+repository's isolated Playwright Chromium fallback. Functional assertions and
+image capture therefore have separate retained evidence rather than concealing
+the browser-tool limitation.
+
+### Desktop, motion, focus, and failure preservation
+
+- At 1440 × 1000 the shell remained centered and bounded. Cards computed to two
+  columns while keeping DOM order; Compact remained a single list.
+- With reduced motion emulated, the waveform transition computed to `1e-06s`
+  and the textual **Ready when you are** state remained visible. Global
+  `:focus-visible` rules continue to provide a three-pixel focus outline for
+  links, buttons, inputs, textareas, and selects.
+- The full regression gate retained explicit microphone-denial recovery,
+  locally queued/offline resume, processing retry/idempotency, empty-library and
+  no-results states, and the two-step exact-`ERASE` confirmation. No existing
+  user browser profile was erased.
+
+### Screenshot evidence
+
+- [`capture-idle-mobile.png`](evidence/visual-polish/capture-idle-mobile.png)
+- [`capture-recording-mobile.png`](evidence/visual-polish/capture-recording-mobile.png)
+- [`review-mobile.png`](evidence/visual-polish/review-mobile.png)
+- [`library-cards-mobile.png`](evidence/visual-polish/library-cards-mobile.png)
+- [`library-compact-mobile.png`](evidence/visual-polish/library-compact-mobile.png)
+- [`idea-detail-mobile.png`](evidence/visual-polish/idea-detail-mobile.png)
+- [`library-desktop.png`](evidence/visual-polish/library-desktop.png)
+
+### Preservation boundary
+
+This pass changed presentation only. It did not change provider calls, prompts,
+schemas, database contracts, grounding rules, confirmation requirements,
+privacy copy, analytics payloads, export payloads, local-first persistence, or
+processing behavior. `docs/hackathon/demo-video-draft/` remained untracked and
+untouched.
