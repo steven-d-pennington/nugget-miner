@@ -36,17 +36,19 @@ and [Build Week evidence ledger](BUILD_WEEK_EVIDENCE.md).
   and reviewed for models, review/confirmation, local/cloud wording, and deferred
   capabilities. The documented comparison is in the [final verification
   record](FINAL_VERIFICATION.md#claim-surface-comparison).
-- [ ] `npm run eval:live` passes and writes `docs/evals/latest.json`. It exited 1
-  before provider-client use because `OPENAI_KEY_NONEMPTY=False` and
-  `OPENAI_API_KEY is required for the live evaluation`; one eval file failed and
-  13 tests were skipped. No provider call, report, or spend is claimed.
+- [x] `npm run eval:live` passed and wrote `docs/evals/latest.json` at
+  `2026-07-17T18:23:10.007Z`: `gpt-5.6-terra`, medium reasoning, `segment-v2`,
+  and `organize-v2`; 12/12 correct idea counts and categories; zero invalid
+  categories and unsupported explicit claims; all 12 special requirements and
+  both response IDs per fixture present. The initial failed v1 report remains in
+  Git history at `be48e46`; the v2 prompt fix is `8d5d380`.
 - [x] A **two-call production smoke** at
   `2026-07-17T17:11:13.3468501Z` completed one live `segment-v1` /
   `segmentation-v1` request and one live `organize-v1` / `organization-v1`
   request with `gpt-5.6-terra`, returning two candidates and two structured
   ideas. See [`../evals/production-smoke-2026-07-17.json`](../evals/production-smoke-2026-07-17.json).
   This is not `npm run eval:live`, does not create `docs/evals/latest.json`,
-  and does not close the canonical 12-fixture evaluation gate.
+  and does not replace the canonical 12-fixture evaluation gate recorded above.
 - [ ] The full logged-out public production/PWA smoke passes. Anonymous root,
   health, headers, manifest, and service-worker checks pass at
   `https://nugget-miner-kappa.vercel.app`; install/standalone and physical-device
@@ -161,8 +163,8 @@ Not created. These are status statements, not placeholders.
    production path.
 2. Complete the fast judge path on that exact
    URL; stop if the public judge path is not frictionless.
-3. If a safe nonempty key and an accepted budget are available, run the live
-   evaluation and retain its result; otherwise keep that gate visibly open.
+3. Retain the verified canonical v2 evaluation report with the submission
+   evidence; do not substitute the distinct two-call production smoke for it.
 4. Record and publish the truthful public YouTube demo, then verify playback
    while logged out.
 5. Perform the final app/README/Devpost/video/screenshot claim comparison.

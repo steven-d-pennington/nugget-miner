@@ -43,7 +43,7 @@
 | First `npm run check` | Typecheck and lint passed; 57 normal test files / 394 tests passed. The command then failed because ignored temporary `.superpowers/sdd/sprint-6-task-3.capture.spec.ts` was discovered as an extra Vitest suite, where Playwright `test.beforeEach` cannot run under Vitest. |
 | Root-cause cleanup and rerun | Sol removed only the ignored temporary Task 3 capture spec and ignored Playwright config. Those untracked/ignored hygiene removals produced no Git diff. The rerun exited 0: typecheck and lint passed; 57 normal test files / 394 tests passed; the Next.js 16.2.9 production build compiled, passed TypeScript, generated 13 static pages, and completed. |
 | `npm run test:e2e` | Exit 0; 3/3 passed in 36.7 seconds: capture-to-library two ideas, retry idempotency, and offline queue resume. |
-| Live-eval preflight | `OPENAI_KEY_NONEMPTY=False`. `npm run eval:live` exited 1 before provider-client use with `OPENAI_API_KEY is required for the live evaluation`; one file failed and 13 tests were skipped. No `docs/evals/latest.json` exists. This is an open gate, not a passing live eval. |
+| Canonical live evaluation | **Verified July 17.** `docs/evals/latest.json` was generated at `2026-07-17T18:23:10.007Z` with `gpt-5.6-terra`, medium reasoning, `segment-v2`, and `organize-v2`. All 12 fixtures passed idea-count and category checks; invalid category IDs and unsupported explicit claims were both zero; every special requirement and both response IDs per fixture were present. The earlier failed v1 report remains in Git history at `be48e46`; the v2 prompt fix is `8d5d380`. |
 | `npm audit --omit=dev` | 0 vulnerabilities. |
 | `git diff --check` and final status | Exit 0; tree clean and synchronized before this documentation task. |
 | Authenticated preview smoke | `/api/health` was `ok`; transcription `whisper-1`; organization `gpt-5.6-terra`; root contained **Quick capture** and **Record**; Settings contained **Load sample library**. This does not prove anonymous access or the public judge path. |
@@ -70,7 +70,7 @@
 
 | Requirement | Status | Precise evidence or blocker |
 | --- | --- | --- |
-| Clean install, checks, E2E, live eval, and production smoke all pass | Blocked-Pending | Install, check, E2E, audit, and anonymous production infrastructure smoke passed. Live eval still has no report, and physical-device/browser checks remain open. |
+| Clean install, checks, E2E, live eval, and production smoke all pass | Blocked-Pending | Install, check, E2E, audit, canonical live eval, and anonymous production infrastructure smoke passed. Physical-device/browser checks remain open. |
 | Logged-out HTTPS root and `/api/health` | Verified | Public root returned HTTP 200 and health reported `whisper-1` plus `gpt-5.6-terra` without deployment authentication. |
 | PWA fast path and live two-idea judge path | Partial | A two-call production smoke returned two organized ideas; the interactive sample path, full live judge path, and physical-device checks have not yet been run on it. |
 | Public repository and README links open in the external judge path | Verified | The public production URL and public MVP branch are now available without Vercel deployment authentication. |
@@ -95,7 +95,7 @@ rg -n -i -e 'self-learning|live research|cloud sync|fully closed|background proc
 
 | Surface | Comparison result |
 | --- | --- |
-| Model names | `src/lib/llm/modelConfig.ts` defaults organization to `gpt-5.6-terra`; `src/lib/server/transcriptionConfig.ts` defaults transcription to `gpt-4o-mini-transcribe`; the live-eval configuration is also `gpt-5.6-terra`. Public production health reports `whisper-1` and `gpt-5.6-terra`; the July 17 two-call production smoke also recorded `gpt-5.6-terra` for segmentation and organization. README, Devpost, and demo distinguish defaults, observed production models, and the still-open canonical evaluation gate. |
+| Model names | `src/lib/llm/modelConfig.ts` defaults organization to `gpt-5.6-terra`; `src/lib/server/transcriptionConfig.ts` defaults transcription to `gpt-4o-mini-transcribe`; the live-eval configuration is also `gpt-5.6-terra`. Public production health reports `whisper-1` and `gpt-5.6-terra`; the July 17 two-call production smoke and the full canonical v2 evaluation both recorded `gpt-5.6-terra` for segmentation and organization. README, Devpost, and demo distinguish defaults, observed production models, and the remaining device/submission gates. |
 | Mandatory review | `src/features/review/IdeaCandidateForm.tsx` requires reviewing highlighted fields before confirmation; `ReviewScreen.tsx` presents confirm/confirm-all controls; capture and library routes direct ready captures into review. README, Devpost, and demo consistently describe editable review and human confirmation before library use. |
 | Local/cloud boundary | `HomeScreen.tsx`, `ProcessCaptureButton.tsx`, and `SettingsScreen.tsx` state that audio/transcript content is sent for cloud processing when enabled or initiated, while saved records remain in the browser; Settings explicitly says saved recordings and ideas do not cloud-sync. README, Devpost, and demo describe browser IndexedDB/local save plus opt-in/initiated transient cloud processing without a local-only claim. |
 | Deferred and background-close claims | README and Devpost explicitly exclude self-learning, live research execution, sync, and guaranteed fully-closed-mobile-browser processing. The demo prohibits contrary narration. No reviewed app-source match advertises a conflicting capability. |
@@ -104,17 +104,18 @@ rg -n -i -e 'self-learning|live research|cloud sync|fully closed|background proc
 GPT-5.6-terra is the organization model, transcription has a separate model,
 review is mandatory, durable user records stay browser-local, cloud processing
 is disclosed, and deferred capabilities are not claimed. This conclusion does
-not replace the remaining physical-device, interactive judge-path, or canonical
-12-fixture live-evaluation gates. The two-call production smoke is recorded
-separately in [`../evals/production-smoke-2026-07-17.json`](../evals/production-smoke-2026-07-17.json).
+not replace the remaining physical-device, interactive judge-path, or
+submission gates. The canonical v2 report is
+[`../evals/latest.json`](../evals/latest.json); the distinct two-call production
+smoke remains in [`../evals/production-smoke-2026-07-17.json`](../evals/production-smoke-2026-07-17.json).
 
 ## API usage and remaining owner sequence
 
-**API usage for this gate:** zero new provider calls and zero estimated provider
-spend. The live evaluation stopped before provider-client use; no live report
-exists.
+**API usage for the July 16 pre-submission window:** zero provider calls and
+zero estimated provider spend. The later canonical v2 evaluation is recorded
+separately in `docs/evals/latest.json`; this document does not infer a cost from
+that report.
 
-The single best remaining sequence is: run the real-device check; run a safe
-live eval only if a key is available and budget is accepted; record and publish
-the video; perform the final comparison; submit and reverify; then commit the
-real confirmation evidence and create the tag.
+The single best remaining sequence is: run the real-device check; record and
+publish the video; perform the final comparison; submit and reverify; then
+commit the real confirmation evidence and create the tag.

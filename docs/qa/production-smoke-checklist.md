@@ -42,8 +42,9 @@ action). Structured metadata is retained in
 [`../evals/production-smoke-2026-07-17.json`](../evals/production-smoke-2026-07-17.json).
 
 This is a production two-call smoke only. It is not the canonical 12-fixture
-live evaluation, does not create `docs/evals/latest.json`, and does not close
-the Sprint 2 live-evaluation gate.
+live evaluation. The later canonical v2 report in `docs/evals/latest.json`
+does close the Sprint 2 quality/evaluation gate; it remains distinct from this
+two-call production smoke.
 
 ## Local automated proof
 
@@ -101,7 +102,10 @@ $serviceWorker
 
 ## Retained prior-sprint gaps
 
-- Sprint 2 remains incomplete: the cost-deferred live evaluation score and reusable live-result screenshot are still open.
+- Sprint 2 quality/evaluation gate is complete: the canonical v2 live report
+  records all 12 passing fixtures with zero invalid categories or unsupported
+  explicit claims. A reusable user-facing live-result screenshot remains a
+  separate demonstration asset, not an evaluation-gate requirement.
 - Sprint 4 remains incomplete: manual action removal, category reassignment/deletion, custom-category live-classification effect, and downloaded-payload inspection remain unproved.
 
 These gaps are retained intentionally; this Sprint 5 evidence pass does not erase or supersede them.
