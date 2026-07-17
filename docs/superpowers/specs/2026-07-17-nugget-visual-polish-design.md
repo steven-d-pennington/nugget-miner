@@ -1,7 +1,9 @@
 # Nugget MVP Visual Polish Design
 
-**Status:** Approved for implementation planning  
-**Date:** July 17, 2026  
+**Status:** Approved for implementation planning
+
+**Date:** July 17, 2026
+
 **Branch:** `codex/mvp-completion-2026-07-17`
 
 ## Context
@@ -151,4 +153,3 @@ The polish pass is complete when:
 - Library: **balanced Cards default plus remembered Compact toggle**.
 - Idea detail: **summary-first sections**.
 - Navigation: **three bottom tabs plus Settings gear**.
-
