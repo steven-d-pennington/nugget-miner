@@ -1,181 +1,409 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
-import { ReviewService, type ReviewSnapshot } from '@/lib/services/ReviewService';
-import { parseExtractionResult } from '@/lib/validation/extractionResult';
-import { transcriptRepository } from '@/lib/repositories';
-import type { ExtractionActionSuggestion, ExtractionPreset, SourceSpan, Transcript } from '@/types';
-import { PresetSelector } from './PresetSelector';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AppShell } from '@/components/AppShell';
+import { errorDetails } from '@/lib/errors';
+import { tagRepository } from '@/lib/repositories';
+import { ReviewService, type CanonicalReviewSnapshot } from '@/lib/services/ReviewService';
+import { userErrorMessage, type UserErrorMessage } from '@/lib/userErrorMessage';
+import type { Idea, Tag } from '@/types';
+import {
+  IdeaCandidateForm,
+  initializeIdeaDraftFormValue,
+  type IdeaDraftFormValue,
+  validateIdeaDraftFormValue,
+} from './IdeaCandidateForm';
 
-function sourceSnippet(transcript: Transcript | undefined, span?: SourceSpan) {
-  if (!transcript || !span) return 'Source unavailable';
-  return transcript.text.slice(span.start, span.end).replace(/\s+/g, ' ').trim() || 'Source unavailable';
+interface MutationFailure {
+  ideaId?: string;
+  message: UserErrorMessage;
+  retry: 'confirm' | 'confirm-all' | 'discard' | 'reprocess';
 }
 
-function ActionCard({ action, index, onAccept, transcript }: { action: ExtractionActionSuggestion; index: number; onAccept(index: number): void; transcript?: Transcript }) {
-  return (
-    <article className="rounded-2xl border border-white/10 bg-black/20 p-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-full border border-accent/40 px-2 py-1 text-xs text-accent">Suggested action</span>
-        <span className="rounded-full border border-white/10 px-2 py-1 text-xs text-muted">{action.priority}</span>
-        <span className="text-xs text-muted">{Math.round(action.confidence * 100)}% confidence</span>
-      </div>
-      <h3 className="mt-3 text-lg font-semibold">{action.title}</h3>
-      {action.description ? <p className="mt-2 text-muted">{action.description}</p> : null}
-      <blockquote className="mt-3 border-l-2 border-accent/50 pl-3 text-sm text-muted">{sourceSnippet(transcript, action.sourceSpan)}</blockquote>
-      <button className="mt-4 rounded-full bg-success px-4 py-2 font-semibold text-black" onClick={() => onAccept(index)} type="button">
-        Accept action
-      </button>
-    </article>
-  );
+function confirmationInput(value: IdeaDraftFormValue, tagIds: string[]) {
+  return {
+    title: value.title.trim(),
+    summary: value.summary,
+    purpose: value.purpose,
+    goals: value.goals,
+    problem: value.problem,
+    blockers: value.blockers,
+    questions: value.questions,
+    suggestedActions: value.suggestedActions,
+    research: value.research,
+    categoryId: value.categoryId,
+    tagIds,
+  };
 }
 
-export function ReviewScreen({ ideaId }: { ideaId: string }) {
-  const [snapshot, setSnapshot] = useState<ReviewSnapshot | undefined>();
-  const [transcript, setTranscript] = useState<Transcript | undefined>();
-  const [preset, setPreset] = useState<ExtractionPreset>('general-thought');
-  const [message, setMessage] = useState<string | null>(null);
+export function ReviewScreen({ captureId }: { captureId: string }) {
+  const [snapshot, setSnapshot] = useState<CanonicalReviewSnapshot>();
+  const [pendingIdeas, setPendingIdeas] = useState<Idea[]>([]);
+  const [drafts, setDrafts] = useState<Map<string, IdeaDraftFormValue>>(new Map());
+  const [allTags, setAllTags] = useState<Tag[]>([]);
+  const [activeIdeaId, setActiveIdeaId] = useState<string>();
+  const [initialIdeaCount, setInitialIdeaCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [running, setRunning] = useState(false);
+  const [loadFailure, setLoadFailure] = useState<unknown>();
+  const [mutationFailure, setMutationFailure] = useState<MutationFailure>();
+  const [notice, setNotice] = useState<string>();
+  const [busy, setBusy] = useState(false);
+  const inFlight = useRef(false);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [nextSnapshot, nextTranscript] = await Promise.all([
-      ReviewService.latestSnapshot(ideaId),
-      transcriptRepository.getByIdeaId(ideaId),
-    ]);
-    setSnapshot(nextSnapshot);
-    setTranscript(nextTranscript);
-    if (nextSnapshot) setPreset(nextSnapshot.run.preset);
-    setLoading(false);
-  }, [ideaId]);
+    setLoadFailure(undefined);
+    try {
+      const [nextSnapshot, tags] = await Promise.all([
+        ReviewService.load(captureId),
+        tagRepository.list(),
+      ]);
+      const nextDrafts = new Map<string, IdeaDraftFormValue>();
+      for (const idea of nextSnapshot.ideas) {
+        nextDrafts.set(idea.id, initializeIdeaDraftFormValue(idea, tags));
+      }
+      setSnapshot(nextSnapshot);
+      setAllTags(tags);
+      setPendingIdeas(nextSnapshot.ideas);
+      setDrafts(nextDrafts);
+      setActiveIdeaId(nextSnapshot.ideas[0]?.id);
+      setInitialIdeaCount(nextSnapshot.ideas.length);
+    } catch (error) {
+      setLoadFailure(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [captureId]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  async function runExtraction() {
-    setRunning(true);
-    setMessage(null);
+  const activeIndex = Math.max(
+    0,
+    pendingIdeas.findIndex((idea) => idea.id === activeIdeaId),
+  );
+  const activeIdea = pendingIdeas[activeIndex];
+  const activeDraft = activeIdea ? drafts.get(activeIdea.id) : undefined;
+  const readyCount = useMemo(
+    () =>
+      snapshot
+        ? pendingIdeas.filter((idea) => {
+            const value = drafts.get(idea.id);
+            return value && validateIdeaDraftFormValue(idea, value, snapshot.categories).valid;
+          }).length
+        : 0,
+    [drafts, pendingIdeas, snapshot],
+  );
+
+  function removeCandidate(ideaId: string) {
+    setDrafts((current) => {
+      const next = new Map(current);
+      next.delete(ideaId);
+      return next;
+    });
+    setPendingIdeas((current) => {
+      const removedIndex = current.findIndex((idea) => idea.id === ideaId);
+      const next = current.filter((idea) => idea.id !== ideaId);
+      setActiveIdeaId((currentActive) => {
+        if (currentActive !== ideaId && next.some((idea) => idea.id === currentActive)) {
+          return currentActive;
+        }
+        return next[Math.min(Math.max(removedIndex, 0), Math.max(next.length - 1, 0))]?.id;
+      });
+      return next;
+    });
+  }
+
+  function changeDraft(ideaId: string, value: IdeaDraftFormValue) {
+    setDrafts((current) => {
+      const next = new Map(current);
+      next.set(ideaId, value);
+      return next;
+    });
+    setMutationFailure(undefined);
+    setNotice(undefined);
+  }
+
+  async function persistConfirmation(idea: Idea, value: IdeaDraftFormValue) {
+    const tags = await tagRepository.findOrCreate(value.tagNames);
+    await ReviewService.confirm(
+      idea.id,
+      confirmationInput(value, tags.map((tag) => tag.id)),
+      [...new Set(value.acceptedActionSuggestionIds)],
+    );
+    setAllTags((current) => {
+      const byId = new Map(current.map((tag) => [tag.id, tag]));
+      for (const tag of tags) byId.set(tag.id, tag);
+      return [...byId.values()];
+    });
+  }
+
+  async function confirmOne(ideaId = activeIdea?.id) {
+    if (!ideaId || inFlight.current || !snapshot) return;
+    const idea = pendingIdeas.find((candidate) => candidate.id === ideaId);
+    const value = drafts.get(ideaId);
+    if (!idea || !value || !validateIdeaDraftFormValue(idea, value, snapshot.categories).valid) return;
+
+    inFlight.current = true;
+    setBusy(true);
+    setMutationFailure(undefined);
+    setNotice(undefined);
     try {
-      await ReviewService.runMockExtraction({ ideaId, preset });
-      await load();
+      await persistConfirmation(idea, value);
+      removeCandidate(idea.id);
+      setNotice('Idea added to your library');
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Extraction failed.');
+      setMutationFailure({
+        ideaId,
+        message: userErrorMessage(error),
+        retry: 'confirm',
+      });
     } finally {
-      setRunning(false);
+      inFlight.current = false;
+      setBusy(false);
     }
   }
 
-  async function acceptNugget(id: string) {
-    await ReviewService.acceptNugget(id);
-    await load();
+  async function confirmAllReady() {
+    if (inFlight.current || !snapshot) return;
+    const ready = pendingIdeas.filter((idea) => {
+      const value = drafts.get(idea.id);
+      return value && validateIdeaDraftFormValue(idea, value, snapshot.categories).valid;
+    });
+    if (ready.length === 0) return;
+
+    inFlight.current = true;
+    setBusy(true);
+    setMutationFailure(undefined);
+    setNotice(undefined);
+    let succeeded = 0;
+    try {
+      for (const idea of ready) {
+        const value = drafts.get(idea.id)!;
+        try {
+          await persistConfirmation(idea, value);
+          succeeded += 1;
+          removeCandidate(idea.id);
+        } catch (error) {
+          setActiveIdeaId(idea.id);
+          const recovery = userErrorMessage(error);
+          setMutationFailure({
+            ideaId: idea.id,
+            message: {
+              ...recovery,
+              detail: `${succeeded} of ${ready.length} ready ideas confirmed before this stopped. ${recovery.detail}`,
+              actionLabel: 'Retry',
+            },
+            retry: 'confirm-all',
+          });
+          return;
+        }
+      }
+      setNotice(
+        succeeded === 1
+          ? '1 idea added to your library'
+          : `${succeeded} ideas added to your library`,
+      );
+    } finally {
+      inFlight.current = false;
+      setBusy(false);
+    }
   }
 
-  async function rejectNugget(id: string) {
-    await ReviewService.rejectNugget(id);
-    await load();
+  async function discardIdea(ideaId = activeIdea?.id) {
+    if (!ideaId || inFlight.current) return;
+    inFlight.current = true;
+    setBusy(true);
+    setMutationFailure(undefined);
+    setNotice(undefined);
+    try {
+      await ReviewService.discard(ideaId);
+      removeCandidate(ideaId);
+      setNotice('Draft idea discarded. Your source capture is still available.');
+    } catch (error) {
+      setMutationFailure({
+        ideaId,
+        message: userErrorMessage(error),
+        retry: 'discard',
+      });
+    } finally {
+      inFlight.current = false;
+      setBusy(false);
+    }
   }
 
-  async function acceptQuestion(id: string) {
-    await ReviewService.acceptQuestion(id);
-    await load();
+  async function reprocess() {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setBusy(true);
+    setMutationFailure(undefined);
+    setNotice(undefined);
+    try {
+      await ReviewService.reprocess(captureId);
+      await load();
+    } catch (error) {
+      setMutationFailure({
+        message: userErrorMessage(error),
+        retry: 'reprocess',
+      });
+    } finally {
+      inFlight.current = false;
+      setBusy(false);
+    }
   }
 
-  async function rejectQuestion(id: string) {
-    await ReviewService.rejectQuestion(id);
-    await load();
+  function retryMutation() {
+    if (!mutationFailure) return;
+    if (mutationFailure.retry === 'confirm') void confirmOne(mutationFailure.ideaId);
+    else if (mutationFailure.retry === 'confirm-all') void confirmAllReady();
+    else if (mutationFailure.retry === 'discard') void discardIdea(mutationFailure.ideaId);
+    else void reprocess();
   }
 
-  async function acceptAction(index: number) {
-    if (!snapshot) return;
-    const action = await ReviewService.acceptAction(snapshot.run.id, index);
-    setMessage(`Accepted action: ${action.title}`);
-    await load();
+  if (loading) {
+    return (
+      <AppShell backHref={`/capture/${captureId}?stay=1`} title="Review">
+        <p aria-live="polite">Loading ideas...</p>
+      </AppShell>
+    );
   }
 
-  const result = snapshot ? parseExtractionResult(JSON.parse(snapshot.run.rawJson)) : undefined;
+  if (loadFailure) {
+    const failureMessage = errorDetails(loadFailure).message;
+    const missingCapture = failureMessage === 'Capture not found.';
+    const missingTranscript = failureMessage === 'A transcript is required before review.';
+    const recovery = userErrorMessage(loadFailure);
+    return (
+      <AppShell backHref="/" title="Review">
+        <section className="review-empty" role="alert">
+          <p className="review-screen__eyebrow">Review unavailable</p>
+          <h1>{missingCapture ? 'Capture not found' : missingTranscript ? 'Transcript unavailable' : 'Unable to load review'}</h1>
+          <p>{missingCapture ? 'This capture is not stored in this browser profile.' : missingTranscript ? 'This capture needs a saved transcript before it can be reviewed.' : recovery.detail}</p>
+          <div className="review-empty__actions">
+            {!missingCapture ? <Link className="button-primary" href={`/capture/${captureId}?stay=1`}>Back to capture</Link> : null}
+            <button className="button-quiet" onClick={() => void load()} type="button">Try again</button>
+          </div>
+        </section>
+      </AppShell>
+    );
+  }
 
-  if (loading) return <main className="mx-auto min-h-screen max-w-5xl px-4 py-8 text-muted">Loading review…</main>;
+  if (!snapshot) return null;
+
+  const sourceHref = `/capture/${captureId}?stay=1`;
+  const completed = pendingIdeas.length === 0 &&
+    (initialIdeaCount > 0 || snapshot.capture.processingState === 'confirmed');
+
+  if (completed) {
+    return (
+      <AppShell backHref="/ideas" title="Review">
+        <section className="review-empty">
+          <p className="review-screen__eyebrow">Review complete</p>
+          <h1>All ideas reviewed</h1>
+          <p>Your confirmed ideas are in the library. The original capture and transcript remain linked.</p>
+          {notice ? <p aria-live="polite" className="success-note">{notice}</p> : null}
+          <div className="review-empty__actions">
+            <Link className="button-primary" href="/ideas">Browse ideas</Link>
+            <Link className="button-quiet" href={sourceHref}>View source capture</Link>
+          </div>
+        </section>
+      </AppShell>
+    );
+  }
+
+  if (pendingIdeas.length === 0) {
+    return (
+      <AppShell backHref={sourceHref} title="Review">
+        <section className="review-empty">
+          <p className="review-screen__eyebrow">Nothing separated yet</p>
+          <h1>No clear ideas found</h1>
+          <p>Edit the transcript if speech was missed, or try organizing this capture again. Your source text is unchanged.</p>
+          <blockquote className="review-empty__transcript">{snapshot.transcript.text}</blockquote>
+          {mutationFailure ? (
+            <div className="review-mutation-error" role="alert">
+              <strong>{mutationFailure.message.title}</strong>
+              <p>{mutationFailure.message.detail}</p>
+              <button className="button-quiet" disabled={busy} onClick={retryMutation} type="button">{mutationFailure.message.actionLabel ?? 'Retry'}</button>
+            </div>
+          ) : null}
+          <div className="review-empty__actions">
+            <Link className="button-quiet" href={sourceHref}>Edit transcript</Link>
+            <button className="button-primary" disabled={busy} onClick={() => void reprocess()} type="button">Reprocess</button>
+            <Link className="review-source-link" href={sourceHref}>Back to capture</Link>
+          </div>
+        </section>
+      </AppShell>
+    );
+  }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6">
-      <Link className="text-accent" href={`/idea/${ideaId}`}>← Back to idea</Link>
-      <header className="rounded-[var(--radius)] border border-white/10 bg-surface p-6">
-        <p className="text-sm uppercase tracking-[0.25em] text-accent">Nugget review</p>
-        <h1 className="mt-2 text-3xl font-bold">Review suggested nuggets</h1>
-        <p className="mt-2 max-w-2xl text-muted">Mock extraction runs locally. Suggestions are not trusted records until you accept them.</p>
-      </header>
-
-      <section className="rounded-[var(--radius)] border border-white/10 bg-surface p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <PresetSelector value={preset} onChange={setPreset} />
-          <button className="rounded-full bg-accent px-5 py-3 font-semibold text-black disabled:opacity-50" disabled={running || !transcript} onClick={runExtraction} type="button">
-            {snapshot ? 'Regenerate mock extraction' : 'Run mock extraction'}
+    <AppShell backHref={sourceHref} title="Review">
+      <article className="review-screen">
+        <header className="review-screen__header">
+          <p className="review-screen__eyebrow">Organized from your ramble</p>
+          <h1>{initialIdeaCount} {initialIdeaCount === 1 ? 'idea' : 'ideas'} found</h1>
+          <div className="review-screen__context">
+            <span className="metadata">{activeIndex + 1} of {pendingIdeas.length}</span>
+            <Link className="review-source-link" href={sourceHref}>View source capture</Link>
+          </div>
+          <div aria-label="Idea navigation" className="review-screen__navigation" role="group">
+            <button
+              className="button-quiet"
+              disabled={busy || activeIndex === 0}
+              onClick={() => setActiveIdeaId(pendingIdeas[activeIndex - 1]?.id)}
+              type="button"
+            >
+              Previous idea
+            </button>
+            <button
+              className="button-quiet"
+              disabled={busy || activeIndex >= pendingIdeas.length - 1}
+              onClick={() => setActiveIdeaId(pendingIdeas[activeIndex + 1]?.id)}
+              type="button"
+            >
+              Next idea
+            </button>
+          </div>
+          <button
+            className="review-confirm-all"
+            disabled={busy || readyCount === 0}
+            onClick={() => void confirmAllReady()}
+            type="button"
+          >
+            Confirm all ready ideas ({readyCount})
           </button>
-        </div>
-        {!transcript ? <p className="mt-4 rounded-xl border border-danger/40 bg-danger/10 p-3 text-danger">A transcript is required before extraction.</p> : null}
-        {message ? <p className="mt-4 rounded-xl border border-success/40 bg-success/10 p-3 text-success">{message}</p> : null}
-      </section>
+        </header>
 
-      {snapshot && result ? (
-        <>
-          <section className="rounded-[var(--radius)] border border-white/10 bg-surface p-6">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-accent/40 px-3 py-1 text-sm text-accent">Suggested</span>
-              <span className="text-sm text-muted">{snapshot.run.provider} · {snapshot.run.preset} · {snapshot.run.schemaVersion}</span>
-            </div>
-            <h2 className="mt-4 text-xl font-semibold">Summary</h2>
-            <p className="mt-2 text-muted">{result.summary}</p>
-            {result.tags.length ? <p className="mt-3 text-sm text-muted">Tags: {result.tags.join(', ')}</p> : null}
-            {result.warnings.length ? <p className="mt-3 text-sm text-warning">Warnings: {result.warnings.join('; ')}</p> : null}
-          </section>
+        {notice ? <p aria-live="polite" className="success-note">{notice}</p> : null}
+        {mutationFailure && mutationFailure.retry !== 'discard' ? (
+          <div className="review-mutation-error" role="alert">
+            <strong>{mutationFailure.message.title}</strong>
+            <p>{mutationFailure.message.detail}</p>
+            <button className="button-quiet" disabled={busy} onClick={retryMutation} type="button">{mutationFailure.message.actionLabel ?? 'Retry'}</button>
+          </div>
+        ) : null}
 
-          <section className="grid gap-4 md:grid-cols-2" aria-label="Suggested nuggets">
-            {snapshot.nuggets.map((nugget) => (
-              <article key={nugget.id} className="rounded-2xl border border-white/10 bg-surface p-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full border border-accent/40 px-2 py-1 text-xs text-accent">Suggested nugget</span>
-                  <span className="rounded-full border border-white/10 px-2 py-1 text-xs text-muted">{nugget.category}</span>
-                  <span className="text-xs text-muted">{nugget.status}</span>
-                </div>
-                <h3 className="mt-3 text-lg font-semibold">{nugget.title}</h3>
-                {nugget.detail ? <p className="mt-2 text-muted">{nugget.detail}</p> : null}
-                <blockquote className="mt-3 border-l-2 border-accent/50 pl-3 text-sm text-muted">{sourceSnippet(transcript, nugget.sourceSpan)}</blockquote>
-                <div className="mt-4 flex gap-2">
-                  <button className="rounded-full bg-success px-4 py-2 font-semibold text-black" onClick={() => acceptNugget(nugget.id)} type="button">Accept</button>
-                  <button className="rounded-full border border-danger/50 px-4 py-2 font-semibold text-danger" onClick={() => rejectNugget(nugget.id)} type="button">Reject</button>
-                </div>
-              </article>
-            ))}
-          </section>
-
-          <section className="grid gap-4 md:grid-cols-2" aria-label="Suggested actions">
-            {result.actions.map((action, index) => (
-              <ActionCard key={`${action.title}-${index}`} action={action} index={index} transcript={transcript} onAccept={acceptAction} />
-            ))}
-          </section>
-
-          <section className="grid gap-4 md:grid-cols-2" aria-label="Suggested questions">
-            {snapshot.questions.map((question) => (
-              <article key={question.id} className="rounded-2xl border border-white/10 bg-surface p-4">
-                <span className="rounded-full border border-accent/40 px-2 py-1 text-xs text-accent">Suggested question</span>
-                <h3 className="mt-3 text-lg font-semibold">{question.text}</h3>
-                <blockquote className="mt-3 border-l-2 border-accent/50 pl-3 text-sm text-muted">{sourceSnippet(transcript, question.sourceSpan)}</blockquote>
-                <div className="mt-4 flex gap-2">
-                  <button className="rounded-full bg-success px-4 py-2 font-semibold text-black" onClick={() => acceptQuestion(question.id)} type="button">Accept</button>
-                  <button className="rounded-full border border-danger/50 px-4 py-2 font-semibold text-danger" onClick={() => rejectQuestion(question.id)} type="button">Reject</button>
-                </div>
-              </article>
-            ))}
-          </section>
-        </>
-      ) : (
-        <section className="rounded-[var(--radius)] border border-dashed border-white/20 bg-surface p-6 text-muted">
-          No extraction run yet. Run mock extraction to create source-linked suggestions.
-        </section>
-      )}
-    </main>
+        {activeIdea && activeDraft ? (
+          <IdeaCandidateForm
+            busy={busy}
+            categories={snapshot.categories}
+            discardError={
+              mutationFailure?.retry === 'discard' && mutationFailure.ideaId === activeIdea.id
+                ? `${mutationFailure.message.title}. ${mutationFailure.message.detail}`
+                : undefined
+            }
+            idea={activeIdea}
+            key={activeIdea.id}
+            onChange={(value) => changeDraft(activeIdea.id, value)}
+            onConfirm={() => void confirmOne(activeIdea.id)}
+            onDiscard={() => void discardIdea(activeIdea.id)}
+            tags={allTags}
+            value={activeDraft}
+          />
+        ) : null}
+      </article>
+    </AppShell>
   );
 }

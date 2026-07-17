@@ -35,6 +35,7 @@ export class BrowserRecorderService {
   private audioContext?: AudioContext;
   private analyser?: AnalyserNode;
   private levelTimer?: number;
+  private permissionRequestId = 0;
 
   async start(): Promise<void> {
     if (this.state === 'recording' || this.state === 'requesting-permission') return;
@@ -43,17 +44,32 @@ export class BrowserRecorderService {
       throw new RecorderError('This browser does not support microphone recording.');
     }
 
+    const requestId = ++this.permissionRequestId;
     this.state = 'requesting-permission';
+    let stream: MediaStream;
     try {
-      this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (error) {
+      if (requestId !== this.permissionRequestId) return;
+      this.state = 'error';
+      throw new RecorderError(error instanceof Error ? error.message : 'Microphone permission was denied.');
+    }
+
+    if (requestId !== this.permissionRequestId) {
+      stream.getTracks().forEach((track) => track.stop());
+      return;
+    }
+
+    this.stream = stream;
+    try {
       const mimeType = selectMimeType();
-      this.recorder = new MediaRecorder(this.stream, mimeType ? { mimeType } : undefined);
+      this.recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       this.chunks = [];
       this.levels = [];
       this.recorder.ondataavailable = (event) => {
         if (event.data.size > 0) this.chunks.push(event.data);
       };
-      this.setupAnalyser(this.stream);
+      this.setupAnalyser(stream);
       this.startedAt = performance.now();
       this.recorder.start(250);
       this.state = 'recording';
@@ -98,6 +114,7 @@ export class BrowserRecorderService {
   }
 
   cancel(): void {
+    this.permissionRequestId += 1;
     if (this.recorder && this.recorder.state !== 'inactive') {
       this.recorder.stop();
     }

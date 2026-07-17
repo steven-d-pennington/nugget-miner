@@ -1,156 +1,209 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { ConsentSheet } from '@/components/ConsentSheet';
+import { useEffect, useRef, useState } from 'react';
 import { useRecorder } from '@/hooks/useRecorder';
-import { cloudTranscriptionProvider, type PublicTranscriptionConfig } from '@/lib/providers/transcription/cloudProvider';
-import { saveRecording, type TranscriptionMode } from './saveRecording';
+import { useWakeLock } from '@/hooks/useWakeLock';
+import { settingsRepository } from '@/lib/repositories';
+import { userErrorMessage } from '@/lib/userErrorMessage';
+import { CaptureService } from '@/lib/services/CaptureService';
+import { ProcessingService } from '@/lib/services/ProcessingService';
+import type { RecordingDraft } from '@/types';
 
 function formatDuration(durationMs: number) {
   const seconds = Math.max(0, Math.round(durationMs / 1000));
   const minutes = Math.floor(seconds / 60);
   const remainder = seconds % 60;
-  return `${minutes}:${remainder.toString().padStart(2, '0')}`;
+  return `${minutes.toString().padStart(2, '0')}:${remainder.toString().padStart(2, '0')}`;
 }
 
-function missingConfigMessage(config: PublicTranscriptionConfig | null) {
-  const missing = config?.missing?.length ? config.missing.join(', ') : 'apiKey';
-  return `Real transcription is not configured on the server yet. Missing: ${missing}. Add NUGGET_TRANSCRIPTION_API_KEY or OPENAI_API_KEY in Vercel.`;
+export interface RecorderPanelProps {
+  onCaptureLockChange?: (locked: boolean) => void;
+  onCaptureSaved?: () => void;
 }
 
-export function RecorderPanel({ onSaved }: { onSaved?: () => void }) {
+export function RecorderPanel({ onCaptureLockChange, onCaptureSaved }: RecorderPanelProps) {
   const router = useRouter();
   const recorder = useRecorder();
   const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const [consentOpen, setConsentOpen] = useState(false);
-  const [cloudConfig, setCloudConfig] = useState<PublicTranscriptionConfig | null>(null);
-  const [cloudConfigLoading, setCloudConfigLoading] = useState(true);
+  const [saveError, setSaveError] = useState<ReturnType<typeof userErrorMessage> | null>(null);
+  const [saveNotice, setSaveNotice] = useState<string | null>(null);
+  const [followupError, setFollowupError] = useState<string | null>(null);
+  const savingRef = useRef(false);
+  const isRecording = recorder.state === 'recording' || recorder.state === 'stopping';
+  const captureLocked = recorder.state === 'requesting-permission' || isRecording || saving || Boolean(recorder.draft);
+
+  useWakeLock(recorder.state === 'recording');
 
   useEffect(() => {
-    let active = true;
-    cloudTranscriptionProvider
-      .getConfig()
-      .then((config) => {
-        if (active) setCloudConfig(config);
-      })
-      .catch(() => {
-        if (active) setCloudConfig({ available: false, missing: ['apiKey'] });
-      })
-      .finally(() => {
-        if (active) setCloudConfigLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
+    onCaptureLockChange?.(captureLocked);
+  }, [captureLocked, onCaptureLockChange]);
 
-  async function persist(transcriptionMode: TranscriptionMode) {
-    if (!recorder.draft) return;
+  useEffect(() => {
+    if (!captureLocked) return;
+    const protectUnsavedWork = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', protectUnsavedWork);
+    return () => window.removeEventListener('beforeunload', protectUnsavedWork);
+  }, [captureLocked]);
+
+  async function persistDraft(draft: RecordingDraft) {
+    if (savingRef.current) return;
+    savingRef.current = true;
     setSaving(true);
     setSaveError(null);
+    setSaveNotice(null);
+    setFollowupError(null);
+    let savedCaptureId: string;
+    let automaticProcessing = false;
     try {
-      const { idea } = await saveRecording({ draft: recorder.draft, transcriptionMode });
-      onSaved?.();
-      router.push(`/idea/${idea.id}`);
-    } catch (caught) {
-      setSaveError(caught instanceof Error ? caught.message : 'Could not save recording.');
-    } finally {
+      const settings = await settingsRepository.get();
+      automaticProcessing = settings.automaticProcessing && settings.cloudProcessingConsent === 'granted';
+      const saved = await CaptureService.saveRecording({
+        draft,
+        processingPreference: automaticProcessing ? 'automatic' : 'manual',
+      });
+      savedCaptureId = saved.capture.id;
+    } catch (error) {
+      setSaveError(userErrorMessage(error));
       setSaving(false);
-    }
-  }
-
-  function requestRealTranscription() {
-    if (!cloudConfig?.available) {
-      setSaveError(missingConfigMessage(cloudConfig));
+      savingRef.current = false;
       return;
     }
+
+    recorder.clearSavedDraft();
+    onCaptureSaved?.();
+    if (!navigator.onLine) {
+      setSaveNotice('Recording saved locally. Reconnect to continue processing.');
+      setSaving(false);
+      savingRef.current = false;
+      return;
+    }
+    try {
+      router.push(`/capture/${savedCaptureId}`);
+    } catch {
+      setFollowupError('Your recording was saved locally, but the capture screen could not open. Open it from Recent captures.');
+      setSaving(false);
+      savingRef.current = false;
+      return;
+    }
+    if (automaticProcessing) {
+      void ProcessingService.process(savedCaptureId).catch(() => undefined);
+    }
+    setSaving(false);
+    savingRef.current = false;
+  }
+
+  async function stopAndSave() {
+    if (savingRef.current) return;
+    savingRef.current = true;
+    setSaving(true);
     setSaveError(null);
-    setConsentOpen(true);
+    setSaveNotice(null);
+    setFollowupError(null);
+    const draft = await recorder.stop();
+    if (!draft) {
+      setSaving(false);
+      savingRef.current = false;
+      return;
+    }
+    savingRef.current = false;
+    await persistDraft(draft);
   }
 
-  async function confirmRealTranscription() {
-    setConsentOpen(false);
-    await persist('cloud');
+  function openPasteRamble() {
+    document.querySelector<HTMLButtonElement>('[aria-controls="text-capture-panel"]')?.click();
   }
 
-  const isRecording = recorder.state === 'recording';
+  const recorderRecovery = recorder.error ? userErrorMessage(recorder.error) : null;
   const canStart = (recorder.state === 'idle' || recorder.state === 'error') && !recorder.draft;
-  const cloudAvailable = cloudConfig?.available === true;
+
+  if (recorder.state === 'requesting-permission') {
+    return (
+      <section aria-labelledby="permission-heading" aria-live="polite" className="permission-state">
+        <p className="capture-hero__eyebrow">Microphone</p>
+        <h1 id="permission-heading">Requesting microphone access…</h1>
+        <p>Choose Allow in your browser to begin recording. Nothing is saved until recording starts.</p>
+        <button className="button-quiet" onClick={recorder.discard} type="button">Cancel</button>
+      </section>
+    );
+  }
+
+  if (isRecording) {
+    return (
+      <section aria-labelledby="recording-heading" className="recording-state">
+        <p className="recording-state__eyebrow" id="recording-heading">Listening&hellip;</p>
+        <time aria-label={`Recording time ${formatDuration(recorder.elapsedMs)}`} className="recording-state__timer">
+          {formatDuration(recorder.elapsedMs)}
+        </time>
+        <div
+          aria-label="Live microphone level"
+          aria-valuemax={100}
+          aria-valuemin={0}
+          aria-valuenow={Math.round(recorder.level * 100)}
+          className="recording-waveform"
+          role="meter"
+        >
+          {Array.from({ length: 13 }, (_, index) => (
+            <span
+              aria-hidden="true"
+              key={index}
+              style={{ transform: `scaleY(${Math.max(0.18, recorder.level * (0.55 + ((index * 7) % 9) / 10))})` }}
+            />
+          ))}
+        </div>
+        <button className="record-stop-button" disabled={saving || recorder.state === 'stopping'} onClick={stopAndSave} type="button">
+          {saving || recorder.state === 'stopping' ? 'Saving…' : 'Stop & save'}
+        </button>
+        <p className="recording-state__reassurance">Saved on this device when you stop</p>
+      </section>
+    );
+  }
 
   return (
-    <section className="rounded-[var(--radius)] border border-white/10 bg-surface p-5 shadow-2xl shadow-black/20" aria-labelledby="record-heading">
-      <div className="flex flex-col gap-4">
-        <div>
-          <p className="mb-2 inline-flex rounded-full border border-accent/40 px-3 py-1 text-sm text-accent">Local-first prototype</p>
-          <h2 id="record-heading" className="text-2xl font-semibold">Record a thought</h2>
-          <p className="mt-2 text-muted">Stored on this device. Mock transcription stays local; real transcription asks consent before sending audio to the configured provider.</p>
-        </div>
+    <section aria-labelledby="capture-heading" className="capture-hero">
+      <p className="capture-hero__eyebrow">Quick capture</p>
+      <h1 id="capture-heading">What&apos;s on your mind?</h1>
+      <p className="capture-hero__lede">Speak freely. Your recording is stored in this browser before any processing starts.</p>
 
-        <div className="rounded-2xl bg-[var(--surface-2)] p-4" aria-live="polite">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <p className="text-sm uppercase tracking-[0.24em] text-muted">Status</p>
-              <p className="mt-1 text-xl font-medium capitalize">{recorder.draft ? 'ready to save' : recorder.state.replace('-', ' ')}</p>
-            </div>
-            <div className="font-mono text-4xl">{formatDuration(recorder.elapsedMs)}</div>
-          </div>
-          <div className="mt-4 h-3 overflow-hidden rounded-full bg-black/30" aria-hidden="true">
-            <div className="h-full rounded-full bg-accent transition-[width]" style={{ width: `${Math.max(4, recorder.level * 100)}%` }} />
-          </div>
-          <p className="mt-2 text-sm text-muted">Level meter is visual only; recording state is announced in text above.</p>
-        </div>
-
-        {recorder.error ? <p className="rounded-xl border border-danger/40 bg-danger/10 p-3 text-sm text-danger">{recorder.error}</p> : null}
-        {saveError ? <p className="rounded-xl border border-danger/40 bg-danger/10 p-3 text-sm text-danger">{saveError}</p> : null}
-        {recorder.draft && !cloudConfigLoading && !cloudAvailable ? (
-          <p className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-muted">{missingConfigMessage(cloudConfig)}</p>
-        ) : null}
-
-        <div className="flex flex-wrap gap-3">
-          {canStart ? (
-            <button className="rounded-full bg-accent px-6 py-3 font-semibold text-black" onClick={recorder.start} type="button">
-              Record
+      {recorderRecovery ? (
+        <div className="inline-error" role="alert">
+          <strong>{recorderRecovery.title}</strong>
+          <p>{recorderRecovery.detail}</p>
+          {recorderRecovery.actionLabel ? (
+            <button
+              className="button-quiet"
+              onClick={recorderRecovery.actionLabel === 'Paste a ramble' ? openPasteRamble : recorder.start}
+              type="button"
+            >
+              {recorderRecovery.actionLabel}
             </button>
           ) : null}
-          {isRecording ? (
-            <button className="rounded-full bg-danger px-6 py-3 font-semibold text-white" onClick={recorder.stop} type="button">
-              Stop
-            </button>
-          ) : null}
-          {recorder.draft ? (
-            <>
-              <button className="rounded-full bg-accent px-6 py-3 font-semibold text-black disabled:opacity-50" disabled={saving} onClick={() => persist('mock')} type="button">
-                Save & Mock Transcribe
-              </button>
-              <button
-                className="rounded-full bg-success px-6 py-3 font-semibold text-black disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={saving || cloudConfigLoading || !cloudAvailable}
-                onClick={requestRealTranscription}
-                type="button"
-              >
-                Save & Real Transcribe
-              </button>
-              <button className="rounded-full border border-white/20 px-6 py-3 font-semibold disabled:opacity-50" disabled={saving} onClick={() => persist('none')} type="button">
-                Save Only
-              </button>
-              <button className="rounded-full border border-danger/50 px-6 py-3 font-semibold text-danger disabled:opacity-50" disabled={saving} onClick={recorder.discard} type="button">
-                Discard
-              </button>
-            </>
-          ) : null}
         </div>
-      </div>
-      <ConsentSheet
-        open={consentOpen}
-        dataLabel="audio recording"
-        providerLabel={cloudConfig?.providerLabel ?? 'configured transcription provider'}
-        purpose="generate a transcript"
-        busy={saving}
-        onCancel={() => setConsentOpen(false)}
-        onConfirm={confirmRealTranscription}
-      />
+      ) : null}
+      {saveError ? (
+        <div className="inline-error" role="alert">
+          <strong>{saveError.title}</strong>
+          <p>{saveError.detail}</p>
+        </div>
+      ) : null}
+      {saveNotice ? <p aria-live="polite" className="success-note">{saveNotice}</p> : null}
+      {followupError ? <p className="inline-error" role="alert">{followupError}</p> : null}
+
+      {canStart ? (
+        <button aria-label="Record" className="record-button" onClick={recorder.start} type="button">
+          <span aria-hidden="true" className="record-button__icon" />
+          <span>Record</span>
+        </button>
+      ) : null}
+
+      {recorder.draft ? (
+        <button className="retry-save-button" disabled={saving} onClick={() => persistDraft(recorder.draft!)} type="button">
+          {saving ? 'Saving…' : 'Retry save'}
+        </button>
+      ) : null}
     </section>
   );
 }

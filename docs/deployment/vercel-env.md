@@ -1,80 +1,74 @@
 # Vercel AI provider environment
 
-Nugget's cloud AI paths are server-only and consent-gated:
+Nugget keeps provider credentials on the server. Real transcription sends
+audio to the configured transcription endpoint, and real organization sends
+transcript text to the configured GPT-5.6 endpoint.
 
-- `/api/transcribe` sends audio to the configured transcription provider.
-- `/api/extract` sends transcript text to the configured LLM provider.
+## Required secret
 
-Provider keys must never be placed in client code, IndexedDB, localStorage,
-screenshots, commits, or chat logs.
+`OPENAI_API_KEY` is the only secret in the shared environment template. Add it
+to each Vercel environment that will use real cloud processing:
 
-## Check current project env
-
-```bash
-vercel env ls
-```
-
-## Transcription env
-
-Preferred:
-
-```bash
-vercel env add NUGGET_TRANSCRIPTION_API_KEY production
-vercel env add NUGGET_TRANSCRIPTION_API_KEY preview
-vercel env add NUGGET_TRANSCRIPTION_API_KEY development
-```
-
-Compatible fallback:
-
-```bash
+```powershell
 vercel env add OPENAI_API_KEY production
 vercel env add OPENAI_API_KEY preview
-vercel env add OPENAI_API_KEY development
 ```
 
-Optional transcription settings:
+Never place the key in client code, IndexedDB, localStorage, screenshots,
+commits, logs, or chat messages.
 
-| Purpose | Preferred | Fallback | Default |
-| --- | --- | --- | --- |
-| Base URL | `NUGGET_TRANSCRIPTION_BASE_URL` | `OPENAI_BASE_URL` | `https://api.openai.com/v1` |
-| Model | `NUGGET_TRANSCRIPTION_MODEL` | `OPENAI_TRANSCRIPTION_MODEL` | `whisper-1` |
-| Timeout | `NUGGET_TRANSCRIPTION_TIMEOUT_MS` | — | `60000` |
-| Max upload bytes | `NUGGET_TRANSCRIPTION_MAX_BYTES` | — | `26214400` |
+## Optional overrides
 
-## LLM extraction env
+Every remaining key is a non-secret optional override. The values below are the
+MVP defaults documented in `.env.example`.
 
-Preferred:
+| Key | Purpose | Default |
+| --- | --- | --- |
+| `OPENAI_BASE_URL` | Shared OpenAI-compatible base URL | `https://api.openai.com/v1` |
+| `NUGGET_TRANSCRIPTION_BASE_URL` | Transcription-specific base URL | `https://api.openai.com/v1` |
+| `NUGGET_LLM_BASE_URL` | Organization-specific base URL | `https://api.openai.com/v1` |
+| `NUGGET_TRANSCRIPTION_MODEL` | Transcription model | `gpt-4o-mini-transcribe` |
+| `NUGGET_LLM_MODEL` | Organization model | `gpt-5.6-terra` |
+| `NUGGET_LLM_REASONING_EFFORT` | GPT-5.6 reasoning effort | `medium` |
+| `NUGGET_TRANSCRIPTION_MAX_BYTES` | Maximum transcription upload size | `26214400` |
+| `NUGGET_LLM_MAX_INPUT_CHARS` | Maximum transcript input length | `24000` |
+| `NUGGET_TRANSCRIPTION_TIMEOUT_MS` | Transcription request timeout | `60000` |
+| `NUGGET_LLM_TIMEOUT_MS` | Organization request timeout | `90000` |
 
-```bash
-vercel env add NUGGET_LLM_API_KEY production
-vercel env add NUGGET_LLM_API_KEY preview
-vercel env add NUGGET_LLM_API_KEY development
-```
+Only add an override in Vercel when the deployment must differ from these
+defaults.
 
-Compatible fallbacks, in order:
+## Verified Vercel environment presence — 2026-07-16
 
-```text
-OPENAI_API_KEY
-NUGGET_TRANSCRIPTION_API_KEY
-```
+`vercel env ls` confirmed these encrypted entries by presence only:
 
-Optional LLM settings:
+| Key | Confirmed environments |
+| --- | --- |
+| `OPENAI_API_KEY` | Production, Preview |
+| `NUGGET_LLM_MODEL` | Development, Preview, Production |
+| `NUGGET_TRANSCRIPTION_MODEL` | Development, Preview, Production |
+| `NUGGET_TRANSCRIPTION_API_KEY` | Development, Preview, Production |
 
-| Purpose | Preferred | Fallback | Default |
-| --- | --- | --- | --- |
-| Base URL | `NUGGET_LLM_BASE_URL` | `OPENAI_BASE_URL` | `https://api.openai.com/v1` |
-| Model | `NUGGET_LLM_MODEL` | `OPENAI_MODEL` | `gpt-4o-mini` |
-| Timeout | `NUGGET_LLM_TIMEOUT_MS` | — | `45000` |
-| Max transcript chars | `NUGGET_LLM_MAX_INPUT_CHARS` | — | `24000` |
+The values were not pulled, inspected, printed, or otherwise verified. This is
+only an encrypted-entry presence check; it does not change the template
+defaults above or authorize use of any value.
 
-## Pull env locally for manual smoke tests
+## Preview protection note
 
-```bash
+The verified 2026-07-16 preview is protected by Vercel authentication for
+anonymous access. It can support authenticated smoke checks, but it is not a
+public judging URL. Do not change Deployment Protection or create a production
+deployment without explicit authorization.
+
+## Pull environment values locally
+
+```powershell
 vercel env pull .env.local
 ```
 
-`.env.local` is gitignored. Do not paste its contents into terminal output, logs,
-issues, PRs, or chat.
+`.env.local` may contain secrets and must never be committed. Do not paste its
+contents into terminal output, logs, issues, pull requests, or chat messages.
+Do not use `vercel env pull` for a presence-only evidence check.
 
 ## Secure context note
 
@@ -83,5 +77,5 @@ Microphone recording requires a secure browser context. Use either:
 - `https://*.vercel.app`, or
 - `http://localhost:<port>` for local development.
 
-Plain LAN URLs like `http://10.x.x.x:3110` commonly fail browser mic security
-checks even when the application code is correct.
+Plain LAN URLs such as `http://10.x.x.x:3110` commonly fail browser microphone
+security checks even when the application code is correct.

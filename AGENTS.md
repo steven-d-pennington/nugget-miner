@@ -20,6 +20,8 @@ The detailed sprint plan wins for implementation sequencing. The approved produc
 ## Delegation Policy
 
 - When the user asks Sol to build through Terra, delegate one explicit sprint task or other bounded unit to `terra-worker`.
+- Before accepting the first Terra delegation in a coordinator task, verify runtime evidence identifies the model as `gpt-5.6-terra`. A task name, nickname, or completion report is not routing evidence.
+- Prefer the native project-scoped `terra-worker` custom agent. If the active Codex runtime does not expose that custom-agent selector, invoke `scripts/invoke-terra-worker.ps1` instead; it pins the worker model explicitly.
 - Default to one write-enabled worker at a time because all agents share the same worktree.
 - Parallel agents are appropriate for independent read-only research, review, test analysis, or non-overlapping work with an explicit file boundary.
 - Every delegation prompt must name the task, relevant plan path, allowed scope, required checks, and expected handoff evidence.

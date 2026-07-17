@@ -1,16 +1,20 @@
 import { db } from '@/lib/db';
-import type { ExtractionNuggetSuggestion, ItemStatus, Nugget } from '@/types';
+import type { ExtractionNuggetSuggestion, LegacyItemStatus, Nugget } from '@/types';
 
 function now() {
   return Date.now();
 }
 
 export const nuggetRepository = {
-  async createMany(ideaId: string, extractionRunId: string, suggestions: ExtractionNuggetSuggestion[]): Promise<Nugget[]> {
+  async createMany(
+    captureSessionId: string,
+    extractionRunId: string,
+    suggestions: ExtractionNuggetSuggestion[],
+  ): Promise<Nugget[]> {
     const timestamp = now();
     const nuggets: Nugget[] = suggestions.map((suggestion) => ({
       id: crypto.randomUUID(),
-      ideaId,
+      captureSessionId,
       extractionRunId,
       title: suggestion.title,
       detail: suggestion.detail,
@@ -29,11 +33,14 @@ export const nuggetRepository = {
     return db.nuggets.where('extractionRunId').equals(extractionRunId).toArray();
   },
 
-  async update(id: string, patch: Partial<Pick<Nugget, 'title' | 'detail' | 'category' | 'status'>>): Promise<void> {
+  async update(
+    id: string,
+    patch: Partial<Pick<Nugget, 'title' | 'detail' | 'category' | 'status'>>,
+  ): Promise<void> {
     await db.nuggets.update(id, { ...patch, updatedAt: now() });
   },
 
-  async updateStatus(id: string, status: ItemStatus): Promise<void> {
+  async updateStatus(id: string, status: LegacyItemStatus): Promise<void> {
     await this.update(id, { status });
   },
 };

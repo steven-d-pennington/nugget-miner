@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { resolveTranscriptionConfig } from './transcriptionConfig';
 
 describe('resolveTranscriptionConfig', () => {
+  it('uses gpt-4o-mini-transcribe as the production default', () => {
+    expect(resolveTranscriptionConfig({ OPENAI_API_KEY: 'key' }).model).toBe('gpt-4o-mini-transcribe');
+  });
+
   it('reports unavailable without exposing a fake key when no API key exists', () => {
     const config = resolveTranscriptionConfig({});
 
@@ -9,7 +13,7 @@ describe('resolveTranscriptionConfig', () => {
     expect(config.missing).toEqual(['apiKey']);
     expect(config.apiKey).toBeUndefined();
     expect(config.baseUrl).toBe('https://api.openai.com/v1');
-    expect(config.model).toBe('whisper-1');
+    expect(config.model).toBe('gpt-4o-mini-transcribe');
     expect(config.timeoutMs).toBe(60_000);
     expect(config.maxBytes).toBe(26_214_400);
   });

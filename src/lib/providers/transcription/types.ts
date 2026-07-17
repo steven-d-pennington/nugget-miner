@@ -1,7 +1,7 @@
 import type { ProviderMode, TranscriptResult } from '@/types';
 
 export interface TranscriptionInput {
-  ideaId: string;
+  captureSessionId: string;
   recordingId: string;
   audioBlob: Blob;
   signal?: AbortSignal;

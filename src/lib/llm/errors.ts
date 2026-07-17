@@ -1,7 +1,10 @@
 export class LlmProviderError extends Error {
   readonly code = 'llm_provider_error';
 
-  constructor(message = 'LLM provider request failed.') {
+  constructor(
+    message = 'LLM provider request failed.',
+    readonly retryable = false,
+  ) {
     super(message);
     this.name = 'LlmProviderError';
   }

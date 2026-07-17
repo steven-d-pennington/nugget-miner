@@ -1,3 +1,25 @@
+export interface ErrorDetails {
+  code?: string;
+  message?: string;
+  name?: string;
+}
+
+function stringProperty(value: object, property: string) {
+  const candidate = (value as Record<string, unknown>)[property];
+  return typeof candidate === 'string' ? candidate : undefined;
+}
+
+export function errorDetails(error: unknown): ErrorDetails {
+  if (typeof error === 'string') return { message: error };
+  if (!error || typeof error !== 'object') return {};
+
+  return {
+    code: stringProperty(error, 'code'),
+    message: stringProperty(error, 'message'),
+    name: stringProperty(error, 'name'),
+  };
+}
+
 export class NuggetError extends Error {
   constructor(message: string, readonly code: string) {
     super(message);

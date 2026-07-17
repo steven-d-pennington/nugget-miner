@@ -1,24 +1,40 @@
-import { cloudExtractionProvider } from './cloudProvider';
-import { mockExtractionProvider } from './mockProvider';
-import type { ExtractionProvider } from './types';
+import { cloudOrganizationProvider } from './cloudProvider';
+import { mockOrganizationProvider } from './mockProvider';
+import type { OrganizationProvider } from './types';
 
-const providers = new Map<string, ExtractionProvider>();
+const providers = new Map<string, OrganizationProvider>();
 
-export function registerExtractionProvider(provider: ExtractionProvider) {
+export function registerOrganizationProvider(provider: OrganizationProvider) {
   providers.set(provider.id, provider);
 }
 
-export function getExtractionProvider(id = 'mock') {
+export function getOrganizationProvider(id = 'mock') {
   return providers.get(id);
 }
 
-export function listExtractionProviders() {
+export function listOrganizationProviders() {
   return [...providers.values()];
 }
 
-registerExtractionProvider(mockExtractionProvider);
-registerExtractionProvider(cloudExtractionProvider);
+registerOrganizationProvider(mockOrganizationProvider);
+registerOrganizationProvider(cloudOrganizationProvider);
 
-export { cloudExtractionProvider, createCloudExtractionProvider } from './cloudProvider';
-export { mockExtractionProvider } from './mockProvider';
-export type { ExtractionContext, ExtractionProvider, ExtractionProviderInput, ExtractionProviderOutput } from './types';
+export {
+  cloudExtractionProvider,
+  cloudOrganizationProvider,
+  createCloudExtractionProvider,
+  createCloudOrganizationProvider,
+} from './cloudProvider';
+export {
+  mockExtractionProvider,
+  mockOrganizationProvider,
+} from './mockProvider';
+export type {
+  OrganizeProviderInput,
+  OrganizeProviderOutput,
+  OrganizationProvider,
+  OrganizationProviderCategory,
+  OrganizationProviderDescriptor,
+  SegmentProviderInput,
+  SegmentProviderOutput,
+} from './types';
