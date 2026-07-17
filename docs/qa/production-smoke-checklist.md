@@ -46,13 +46,25 @@ live evaluation. The later canonical v2 report in `docs/evals/latest.json`
 does close the Sprint 2 quality/evaluation gate; it remains distinct from this
 two-call production smoke.
 
+### Completion-branch production verification — July 17, 2026
+
+| Item | Verified result |
+| --- | --- |
+| Reviewed commits | Sol reviewed canonical-evaluation evidence `00572b2` and E2E metadata-drift fix `9087ebf`. |
+| Deployments | Preview `dpl_23u5wWwZPjUFjja3pkBY63Z2cjFm`, READY; exact artifact promoted under existing authorization to production `dpl_BH8LmRFvdRYF4rtdztZWTTUcH2tH`, READY. Canonical aliases include `https://nugget-miner-kappa.vercel.app`. |
+| Local verification | Final `npm run check`: typecheck, lint, 57 files / 396 tests, Next 16.2.9 build / 13 pages; `npm audit --omit=dev`: 0 vulnerabilities; `git diff --check`: pass. |
+| E2E regression handling | Independent initial E2E rerun failed 3/3 because mocks sent stale `segment-v1` / `organize-v1` values. The application correctly rejected invalid metadata. `9087ebf` imports the current source constants; Terra and Sol each reran `npm run test:e2e`, both passing 3/3. |
+| Public runtime | Health returned `ok`, `whisper-1`, and `gpt-5.6-terra`; public Settings HTML contained `segment-v2` and `organize-v2`. Headers, standalone portrait manifest, and API-excluding/GET-only service-worker behavior were reverified. |
+| Logged-out mobile Chromium | 430 x 932: HTTP 200, title **Nugget**, meaningful content, `h1` **What’s on your mind?**, visible **Record**, Capture/Ideas/Actions navigation, Settings navigation, **Load sample library**, manifest linked, service-worker supported, and zero framework overlays. |
+| Console/network diagnostic | First browser pass saw one anonymous console 404. Immediate clean diagnostic rerun found no failed requests and no responses >=400. Vercel error-log query for the prior hour returned no logs. Both observations are retained. |
+
 ## Local automated proof
 
 | Check | Result |
 | --- | --- |
-| `npm audit --omit=dev` | 0 vulnerabilities |
-| `npm run check` | July 17 coordinator verification: typecheck, lint, 57 files / 394 tests, and production build pass |
-| `npm run test:e2e` | July 17 coordinator verification: 3/3 passed |
+| `npm audit --omit=dev` | July 17 completion verification: 0 vulnerabilities |
+| `npm run check` | July 17 completion verification: typecheck, lint, 57 files / 396 tests, and Next 16.2.9 13-page production build passed |
+| `npm run test:e2e` | The initial independent rerun correctly failed 3/3 on stale mock metadata. After `9087ebf`, Terra and Sol each reran successfully: 3/3 passed. |
 | Local production-mode Chromium E2E | Covers the critical flows with deterministic provider interception. It is browser automation proof, not physical-device proof. |
 
 The July 17 two-call production smoke above is the only new live organization evidence recorded here; it is intentionally not represented as a canonical live evaluation or score.
@@ -112,4 +124,4 @@ These gaps are retained intentionally; this Sprint 5 evidence pass does not eras
 
 ## Task 6 status
 
-The authenticated preview, public production, environment-entry presence, local automated gate, headers, manifest, and service-worker policy are documented. Task 6 and Sprint 5 remain incomplete until the required real-device/browser matrix and live judge path are verified.
+The authenticated preview, completion-branch public production, environment-entry presence, local automated gate, headers, manifest, and service-worker policy are documented. Task 6 and Sprint 5 remain incomplete until the required real-device/browser matrix and live judge path are verified.

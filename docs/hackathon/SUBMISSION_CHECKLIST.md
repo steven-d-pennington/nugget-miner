@@ -22,11 +22,20 @@ and [Build Week evidence ledger](BUILD_WEEK_EVIDENCE.md).
 - [x] `npm ci` exited 0: 313 packages added, 314 audited, and 0 vulnerabilities.
   npm's `sharp@0.34.5` allow-scripts warning was non-blocking and is retained in
   the [final verification record](FINAL_VERIFICATION.md#clean-engineering-evidence).
-- [x] The clean rerun of `npm run check` exited 0: typecheck, lint, 57 normal
-  test files / 394 tests, and the Next.js 16.2.9 production build with 13 static
-  pages all passed.
-- [x] `npm run test:e2e` exited 0: 3/3 critical flows passed in 36.7 seconds.
-- [x] `npm audit --omit=dev` reported 0 vulnerabilities.
+- [x] Final completion-branch `npm run check` passed: typecheck, lint, 57 files /
+  396 tests, and the Next.js 16.2.9 production build with 13 pages. Sol reviewed
+  evidence commit `00572b2` and the E2E repair `9087ebf`.
+- [x] After an independent first E2E rerun correctly failed on stale mock
+  `segment-v1` / `organize-v1` metadata, `9087ebf` imported the source constants.
+  Terra and Sol each reran `npm run test:e2e`; both passed 3/3 critical flows.
+- [x] Final `npm audit --omit=dev` reported 0 vulnerabilities; `git diff --check`
+  passed.
+- [x] Completion artifact promoted to public production: preview
+  `dpl_23u5wWwZPjUFjja3pkBY63Z2cjFm` and production
+  `dpl_BH8LmRFvdRYF4rtdztZWTTUcH2tH` are READY. Public health is `ok` with
+  `whisper-1` and `gpt-5.6-terra`; public Settings contains `segment-v2` and
+  `organize-v2`. Logged-out mobile Chromium smoke is recorded in the
+  [production checklist](../qa/production-smoke-checklist.md).
 - [x] The authenticated preview smoke passed for deployment
   `dpl_BRjPt1wGKEsxp6b1qbFF1KxgbDJu` at the [verified preview](https://nugget-miner-782mixz1t-steven-penningtons-projects.vercel.app): health was `ok`,
   transcription was `whisper-1`, organization was `gpt-5.6-terra`, root exposed

@@ -34,6 +34,18 @@
 | Infrastructure smoke | Root contained **Quick capture** and **Record**; required security headers, standalone/portrait manifest, and service-worker exclusions for non-GET and `/api/*` requests passed. |
 | Corrective evidence | The first production smoke exposed `gpt-4o-mini`; the production-only `NUGGET_LLM_MODEL` value was corrected. A PowerShell stdin attempt then exposed a trailing CRLF, so the value was replaced with Vercel CLI `--value` and the production source redeployed before the passing smoke. |
 
+### Completion-branch production addendum — July 17, 2026
+
+| Field | Verified result |
+| --- | --- |
+| Reviewed commits | Sol reviewed canonical-evaluation evidence commit `00572b2` and E2E metadata-drift fix `9087ebf`. |
+| Final local gate | `npm run check` passed typecheck, lint, 57 files / 396 tests, and the Next.js 16.2.9 production build with 13 pages. `npm audit --omit=dev` reported 0 vulnerabilities; `git diff --check` passed. |
+| E2E regression and repair | An independent initial rerun failed 3/3 because `e2e/helpers/providerMocks.ts` hard-coded `segment-v1` / `organize-v1`; the application correctly rejected invalid metadata before review. Commit `9087ebf` imports the production prompt-version constants. Terra and Sol each reran `npm run test:e2e`; both runs passed 3/3. |
+| Preview and production | Preview `dpl_23u5wWwZPjUFjja3pkBY63Z2cjFm` was READY. Its exact artifact was promoted under existing authorization to production `dpl_BH8LmRFvdRYF4rtdztZWTTUcH2tH`, READY; canonical aliases include [https://nugget-miner-kappa.vercel.app](https://nugget-miner-kappa.vercel.app). |
+| Public runtime smoke | Public health returned `ok`, `whisper-1`, and `gpt-5.6-terra`; public Settings HTML contained `segment-v2` and `organize-v2`. Required headers, the standalone/portrait manifest, and the API-excluding, GET-only service worker were reverified. |
+| Logged-out mobile Chromium | At 430 x 932, the public root returned HTTP 200 with title **Nugget**, meaningful content, **What’s on your mind?** as `h1`, visible **Record**, Capture/Ideas/Actions navigation, Settings navigation, **Load sample library**, manifest linkage, service-worker support, and zero framework overlays. |
+| Diagnostic caveat | The first browser pass observed one anonymous console 404 message. An immediate clean diagnostic rerun recorded no failed requests and no responses with status >=400. Both observations are retained; Vercel error-log query for the prior hour found no logs. |
+
 ## Clean engineering evidence
 
 | Command or check | Result |
@@ -42,10 +54,10 @@
 | `npm ci` | Exit 0; added 313 packages; audited 314 packages; 0 vulnerabilities. npm emitted a non-blocking allow-scripts warning that `sharp@0.34.5` was not covered by `allowScripts`. The warning is retained, not concealed or treated as a failure. |
 | First `npm run check` | Typecheck and lint passed; 57 normal test files / 394 tests passed. The command then failed because ignored temporary `.superpowers/sdd/sprint-6-task-3.capture.spec.ts` was discovered as an extra Vitest suite, where Playwright `test.beforeEach` cannot run under Vitest. |
 | Root-cause cleanup and rerun | Sol removed only the ignored temporary Task 3 capture spec and ignored Playwright config. Those untracked/ignored hygiene removals produced no Git diff. The rerun exited 0: typecheck and lint passed; 57 normal test files / 394 tests passed; the Next.js 16.2.9 production build compiled, passed TypeScript, generated 13 static pages, and completed. |
-| `npm run test:e2e` | Exit 0; 3/3 passed in 36.7 seconds: capture-to-library two ideas, retry idempotency, and offline queue resume. |
+| `npm run test:e2e` | July 17 final verification: an independent first rerun failed 3/3 on stale mock prompt metadata, which the app correctly rejected. After `9087ebf` imported source prompt constants, Terra and Sol each reran the suite and passed 3/3: capture-to-library two ideas, retry idempotency, and offline queue resume. |
 | Canonical live evaluation | **Verified July 17.** `docs/evals/latest.json` was generated at `2026-07-17T18:23:10.007Z` with `gpt-5.6-terra`, medium reasoning, `segment-v2`, and `organize-v2`. All 12 fixtures passed idea-count and category checks; invalid category IDs and unsupported explicit claims were both zero; every special requirement and both response IDs per fixture were present. The earlier failed v1 report remains in Git history at `be48e46`; the v2 prompt fix is `8d5d380`. |
-| `npm audit --omit=dev` | 0 vulnerabilities. |
-| `git diff --check` and final status | Exit 0; tree clean and synchronized before this documentation task. |
+| `npm audit --omit=dev` | July 17 final verification: 0 vulnerabilities. |
+| `git diff --check` and final status | July 17 final verification: exit 0; completion branch pushed through `9087ebf`. |
 | Authenticated preview smoke | `/api/health` was `ok`; transcription `whisper-1`; organization `gpt-5.6-terra`; root contained **Quick capture** and **Record**; Settings contained **Load sample library**. This does not prove anonymous access or the public judge path. |
 
 ## Task 6 required-submission matrix
