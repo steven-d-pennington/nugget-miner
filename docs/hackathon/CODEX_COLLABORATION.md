@@ -9,18 +9,23 @@
 > [steven-d-pennington/nugget-miner](https://github.com/steven-d-pennington/nugget-miner);
 > the current MVP is the public
 > [`codex/mvp-overnight-2026-07-15` branch](https://github.com/steven-d-pennington/nugget-miner/tree/codex/mvp-overnight-2026-07-15)
-> at `e3a0753`; and its root contains the [MIT License](../../LICENSE). The
-> current READY preview was built from `f9bb639` and remains Vercel-auth
-> protected. The default `main` branch remains older at `a668857`, so it is not
-> the current MVP. GitHub's default-branch `licenseInfo` is therefore `null`;
-> that metadata does not negate the MIT license committed on the public MVP
-> branch.
+> whose pushed pre-Task-5 baseline is `e3a0753`; Task 5 documentation follows
+> that baseline without application-source changes. Its root contains the [MIT
+> License](../../LICENSE). The current READY preview is
+> [nugget-miner-782mixz1t-steven-penningtons-projects.vercel.app](https://nugget-miner-782mixz1t-steven-penningtons-projects.vercel.app),
+> deployment `dpl_BRjPt1wGKEsxp6b1qbFF1KxgbDJu`, built from exact pushed
+> `f9bb639`, and remains Vercel-auth protected. The default `main` branch
+> remains older at `a668857`, so it is not the current MVP. GitHub's
+> default-branch `licenseInfo` is therefore `null`; that metadata does not
+> negate the MIT license committed on the public MVP branch.
 
 ## Access and remaining gates
 
 - The remote refs checked for this record resolve `HEAD` and `main` to
-  `a668857eabeab07b46c9e9f12e82acad9b9e950e` and the current MVP branch to
-  `e3a0753795e8f8eb29350829826f8c2634de1e1f`.
+  `a668857eabeab07b46c9e9f12e82acad9b9e950e` and the MVP branch's pushed
+  pre-Task-5 baseline to `e3a0753795e8f8eb29350829826f8c2634de1e1f`. Task 5
+  documentation follows without application-source changes; the current head
+  is shown by the [public MVP branch](https://github.com/steven-d-pennington/nugget-miner/tree/codex/mvp-overnight-2026-07-15).
 - The protected preview is not a public, account-free judge URL, and no public
   production URL, YouTube URL, or live evaluation report is claimed here.
 - The primary implementation Session ID remains pending. This document records
@@ -36,8 +41,8 @@ pipeline with structured validation and provenance; durable processing and
 recovery; categories, tags, library, Actions, export, PWA support, evaluation
 fixtures, browser coverage, and a judge sample path.
 
-The final Task 5 branch diff-stat from `5394b9a` is recorded after these
-documentation changes are staged: **223 files changed, 27022 insertions(+), 1594 deletions(-)**.
+The verified diff from `5394b9a` at collaboration commit `6ffe664` is:
+**223 files changed, 27022 insertions(+), 1594 deletions(-)**.
 
 ## Dated sprint and commit evidence
 
@@ -49,7 +54,7 @@ documentation changes are staged: **223 files changed, 27022 insertions(+), 1594
 | 3 | 2026-07-16 | [`e85d06a`](https://github.com/steven-d-pennington/nugget-miner/commit/e85d06a) to [`4486a0e`](https://github.com/steven-d-pennington/nugget-miner/commit/4486a0e) | Mobile capture, persisted processing/review, multi-idea confirmation, and preview verification. |
 | 4 | 2026-07-16 | [`a236f8d`](https://github.com/steven-d-pennington/nugget-miner/commit/a236f8d) to [`e0ad1f0`](https://github.com/steven-d-pennington/nugget-miner/commit/e0ad1f0) | Searchable library, detail/edit/export, Actions, categories, privacy controls, and repaired detail-flow evidence. |
 | 5 | 2026-07-16 | [`10c3892`](https://github.com/steven-d-pennington/nugget-miner/commit/10c3892) to [`69a36ef`](https://github.com/steven-d-pennington/nugget-miner/commit/69a36ef) | PWA/offline work, anonymous-route hardening, recoverable failures, browser-flow tests, and protected-preview documentation. |
-| 6 | 2026-07-16 | [`29f2bf0`](https://github.com/steven-d-pennington/nugget-miner/commit/29f2bf0) to [`e3a0753`](https://github.com/steven-d-pennington/nugget-miner/commit/e3a0753), plus this Task 5 documentation commit | Judge samples, README/Devpost/screenshot/demo preparation, and truthful submission gates. |
+| 6 | 2026-07-16 | [`29f2bf0`](https://github.com/steven-d-pennington/nugget-miner/commit/29f2bf0) to [`e3a0753`](https://github.com/steven-d-pennington/nugget-miner/commit/e3a0753) (pushed pre-Task-5 baseline), followed by Task 5 documentation commit `6ffe664` with no application-source change | Judge samples, README/Devpost/screenshot/demo preparation, and truthful submission gates. |
 
 ## Roles and human decisions
 

@@ -4,7 +4,7 @@ Nugget is a mobile-first voice capture PWA that turns an unstructured ramble int
 
 **OpenAI Build Week track: Apps for Your Life**
 
-**Current verified preview:** [nugget-miner-9idan4vrm-steven-penningtons-projects.vercel.app](https://nugget-miner-9idan4vrm-steven-penningtons-projects.vercel.app) — deployment `dpl_48tEvWYrqU3MGKsSctxX94coF72A`, READY. It is protected by Vercel Authentication; it is not a public or account-free judge path. Its health reports transcription model `whisper-1` and organization model `gpt-5.6-terra`. Final public production publication requires owner release approval.
+**Current verified preview:** [nugget-miner-782mixz1t-steven-penningtons-projects.vercel.app](https://nugget-miner-782mixz1t-steven-penningtons-projects.vercel.app) — deployment `dpl_BRjPt1wGKEsxp6b1qbFF1KxgbDJu`, READY. It is protected by Vercel Authentication; it is not a public or account-free judge path. Its health reports transcription model `whisper-1` and organization model `gpt-5.6-terra`. Final public production publication requires owner release approval.
 
 ## The problem
 
