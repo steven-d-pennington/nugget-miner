@@ -229,14 +229,18 @@ describe('IdeaLibraryScreen', () => {
     const cards = await screen.findByRole('button', { name: 'Cards' });
     const compact = screen.getByRole('button', { name: 'Compact' });
     expect(cards).toHaveAttribute('aria-pressed', 'true');
+    const replaceCallCount = mocks.replace.mock.calls.length;
     fireEvent.click(compact);
     expect(compact).toHaveAttribute('aria-pressed', 'true');
     expect(localStorage.getItem('nugget:ideas:view')).toBe('compact');
-    expect(mocks.replace).not.toHaveBeenCalledWith('/ideas', expect.anything());
+    expect(mocks.replace).toHaveBeenCalledTimes(replaceCallCount);
     expect(mocks.search).toHaveBeenLastCalledWith(expect.objectContaining({
       categoryId: 'personal',
       tagIds: ['community'],
     }));
+    const compactRow = screen.getByRole('link', { name: /Neighborhood tool library/ });
+    expect(compactRow).toHaveAttribute('href', '/ideas/tool-library');
+    expect(compactRow).toHaveTextContent('Personal · #Community · Jul 14, 2026');
   });
 
   it('restores Compact from local storage', async () => {

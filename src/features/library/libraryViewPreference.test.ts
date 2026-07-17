@@ -33,4 +33,14 @@ describe('library view preference', () => {
     expect(readLibraryView(localStorage)).toBe('compact');
     expect(localStorage.getItem('nugget:ideas:view')).toBe('compact');
   });
+
+  it('handles an unavailable browser storage getter', () => {
+    Object.defineProperty(window, 'localStorage', {
+      configurable: true,
+      get: () => { throw new Error('Storage is unavailable.'); },
+    });
+
+    expect(readLibraryView()).toBe('cards');
+    expect(() => writeLibraryView('compact')).not.toThrow();
+  });
 });
