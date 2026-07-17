@@ -194,8 +194,28 @@ function RuledSection({
 }) {
   return (
     <section className="idea-form__section">
-      <h2>{title}</h2>
+      <h3>{title}</h3>
       {children}
+    </section>
+  );
+}
+
+function IdeaSectionGroup({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="idea-form__group">
+      <header className="idea-form__group-heading">
+        <h2>{title}</h2>
+        <p>{description}</p>
+      </header>
+      <div className="idea-form__group-content">{children}</div>
     </section>
   );
 }
@@ -358,6 +378,10 @@ export function IdeaCandidateForm({
         />
       </div>
 
+      <IdeaSectionGroup
+        description="The purpose, goals, and problem this idea is trying to address."
+        title="Why it matters"
+      >
       <RuledSection title="Purpose">
         {value.purpose ? (
           <GroundedFieldEditor
@@ -443,7 +467,12 @@ export function IdeaCandidateForm({
           />
         )}
       </RuledSection>
+      </IdeaSectionGroup>
 
+      <IdeaSectionGroup
+        description="Blockers, unanswered questions, and research that may shape the next move."
+        title="What's in the way"
+      >
       {(
         [
           ['blockers', 'Blockers', 'blocker'],
@@ -614,7 +643,12 @@ export function IdeaCandidateForm({
           </div>
         )}
       </RuledSection>
+      </IdeaSectionGroup>
 
+      <IdeaSectionGroup
+        description="Choose which proposed steps should become trackable actions when you confirm."
+        title="Next actions"
+      >
       <RuledSection title="Suggested actions">
         {value.suggestedActions.map((action, index) => {
           const canAccept = originalSuggestionIds.has(action.id);
@@ -657,6 +691,7 @@ export function IdeaCandidateForm({
           </p>
         ) : null}
       </RuledSection>
+      </IdeaSectionGroup>
 
       {attemptedConfirm && !validation.valid ? (
         <div className="idea-form__validation-summary" role="alert">

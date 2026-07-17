@@ -944,15 +944,43 @@ time {
   padding: 1.5rem 0;
 }
 
-.idea-form__section > h2 {
+.idea-form__section > h3 {
   margin: 0;
   font-size: 1.02rem;
   letter-spacing: -0.015em;
 }
 
-.idea-form__section h3 {
+.idea-form__section .review-string-list h3 {
   margin: 0;
   font-size: 0.88rem;
+}
+
+.idea-form__group {
+  border-top: 1px solid var(--line);
+  padding-block: 1.5rem;
+}
+
+.idea-form__group-heading {
+  margin-bottom: 1rem;
+}
+
+.idea-form__group-heading h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 1.2rem;
+  line-height: 1.25;
+}
+
+.idea-form__group-heading p {
+  max-width: 42rem;
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.idea-form__group-content > .idea-form__section {
+  border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  padding-block: 1rem;
 }
 
 .grounded-field {
@@ -1277,6 +1305,30 @@ time {
   line-height: 48px;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.2rem;
+}
+
+.review-source-drawer {
+  margin-top: 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  padding: 0.25rem 1rem 1rem;
+}
+
+.review-source-drawer summary {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.review-source-drawer blockquote {
+  margin: 0.75rem 0;
+  white-space: pre-wrap;
+  color: var(--muted);
+  line-height: 1.6;
 }
 
 .review-screen__navigation {
