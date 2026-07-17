@@ -10,11 +10,11 @@
 ### Required fields that remain open
 
 - **Public working URL:** Not available yet. The verified preview is [nugget-miner-9idan4vrm-steven-penningtons-projects.vercel.app](https://nugget-miner-9idan4vrm-steven-penningtons-projects.vercel.app), deployment `dpl_48tEvWYrqU3MGKsSctxX94coF72A`, but Vercel Authentication protects it. It is not a public or account-free judging path. Production is an older `main` deployment and is not the current MVP.
-- **Public video URL:** Not recorded yet.
+- **Public video URL:** Not recorded yet. The recording-ready [demo script](DEMO_SCRIPT.md) and [demo recording checklist](DEMO_RECORDING_CHECKLIST.md) prepare this work, but no YouTube URL may be added until the owner authorizes publication and logged-out public playback is verified.
 - **Primary Codex implementation Session ID:** Not captured yet.
 - **Live evaluation report:** Not recorded yet. A live run was authorized within an approximately four-dollar ceiling, but a safe nonempty key injection was unavailable. This work made zero provider calls and incurred zero provider spend.
 
-Do not submit the protected preview as the public Devpost testing URL. See the [judge test path](JUDGING_TEST_PATH.md) and [screenshot plan](SCREENSHOT_PLAN.md) for the current, truthful demonstration material.
+Do not submit the protected preview as the public Devpost testing URL. See the [judge test path](JUDGING_TEST_PATH.md), [screenshot plan](SCREENSHOT_PLAN.md), [demo script](DEMO_SCRIPT.md), and [demo recording checklist](DEMO_RECORDING_CHECKLIST.md) for the current, truthful demonstration material and pending public-video gate.
 
 ## Inspiration
 
