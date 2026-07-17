@@ -237,6 +237,7 @@ export function SettingsScreen({
           </label>
           <p className="mb-0 mt-2 leading-6 text-[#6E6B67]">When processing runs, audio is sent securely for transcription and transcript text is sent securely for GPT-5.6 organization. Nugget does not cloud-sync your saved recordings or ideas.</p>
           <p className="mb-0 mt-2 leading-6 text-[#6E6B67]">Recordings remain in this browser until you delete the capture or erase all local data.</p>
+          <p className="mb-0 mt-2 leading-6 text-[#6E6B67]">Anonymous page-view analytics go to Vercel. They do not include recordings, transcripts, idea content, or local record identifiers.</p>
           <p className="mb-0 mt-3 text-sm text-[#6E6B67]">Cloud processing consent: <strong className="capitalize text-[#101D36]">{consentLabel}</strong></p>
           {settings?.cloudProcessingConsent === 'granted' ? <button className="mt-3 min-h-12 font-extrabold text-[#101D36] underline decoration-[#E5A11A] decoration-2 underline-offset-4" onClick={() => void revokeConsent()} type="button">Revoke cloud processing consent</button> : null}
           {consentPrompt ? (
