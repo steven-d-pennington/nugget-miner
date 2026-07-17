@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AudioPlayer } from '@/components/AudioPlayer';
 import { GroundedFieldEditor } from '@/features/review/GroundedFieldEditor';
+import { IdeaSummaryView } from '@/features/library/IdeaSummaryView';
 import {
   createInferredGroundedText,
   initializeIdeaDraftFormValue,
@@ -119,6 +120,7 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
 
   const repositoryIdeaId = useMemo(() => {
     try {
@@ -171,6 +173,7 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
       };
       setBundle(nextBundle);
       setForm(initializeIdeaDraftFormValue(idea, allTags));
+      setEditing(false);
     } catch (error) {
       setLoadError(error instanceof Error ? error.message : 'The idea could not be loaded.');
     } finally {
@@ -189,6 +192,22 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
 
   function change(patch: Partial<IdeaDraftFormValue>) {
     if (form && !busy) setForm({ ...form, ...patch });
+  }
+
+  function beginEditing() {
+    if (!bundle || busy) return;
+    setForm(initializeIdeaDraftFormValue(bundle.idea, bundle.allTags));
+    setErrors({});
+    setMutationError(null);
+    setEditing(true);
+  }
+
+  function cancelEditing() {
+    if (!bundle || busy) return;
+    setForm(initializeIdeaDraftFormValue(bundle.idea, bundle.allTags));
+    setErrors({});
+    setMutationError(null);
+    setEditing(false);
   }
 
   function updateList(
@@ -228,6 +247,7 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
       setForm(initializeIdeaDraftFormValue(updated, allTags));
       setErrors({});
       setNotice('Changes saved on this device.');
+      setEditing(false);
     } catch (error) {
       setMutationError(error instanceof Error ? error.message : 'Changes could not be saved.');
     } finally {
@@ -307,7 +327,9 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
 
   return (
     <article className="mx-auto max-w-3xl px-4 pb-28 pt-8 sm:px-6">
-      <header className="pb-7">
+      {editing ? (
+        <div className="idea-detail__editor">
+          <header className="pb-7">
         <p className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#247A55]">
           {isSample ? <span className="rounded-full bg-[#FFF2D4] px-2 py-1 text-[#8A5700]">Sample</span> : null}
           <span>{idea.status === 'archived' ? 'Archived idea' : 'Saved idea'}</span>
@@ -326,7 +348,7 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
         <p className="mt-3 text-sm text-[#6E6B67]">Updated {formatDate(idea.updatedAt)}</p>
       </header>
 
-      <div className="idea-form">
+          <div className="idea-form">
         <section className={sectionClass}>
           <GroundedFieldEditor
             disabled={busy}
@@ -416,7 +438,18 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
           {errors['research.suggestedResourceTypes'] ? <p className="field-error" role="alert">{errors['research.suggestedResourceTypes']}</p> : null}
           <p className="field-guidance">Use one suggestion per line.</p>
         </section>
-      </div>
+          </div>
+        </div>
+      ) : (
+        <IdeaSummaryView
+          actions={bundle.actions}
+          category={bundle.category}
+          disabled={busy}
+          idea={bundle.idea}
+          onEdit={beginEditing}
+          tags={bundle.tags}
+        />
+      )}
 
       <section className={sectionClass} aria-labelledby="linked-actions-heading">
         <div className="flex items-center justify-between gap-4">
@@ -444,7 +477,12 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
       {notice ? <p aria-live="polite" className="mt-5 border-l-4 border-[#247A55] bg-green-50 p-4 text-[#14553A]">{notice}</p> : null}
 
       <section className="mt-7 flex flex-wrap gap-3 border-t border-[#E8DDCE] pt-7" aria-label="Idea actions">
-        <button className="button-primary min-h-12" disabled={busy} onClick={() => void saveChanges()} type="button">{busy ? 'Saving…' : 'Save changes'}</button>
+        {editing ? (
+          <>
+            <button className="button-primary min-h-12" disabled={busy} onClick={() => void saveChanges()} type="button">{busy ? 'Saving…' : 'Save changes'}</button>
+            <button className="button-quiet min-h-12" disabled={busy} onClick={cancelEditing} type="button">Cancel editing</button>
+          </>
+        ) : null}
         <button className="button-quiet min-h-12" disabled={busy} onClick={() => void copySummary()} type="button">Copy summary</button>
         <button className="button-quiet min-h-12" disabled={busy} onClick={() => exportIdea('markdown')} type="button">Export Markdown</button>
         <button className="button-quiet min-h-12" disabled={busy} onClick={() => exportIdea('json')} type="button">Export JSON</button>
