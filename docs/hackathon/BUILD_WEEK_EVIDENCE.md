@@ -58,3 +58,11 @@ subsequent stdin update exposed a trailing CRLF; both were rejected by the gate.
 The final value was set exactly with Vercel CLI `--value` before the passing
 redeploy. No live organization or transcription request was made during this
 infrastructure verification.
+
+## Main-branch publication
+
+On July 17, 2026, Steven authorized merging the verified MVP branch into public
+default `main`. Merge commit `136cc47` contains the current MVP and MIT
+`LICENSE`. Before the push, `npm run check` passed typecheck, lint, 57 test
+files / 394 tests, and the Next.js production build. Historical Task 5 and
+Sprint 6 entries above retain the then-accurate `a668857` baseline reference.

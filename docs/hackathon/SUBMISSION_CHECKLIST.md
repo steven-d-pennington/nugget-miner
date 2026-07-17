@@ -69,12 +69,10 @@ git diff --check
 
 ## Repository and assets verified
 
-- [x] The repository is public and the current MVP branch is pushed. The public
-  default `main` remains older at `a668857`; use the public
-  [`codex/mvp-overnight-2026-07-15` branch](https://github.com/steven-d-pennington/nugget-miner/tree/codex/mvp-overnight-2026-07-15)
-  until an owner-approved merge changes that fact.
-- [x] An MIT `LICENSE` exists on the current public MVP branch. GitHub's
-  default-branch license metadata remains absent because `main` is older.
+- [x] The repository is public and default `main` now contains the current MVP
+  after merge commit `136cc47`; the implementation branch remains available for
+  Build Week history.
+- [x] An MIT `LICENSE` exists on public default `main`.
 - [x] The [README](../../README.md) was reviewed for setup, sample path, testing,
   GPT-5.6, Codex, human decisions, architecture, privacy, boundaries, and
   before/after Build Week evidence. Its relative links were checked in this

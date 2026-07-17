@@ -19,6 +19,11 @@
 > default-branch `licenseInfo` is therefore `null`; that metadata does not
 > negate the MIT license committed on the public MVP branch.
 
+> **Release update — July 17, 2026:** The verified MVP branch was merged into
+> public default `main` as `136cc47` after the full `npm run check` gate passed
+> (57 test files / 394 tests and the production build). The preceding `main`
+> references are preserved as Task 5's historical repository snapshot.
+
 ## Access and remaining gates
 
 - The remote refs checked for this record resolve `HEAD` and `main` to

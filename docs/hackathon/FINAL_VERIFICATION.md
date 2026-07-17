@@ -14,7 +14,7 @@
 | Latest verified preview | [nugget-miner-782mixz1t-steven-penningtons-projects.vercel.app](https://nugget-miner-782mixz1t-steven-penningtons-projects.vercel.app) |
 | Preview deployment | `dpl_BRjPt1wGKEsxp6b1qbFF1KxgbDJu`, `READY`, Next.js; exact deployed source `f9bb639` |
 | Preview access boundary | Vercel-auth protected. It is not a logged-out, public, or account-free judge path. |
-| Public repository | Public; the current MVP branch is pushed and has MIT `LICENSE`. Default `main` is older `a668857` and does not contain the current MVP or license. |
+| Public repository | Public; `main` now contains the current MVP and MIT `LICENSE` after merge commit `136cc47`. |
 | Public production URL | **Authorized and verified in the release addendum below.** |
 | Public YouTube URL and duration | **Not recorded / not published.** |
 | Primary Codex implementation Session ID | **Pending / not captured.** No worker, wrapper, planning, or coordination ID is substituted. |
