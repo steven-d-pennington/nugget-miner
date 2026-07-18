@@ -676,6 +676,7 @@ time {
   margin: 0 0 0.75rem;
   color: var(--ink);
   font-size: 1.2rem;
+  font-weight: 800;
 }
 
 .idea-summary__line {
