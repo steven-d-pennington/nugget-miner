@@ -4,8 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { InstallAppButton } from '@/components/InstallAppButton';
 import { DemoDataService } from '@/lib/demo/DemoDataService';
-import { downloadText } from '@/lib/export/download';
-import { buildFullExport } from '@/lib/export/fullExport';
+import { exportLocalData } from '@/lib/export/exportLocalData';
 import { ORGANIZATION_PROMPT_VERSION } from '@/lib/llm/organizationPrompt';
 import { SEGMENTATION_PROMPT_VERSION } from '@/lib/llm/segmentationPrompt';
 import { DataManagementService } from '@/lib/services/DataManagementService';
@@ -145,8 +144,7 @@ export function SettingsScreen({
     setBusy(true);
     setError(undefined);
     try {
-      const data = await buildFullExport();
-      downloadText(`nugget-full-export-${data.exportedAt.slice(0, 10)}.json`, JSON.stringify(data, null, 2), 'application/json');
+      await exportLocalData();
       setMessage('Your local Nugget export was downloaded.');
     } catch (cause) {
       showError(cause, () => void exportAll());
