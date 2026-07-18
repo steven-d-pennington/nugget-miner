@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { InstallAppButton } from '@/components/InstallAppButton';
+import { useAppUpdate } from '@/components/AppUpdateProvider';
 import { DemoDataService } from '@/lib/demo/DemoDataService';
 import { exportLocalData } from '@/lib/export/exportLocalData';
 import { ORGANIZATION_PROMPT_VERSION } from '@/lib/llm/organizationPrompt';
@@ -52,6 +53,15 @@ export function SettingsScreen({
   navigateToCapture = () => globalThis.location.assign('/'),
   navigateToIdeas = () => globalThis.location.assign('/ideas'),
 }: SettingsScreenProps = {}) {
+  const {
+    applyUpdate,
+    captureLocked,
+    checkForUpdates,
+    releaseId,
+    status: updateStatus,
+    updateMessage,
+    updateReady,
+  } = useAppUpdate();
   const [settings, setSettings] = useState<AppSettings>();
   const [health, setHealth] = useState<PublicHealth>();
   const [healthUnavailable, setHealthUnavailable] = useState(false);
@@ -145,12 +155,20 @@ export function SettingsScreen({
     setError(undefined);
     try {
       await exportLocalData();
-      setMessage('Your local Nugget export was downloaded.');
+      setMessage('Export created. Your data remains in Nugget.');
     } catch (cause) {
       showError(cause, () => void exportAll());
     } finally {
       setBusy(false);
     }
+  }
+
+  async function checkAppUpdate() {
+    setError(undefined);
+    setMessage(undefined);
+    const result = await checkForUpdates();
+    if (result === 'ready') setMessage('A new version of Nugget is ready.');
+    if (result === 'up-to-date') setMessage('Nugget is up to date.');
   }
 
   async function loadSampleLibrary() {
@@ -201,6 +219,7 @@ export function SettingsScreen({
   }
 
   const consentLabel = settings?.cloudProcessingConsent ?? 'unknown';
+  const displayedRelease = releaseId.length > 12 ? releaseId.slice(0, 12) : releaseId;
 
   return (
     <section className="mx-auto grid max-w-3xl gap-8" aria-labelledby="settings-heading">
@@ -251,6 +270,28 @@ export function SettingsScreen({
         </section>
 
         <InstallAppButton />
+
+        <section className="utility-section" aria-labelledby="app-updates-heading">
+          <h2 className="m-0 text-xl font-bold text-[#101D36]" id="app-updates-heading">App updates</h2>
+          <p className="mb-0 mt-2 leading-6 text-[#6E6B67]">Nugget checks for new versions while the app is open and online. An update installs only when you choose it.</p>
+          <p className="mb-0 mt-3 text-sm text-[#6E6B67]">Current release: <code className="font-bold text-[#101D36]">{displayedRelease}</code></p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button className="button-quiet" disabled={updateStatus === 'checking' || updateStatus === 'updating'} onClick={() => void checkAppUpdate()} type="button">
+              {updateStatus === 'checking' ? 'Checking for updates…' : 'Check for updates'}
+            </button>
+            {updateReady ? (
+              <>
+                <button className="button-primary" disabled={captureLocked || updateStatus === 'updating' || busy} onClick={() => void applyUpdate()} type="button">
+                  {updateStatus === 'updating' ? 'Updating Nugget…' : 'Update now'}
+                </button>
+                <button className="button-quiet" disabled={busy || updateStatus === 'updating'} onClick={() => void exportAll()} type="button">
+                  {busy ? 'Creating export…' : 'Export data'}
+                </button>
+              </>
+            ) : null}
+          </div>
+          {updateStatus === 'error' && updateMessage ? <p className="mt-3 text-red-800" role="alert">{updateMessage}</p> : null}
+        </section>
 
         <section className="utility-section" aria-labelledby="offline-storage-heading">
           <h2 className="m-0 text-xl font-bold text-[#101D36]" id="offline-storage-heading">Offline storage</h2>

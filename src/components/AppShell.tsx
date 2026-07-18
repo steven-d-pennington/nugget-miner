@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { BottomNav } from './BottomNav';
+import { AppUpdatePrompt } from './AppUpdatePrompt';
 import { NuggetMark } from './NuggetMark';
 import { ProcessingQueueRunner } from './ProcessingQueueRunner';
 
@@ -10,6 +11,7 @@ export interface AppShellProps {
   children: ReactNode;
   showHeader?: boolean;
   showNavigation?: boolean;
+  showUpdatePrompt?: boolean;
 }
 
 function BackIcon() {
@@ -35,6 +37,7 @@ export function AppShell({
   children,
   showHeader = true,
   showNavigation = true,
+  showUpdatePrompt = true,
 }: AppShellProps) {
   return (
     <div className="app-shell">
@@ -62,6 +65,7 @@ export function AppShell({
       </header> : null}
 
       <main className="app-shell__main">{children}</main>
+      {showUpdatePrompt ? <AppUpdatePrompt /> : null}
       {showNavigation ? <BottomNav /> : null}
     </div>
   );

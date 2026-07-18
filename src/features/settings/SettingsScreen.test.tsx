@@ -14,8 +14,18 @@ const persistedStorage = vi.fn();
 const persistStorage = vi.fn();
 const seedDemo = vi.fn();
 const navigateToIdeas = vi.fn();
+const appUpdate = vi.hoisted(() => ({
+  applyUpdate: vi.fn(),
+  captureLocked: false,
+  checkForUpdates: vi.fn(),
+  releaseId: 'abcdef1234567890',
+  status: 'idle' as 'idle' | 'checking' | 'ready' | 'updating' | 'error',
+  updateMessage: undefined as string | undefined,
+  updateReady: false,
+}));
 
 vi.mock('@/components/AppShell', () => ({ AppShell: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
+vi.mock('@/components/AppUpdateProvider', () => ({ useAppUpdate: () => appUpdate }));
 vi.mock('@/lib/repositories', () => ({
   settingsRepository: { get: (...args: unknown[]) => getSettings(...args), update: (...args: unknown[]) => updateSettings(...args) },
 }));
@@ -28,6 +38,12 @@ const baseSettings = { key: 'app', automaticProcessing: false, cloudProcessingCo
 
 beforeEach(() => {
   vi.clearAllMocks();
+  appUpdate.captureLocked = false;
+  appUpdate.releaseId = 'abcdef1234567890';
+  appUpdate.status = 'idle';
+  appUpdate.updateMessage = undefined;
+  appUpdate.updateReady = false;
+  appUpdate.checkForUpdates.mockResolvedValue('up-to-date');
   getSettings.mockResolvedValue(baseSettings);
   updateSettings.mockImplementation(async (patch) => ({ ...baseSettings, ...patch }));
   buildFullExport.mockResolvedValue({ schemaVersion: 'nugget-full-export-v1', exportedAt: '2026-07-16T12:00:00.000Z' });
@@ -89,6 +105,23 @@ describe('SettingsScreen', () => {
       'application/json',
     ));
     expect(fetch).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('Export created. Your data remains in Nugget.')).toBeInTheDocument();
+  });
+
+  it('shows the release, checks manually, and keeps export optional before updating', async () => {
+    appUpdate.updateReady = true;
+    appUpdate.status = 'ready';
+    appUpdate.checkForUpdates.mockResolvedValue('ready');
+    render(<SettingsScreen />);
+
+    expect(await screen.findByText('abcdef123456')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Check for updates' }));
+    await waitFor(() => expect(appUpdate.checkForUpdates).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('A new version of Nugget is ready.')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Update now' }));
+    expect(appUpdate.applyUpdate).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: 'Export data' })).toBeInTheDocument();
   });
 
   it('loads a clearly disclosed local sample library without calling GPT-5.6', async () => {

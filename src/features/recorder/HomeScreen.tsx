@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AppShell } from '@/components/AppShell';
+import { useAppUpdate } from '@/components/AppUpdateProvider';
 import { captureRepository, settingsRepository } from '@/lib/repositories';
 import type { AppSettings, CaptureSession } from '@/types';
 import { RecorderPanel } from './RecorderPanel';
@@ -39,11 +40,19 @@ function statusLabel(capture: CaptureSession) {
 }
 
 export function HomeScreen() {
+  const { setCaptureLocked: setAppUpdateCaptureLocked } = useAppUpdate();
   const [captures, setCaptures] = useState<CaptureSession[]>([]);
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [captureLocked, setCaptureLocked] = useState(false);
   const [preferenceError, setPreferenceError] = useState<string | null>(null);
   const [invitationDismissed, setInvitationDismissed] = useState(false);
+
+  const handleCaptureLockChange = useCallback((locked: boolean) => {
+    setCaptureLocked(locked);
+    setAppUpdateCaptureLocked(locked);
+  }, [setAppUpdateCaptureLocked]);
+
+  useEffect(() => () => setAppUpdateCaptureLocked(false), [setAppUpdateCaptureLocked]);
 
   const loadHome = useCallback(async () => {
     const [recent, storedSettings] = await Promise.all([
@@ -82,7 +91,7 @@ export function HomeScreen() {
   return (
     <AppShell showHeader={!captureLocked} showNavigation={!captureLocked}>
       <div className="capture-home">
-        <RecorderPanel onCaptureLockChange={setCaptureLocked} onCaptureSaved={() => void loadHome()} />
+        <RecorderPanel onCaptureLockChange={handleCaptureLockChange} onCaptureSaved={() => void loadHome()} />
 
         {!captureLocked ? (
           <>
