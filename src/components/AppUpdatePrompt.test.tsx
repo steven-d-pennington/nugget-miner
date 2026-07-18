@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppUpdatePrompt } from './AppUpdatePrompt';
 
@@ -64,5 +64,19 @@ describe('AppUpdatePrompt', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('The export could not be created');
     expect(screen.getByRole('button', { name: 'Try export again' })).toBeEnabled();
     expect(screen.getByRole('button', { name: 'Update now' })).toBeEnabled();
+  });
+
+  it('keeps Update now enabled while an export is being created', async () => {
+    let finishExport!: () => void;
+    mocks.exportLocalData.mockReturnValueOnce(new Promise((resolve) => {
+      finishExport = () => resolve({ filename: 'nugget.json' });
+    }));
+    render(<AppUpdatePrompt />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Export data' }));
+    expect(screen.getByRole('button', { name: 'Creating export…' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Update now' })).toBeEnabled();
+
+    await act(async () => finishExport());
   });
 });

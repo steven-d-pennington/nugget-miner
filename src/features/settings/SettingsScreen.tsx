@@ -69,6 +69,7 @@ export function SettingsScreen({
   const [eraseText, setEraseText] = useState('');
   const [eraseArmed, setEraseArmed] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [exportBusy, setExportBusy] = useState(false);
   const [sampleLoading, setSampleLoading] = useState(false);
   const [storage, setStorage] = useState<StorageHealth>();
   const [storageBusy, setStorageBusy] = useState(false);
@@ -152,6 +153,7 @@ export function SettingsScreen({
 
   async function exportAll() {
     setBusy(true);
+    setExportBusy(true);
     setError(undefined);
     try {
       await exportLocalData();
@@ -159,6 +161,7 @@ export function SettingsScreen({
     } catch (cause) {
       showError(cause, () => void exportAll());
     } finally {
+      setExportBusy(false);
       setBusy(false);
     }
   }
@@ -281,11 +284,11 @@ export function SettingsScreen({
             </button>
             {updateReady ? (
               <>
-                <button className="button-primary" disabled={captureLocked || updateStatus === 'updating' || busy} onClick={() => void applyUpdate()} type="button">
+                <button className="button-primary" disabled={captureLocked || updateStatus === 'updating'} onClick={() => void applyUpdate()} type="button">
                   {updateStatus === 'updating' ? 'Updating Nugget…' : 'Update now'}
                 </button>
-                <button className="button-quiet" disabled={busy || updateStatus === 'updating'} onClick={() => void exportAll()} type="button">
-                  {busy ? 'Creating export…' : 'Export data'}
+                <button className="button-quiet" disabled={exportBusy || updateStatus === 'updating'} onClick={() => void exportAll()} type="button">
+                  {exportBusy ? 'Creating export…' : 'Export data'}
                 </button>
               </>
             ) : null}

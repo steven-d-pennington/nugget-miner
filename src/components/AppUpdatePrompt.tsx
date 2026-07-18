@@ -27,7 +27,7 @@ export function AppUpdatePrompt() {
   const exporting = exportStatus === 'exporting';
 
   return (
-    <aside aria-labelledby="app-update-title" className="app-update" role="region">
+    <aside aria-labelledby="app-update-title" aria-live="polite" className="app-update" role="region">
       <div className="app-update__mark"><NuggetMark size={24} /></div>
       <div className="app-update__content">
         <h2 id="app-update-title">New version ready</h2>
@@ -40,7 +40,7 @@ export function AppUpdatePrompt() {
         ) : null}
         {status === 'error' && updateMessage ? <p className="app-update__error" role="alert">{updateMessage}</p> : null}
         <div className="app-update__actions">
-          <button className="button-primary" disabled={updating || exporting} onClick={() => void applyUpdate()} type="button">
+          <button className="button-primary" disabled={updating} onClick={() => void applyUpdate()} type="button">
             {updating ? 'Updating Nugget…' : 'Update now'}
           </button>
           <button className="button-quiet" disabled={updating || exporting} onClick={() => void createExport()} type="button">

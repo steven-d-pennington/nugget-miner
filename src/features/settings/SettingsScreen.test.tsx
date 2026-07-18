@@ -124,6 +124,23 @@ describe('SettingsScreen', () => {
     expect(screen.getByRole('button', { name: 'Export data' })).toBeInTheDocument();
   });
 
+  it('does not block Update now while the optional Settings export is being created', async () => {
+    let finishExport!: () => void;
+    appUpdate.updateReady = true;
+    appUpdate.status = 'ready';
+    buildFullExport.mockReturnValueOnce(new Promise((resolve) => {
+      finishExport = () => resolve({ schemaVersion: 'nugget-full-export-v1', exportedAt: '2026-07-16T12:00:00.000Z' });
+    }));
+    render(<SettingsScreen />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Export data' }));
+    expect(screen.getByRole('button', { name: 'Creating export…' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Update now' })).toBeEnabled();
+
+    finishExport();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Export data' })).toBeEnabled());
+  });
+
   it('loads a clearly disclosed local sample library without calling GPT-5.6', async () => {
     seedDemo
       .mockResolvedValueOnce({ created: true, captureId: 'demo-capture' })
