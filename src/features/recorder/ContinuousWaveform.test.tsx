@@ -25,4 +25,21 @@ describe('ContinuousWaveform', () => {
       '0,20 25,20 50,20 75,20 100,20',
     );
   });
+
+  it('makes an ordinary low phone-microphone level visibly responsive', () => {
+    render(<ContinuousWaveform active level={0.04} sampleCount={2} />);
+    const points = screen.getByTestId('continuous-waveform-line').getAttribute('points') ?? '';
+    const finalY = Number(points.split(' ').at(-1)?.split(',').at(-1));
+
+    expect(Math.abs(finalY - 20)).toBeGreaterThanOrEqual(5);
+  });
+
+  it('keeps sub-threshold room noise on the baseline', () => {
+    render(<ContinuousWaveform active level={0.008} sampleCount={2} />);
+
+    expect(screen.getByTestId('continuous-waveform-line')).toHaveAttribute(
+      'points',
+      '0,20 100,20',
+    );
+  });
 });

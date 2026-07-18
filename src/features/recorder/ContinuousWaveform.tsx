@@ -12,9 +12,19 @@ const WIDTH = 100;
 const HEIGHT = 40;
 const CENTER = HEIGHT / 2;
 const AMPLITUDE = 15;
+const NOISE_FLOOR = 0.012;
+const SPEECH_CEILING = 0.18;
+const SENSITIVITY_CURVE = 0.55;
 
 function clampLevel(level: number) {
   return Number.isFinite(level) ? Math.min(1, Math.max(0, level)) : 0;
+}
+
+function toVisualLevel(level: number) {
+  const clamped = clampLevel(level);
+  if (clamped <= NOISE_FLOOR) return 0;
+  const speechRange = (clamped - NOISE_FLOOR) / (SPEECH_CEILING - NOISE_FLOOR);
+  return Math.pow(Math.min(1, speechRange), SENSITIVITY_CURVE);
 }
 
 function emptySamples(sampleCount: number) {
@@ -36,7 +46,7 @@ export function ContinuousWaveform({
     }
     setSamples((current) => {
       const normalized = current.length === count ? current : emptySamples(count);
-      return [...normalized.slice(1), clampLevel(level)];
+      return [...normalized.slice(1), toVisualLevel(level)];
     });
   }, [active, count, level]);
 
