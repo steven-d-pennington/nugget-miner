@@ -5,8 +5,11 @@ param(
     [string]$BrowserSource = (Join-Path $PSScriptRoot 'browser-walkthrough.webm'),
     [string]$BrowserTimeline = (Join-Path $PSScriptRoot 'browser-walkthrough-timeline.json'),
     [string]$SilentOutput = '',
+    [string]$NarratedOutput = '',
+    [string]$ContactSheetOutput = '',
     [string]$CaptureDirectory = (Join-Path $env:USERPROFILE 'Downloads'),
-    [string]$FfmpegDirectory = 'C:\Users\Steven Pennington\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.1.1-full_build\bin'
+    [string]$FfmpegDirectory = 'C:\Users\Steven Pennington\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.1.1-full_build\bin',
+    [switch]$SkipNarrated
 )
 
 $ErrorActionPreference = 'Stop'
@@ -18,6 +21,12 @@ $finalDirectory = Join-Path $hackathonDirectory 'demo-video-final'
 $narratedSource = Join-Path $finalDirectory 'nugget-demo-final-with-openai-narration.mp4'
 if (-not $SilentOutput) {
     $SilentOutput = Join-Path $finalDirectory 'nugget-demo-hybrid-silent.mp4'
+}
+if (-not $NarratedOutput) {
+    $NarratedOutput = Join-Path $finalDirectory 'nugget-demo-hybrid-narrated.mp4'
+}
+if (-not $ContactSheetOutput) {
+    $ContactSheetOutput = Join-Path $finalDirectory 'nugget-demo-hybrid-contact-sheet.png'
 }
 
 $capture0110 = Join-Path $CaptureDirectory 'ScreenRecording_07-18-2026 01-10-58_1.MP4'
@@ -195,3 +204,57 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Created $SilentOutput"
+
+if (-not $SkipNarrated) {
+    $disclosure = "drawtext=fontfile='C\:/Windows/Fonts/arial.ttf':" +
+        "text='AI-GENERATED NARRATION - OPENAI TTS-1-HD':" +
+        "fontcolor=0x6F4600@0.9:fontsize=18:x=w-tw-42:y=h-th-26:enable='lt(t,136)'"
+    $narratedArgs = @(
+        '-y',
+        '-i', $SilentOutput,
+        '-i', $narratedSource,
+        '-map', '0:v:0',
+        '-map', '1:a:0',
+        '-map', '1:s:0?',
+        '-vf', $disclosure,
+        '-c:v', 'libx264',
+        '-preset', 'medium',
+        '-crf', '19',
+        '-pix_fmt', 'yuv420p',
+        '-color_range', 'tv',
+        '-c:a', 'copy',
+        '-c:s', 'mov_text',
+        '-metadata:s:a:0', 'language=eng',
+        '-metadata:s:s:0', 'language=eng',
+        '-shortest',
+        '-movflags', '+faststart',
+        '-metadata', 'title=Nugget hybrid demo narrated review copy',
+        $NarratedOutput
+    )
+
+    & $ffmpeg @narratedArgs
+    if ($LASTEXITCODE -ne 0) {
+        throw "Hybrid narrated render failed with exit code $LASTEXITCODE"
+    }
+
+    $contactSheetArgs = @(
+        '-y',
+        '-loglevel', 'error',
+        '-i', $NarratedOutput,
+        '-vf', 'fps=1/15,scale=640:360:flags=lanczos,tile=3x4:padding=8:margin=8:color=0xF7F2EA',
+        '-frames:v', '1',
+        $ContactSheetOutput
+    )
+    & $ffmpeg @contactSheetArgs
+    if ($LASTEXITCODE -ne 0) {
+        throw "Hybrid contact sheet generation failed with exit code $LASTEXITCODE"
+    }
+
+    & $ffprobe -v error -show_entries format=duration,size -show_entries stream=index,codec_type,codec_name,width,height,r_frame_rate,pix_fmt,sample_rate,channels:stream_tags=language -of json -- $NarratedOutput
+    if ($LASTEXITCODE -ne 0) {
+        throw "Hybrid narrated media verification failed with exit code $LASTEXITCODE"
+    }
+
+    Write-Host "Created $NarratedOutput"
+    Write-Host "Created $ContactSheetOutput"
+}
