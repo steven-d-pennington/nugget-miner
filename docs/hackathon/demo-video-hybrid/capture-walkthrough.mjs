@@ -1,0 +1,178 @@
+import { chromium, expect } from '@playwright/test';
+import { execFileSync } from 'node:child_process';
+import { mkdir, readdir, rm, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { performance } from 'node:perf_hooks';
+
+const baseUrl = (process.env.NUGGET_DEMO_BASE_URL ?? 'http://127.0.0.1:3000').replace(/\/$/, '');
+const outputDirectory = path.resolve('docs/hackathon/demo-video-hybrid');
+const videoOutput = path.join(outputDirectory, 'browser-walkthrough.webm');
+const timelineOutput = path.join(outputDirectory, 'browser-walkthrough-timeline.json');
+
+await mkdir(outputDirectory, { recursive: true });
+await rm(videoOutput, { force: true });
+await rm(timelineOutput, { force: true });
+for (const filename of await readdir(outputDirectory)) {
+  if (/^page@.*\.webm$/.test(filename)) {
+    await rm(path.join(outputDirectory, filename), { force: true });
+  }
+}
+
+const browser = await chromium.launch({ headless: true });
+const context = await browser.newContext({
+  viewport: { width: 430, height: 932 },
+  recordVideo: { dir: outputDirectory, size: { width: 430, height: 932 } },
+  colorScheme: 'light',
+  locale: 'en-US',
+  timezoneId: 'America/Los_Angeles',
+  reducedMotion: 'no-preference',
+});
+const page = await context.newPage();
+const video = page.video();
+const rawVideoPath = await video.path();
+const captureStartedAt = performance.now();
+const chapters = [];
+
+const pause = (milliseconds) => page.waitForTimeout(milliseconds);
+
+async function mark(name, action) {
+  const startSeconds = (performance.now() - captureStartedAt) / 1000;
+  await action();
+  const endSeconds = (performance.now() - captureStartedAt) / 1000;
+  chapters.push({
+    name,
+    startSeconds: Number(startSeconds.toFixed(3)),
+    endSeconds: Number(endSeconds.toFixed(3)),
+  });
+}
+
+async function goto(route) {
+  await page.goto(`${baseUrl}${route}`, { waitUntil: 'networkidle' });
+}
+
+async function slowScrollBy(distance, duration = 900) {
+  await page.evaluate(async ({ distance: totalDistance, duration: totalDuration }) => {
+    const steps = 30;
+    const start = window.scrollY;
+    for (let step = 1; step <= steps; step += 1) {
+      const progress = step / steps;
+      const eased = 1 - ((1 - progress) ** 3);
+      window.scrollTo({ top: start + (totalDistance * eased), behavior: 'instant' });
+      await new Promise((resolve) => window.setTimeout(resolve, totalDuration / steps));
+    }
+  }, { distance, duration });
+}
+
+try {
+  // Prepare a fresh browser profile with the built-in, visibly disclosed sample data.
+  await goto('/settings');
+  const loadSampleButton = page.getByRole('button', { name: 'Load sample library' });
+  await expect(loadSampleButton).toBeEnabled();
+  await loadSampleButton.click();
+  await expect(
+    page.getByText(/Sample ideas (?:added|are already loaded)/),
+  ).toBeVisible();
+
+  await goto('/ideas');
+  await expect(page.getByRole('heading', { name: 'Ideas', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Create a neighborhood tool-sharing library/ })).toBeVisible();
+
+  await mark('ideas-cards', async () => {
+    await expect(page.getByRole('button', { name: 'Cards' })).toHaveAttribute('aria-pressed', 'true');
+    await pause(5_000);
+  });
+
+  await mark('ideas-compact', async () => {
+    const compactButton = page.getByRole('button', { name: 'Compact' });
+    await compactButton.click();
+    await expect(compactButton).toHaveAttribute('aria-pressed', 'true');
+    await pause(5_000);
+  });
+
+  await mark('ideas-cards-return', async () => {
+    const cardsButton = page.getByRole('button', { name: 'Cards' });
+    await cardsButton.click();
+    await expect(cardsButton).toHaveAttribute('aria-pressed', 'true');
+    await pause(3_000);
+  });
+
+  await mark('idea-detail', async () => {
+    await Promise.all([
+      page.waitForURL(/\/ideas\/demo-idea-tool-sharing$/),
+      page.getByRole('link', { name: /Create a neighborhood tool-sharing library/ }).click(),
+    ]);
+    await expect(page.getByRole('heading', { name: 'Create a neighborhood tool-sharing library' })).toBeVisible();
+    await expect(page.locator('article').getByText('Sample', { exact: true })).toBeVisible();
+    await pause(3_000);
+    await slowScrollBy(360);
+    await expect(page.getByRole('heading', { name: 'Why it matters' })).toBeVisible();
+    await pause(2_500);
+    await slowScrollBy(360);
+    await expect(page.getByRole('heading', { name: "What's in the way" })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Next actions' })).toBeVisible();
+    await pause(4_000);
+  });
+
+  await mark('actions', async () => {
+    await goto('/actions');
+    await expect(page.getByRole('heading', { name: 'Actions', exact: true })).toBeVisible();
+    const actionToggle = page.getByRole('checkbox', { name: 'Mark Draft a one-page interest survey. completed' });
+    await expect(actionToggle).toBeVisible();
+    await pause(3_000);
+    await actionToggle.click();
+    await expect(page.getByRole('checkbox', { name: 'Mark Draft a one-page interest survey. open' })).toBeChecked();
+    await pause(5_000);
+  });
+
+  await mark('settings', async () => {
+    await goto('/settings');
+    const aboutHeading = page.getByRole('heading', { name: 'About' });
+    await aboutHeading.scrollIntoViewIfNeeded();
+    await expect(aboutHeading).toBeVisible();
+    await expect(page.getByText(/^Transcription:/)).toBeVisible();
+    await expect(page.getByText(/^Organization:/)).toBeVisible();
+    await pause(5_000);
+  });
+
+  await mark('close', async () => {
+    await goto('/');
+    await expect(page.getByRole('heading', { name: "What's on your mind?" })).toBeVisible();
+    await pause(6_000);
+  });
+} finally {
+  await context.close();
+  await video.saveAs(videoOutput);
+  if (path.resolve(rawVideoPath) !== path.resolve(videoOutput)) {
+    await rm(rawVideoPath, { force: true });
+  }
+  await browser.close();
+}
+
+const probe = JSON.parse(execFileSync(
+  'ffprobe',
+  ['-v', 'error', '-show_entries', 'format=duration', '-of', 'json', videoOutput],
+  { encoding: 'utf8' },
+));
+const sourceDurationSeconds = Number(probe.format.duration);
+const finalMarkerEnd = chapters.at(-1)?.endSeconds ?? sourceDurationSeconds;
+const captureOffsetSeconds = Math.max(0, finalMarkerEnd - sourceDurationSeconds);
+const normalizedChapters = chapters.map((chapter) => ({
+  ...chapter,
+  startSeconds: Number(Math.max(0, chapter.startSeconds - captureOffsetSeconds).toFixed(3)),
+  endSeconds: Number(Math.max(0, chapter.endSeconds - captureOffsetSeconds).toFixed(3)),
+}));
+
+await writeFile(
+  timelineOutput,
+  `${JSON.stringify({
+    source: baseUrl,
+    viewport: { width: 430, height: 932 },
+    sourceDurationSeconds,
+    captureOffsetSeconds: Number(captureOffsetSeconds.toFixed(3)),
+    chapters: normalizedChapters,
+  }, null, 2)}\n`,
+  'utf8',
+);
+
+console.log(`Saved browser capture: ${videoOutput}`);
+console.log(`Saved chapter timeline: ${timelineOutput}`);
