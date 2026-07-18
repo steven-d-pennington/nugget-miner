@@ -1,5 +1,9 @@
 # Nugget public demo script
 
+> Recording the complete phone walkthrough in one continuous take? Follow
+> [ONE_TAKE_DEMO_SCRIPT.md](./ONE_TAKE_DEMO_SCRIPT.md). This document remains
+> the evidence and edit-oriented version of the demo plan.
+
 ## Recording boundary
 
 This is preparation, not evidence that a public demo has been recorded or

@@ -3,8 +3,8 @@
 > **Status:** Incomplete pre-submission gate. This record reflects Sol's July 16,
 > 2026 engineering evidence window and this documentation claim-surface review.
 >
-> **Authority boundary:** This checklist does not authorize a production release,
-> Vercel setting change, provider call, YouTube publication, Devpost submission,
+> **Authority boundary:** This checklist does not authorize a Vercel setting
+> change, additional provider call, YouTube publication, Devpost submission,
 > tag, push, or any external publication. Checked boxes mean evidence was
 > verified in this gate; unchecked boxes require the named owner action and
 > fresh evidence.
@@ -22,11 +22,20 @@ and [Build Week evidence ledger](BUILD_WEEK_EVIDENCE.md).
 - [x] `npm ci` exited 0: 313 packages added, 314 audited, and 0 vulnerabilities.
   npm's `sharp@0.34.5` allow-scripts warning was non-blocking and is retained in
   the [final verification record](FINAL_VERIFICATION.md#clean-engineering-evidence).
-- [x] The clean rerun of `npm run check` exited 0: typecheck, lint, 57 normal
-  test files / 394 tests, and the Next.js 16.2.9 production build with 13 static
-  pages all passed.
-- [x] `npm run test:e2e` exited 0: 3/3 critical flows passed in 36.7 seconds.
-- [x] `npm audit --omit=dev` reported 0 vulnerabilities.
+- [x] Final completion-branch `npm run check` passed: typecheck, lint, 57 files /
+  396 tests, and the Next.js 16.2.9 production build with 13 pages. Sol reviewed
+  evidence commit `00572b2` and the E2E repair `9087ebf`.
+- [x] After an independent first E2E rerun correctly failed on stale mock
+  `segment-v1` / `organize-v1` metadata, `9087ebf` imported the source constants.
+  Terra and Sol each reran `npm run test:e2e`; both passed 3/3 critical flows.
+- [x] Final `npm audit --omit=dev` reported 0 vulnerabilities; `git diff --check`
+  passed.
+- [x] Completion artifact promoted to public production: preview
+  `dpl_23u5wWwZPjUFjja3pkBY63Z2cjFm` and production
+  `dpl_BH8LmRFvdRYF4rtdztZWTTUcH2tH` are READY. Public health is `ok` with
+  `whisper-1` and `gpt-5.6-terra`; public Settings contains `segment-v2` and
+  `organize-v2`. Logged-out mobile Chromium smoke is recorded in the
+  [production checklist](../qa/production-smoke-checklist.md).
 - [x] The authenticated preview smoke passed for deployment
   `dpl_BRjPt1wGKEsxp6b1qbFF1KxgbDJu` at the [verified preview](https://nugget-miner-782mixz1t-steven-penningtons-projects.vercel.app): health was `ok`,
   transcription was `whisper-1`, organization was `gpt-5.6-terra`, root exposed
@@ -36,14 +45,24 @@ and [Build Week evidence ledger](BUILD_WEEK_EVIDENCE.md).
   and reviewed for models, review/confirmation, local/cloud wording, and deferred
   capabilities. The documented comparison is in the [final verification
   record](FINAL_VERIFICATION.md#claim-surface-comparison).
-- [ ] `npm run eval:live` passes and writes `docs/evals/latest.json`. It exited 1
-  before provider-client use because `OPENAI_KEY_NONEMPTY=False` and
-  `OPENAI_API_KEY is required for the live evaluation`; one eval file failed and
-  13 tests were skipped. No provider call, report, or spend is claimed.
-- [ ] The full logged-out public production/PWA smoke passes. Anonymous root,
+- [x] `npm run eval:live` passed and wrote `docs/evals/latest.json` at
+  `2026-07-17T18:23:10.007Z`: `gpt-5.6-terra`, medium reasoning, `segment-v2`,
+  and `organize-v2`; 12/12 correct idea counts and categories; zero invalid
+  categories and unsupported explicit claims; all 12 special requirements and
+  both response IDs per fixture present. The initial failed v1 report remains in
+  Git history at `be48e46`; the v2 prompt fix is `8d5d380`.
+- [x] A **two-call production smoke** at
+  `2026-07-17T17:11:13.3468501Z` completed one live `segment-v1` /
+  `segmentation-v1` request and one live `organize-v1` / `organization-v1`
+  request with `gpt-5.6-terra`, returning two candidates and two structured
+  ideas. See [`../evals/production-smoke-2026-07-17.json`](../evals/production-smoke-2026-07-17.json).
+  This is not `npm run eval:live`, does not create `docs/evals/latest.json`,
+  and does not replace the canonical 12-fixture evaluation gate recorded above.
+- [x] The primary logged-out public production/PWA smoke passes. Anonymous root,
   health, headers, manifest, and service-worker checks pass at
-  `https://nugget-miner-kappa.vercel.app`; install/standalone and physical-device
-  interaction remain open.
+  `https://nugget-miner-kappa.vercel.app`. Steven also owner-confirmed the
+  requested capture/save/close/reopen/playback and installed offline/reconnect
+  path in Chrome on an iPhone 14 Pro Max with resumed processing and no duplicate.
 
 ### Safe engineering commands
 
@@ -81,10 +100,11 @@ git diff --check
   demo script, and app source. Its claims preserve required review, local
   browser storage with opt-in cloud processing, and the exclusions for
   self-learning, live research, sync, and fully-closed-browser processing.
-- [ ] The sample library's usefulness, local behavior, idempotency, and labels
-  are re-executed for this final gate. This gate only reverified that Settings
-  exposes **Load sample library**; see the earlier [judge test path](JUDGING_TEST_PATH.md)
-  and evidence ledger for the prior focused evidence.
+- [x] The sample library's usefulness, local behavior, idempotency, and labels
+  were re-executed against public production in a clean mobile Chrome context.
+  The complete [judge test path](JUDGING_TEST_PATH.md) passed through Markdown
+  export with zero provider calls, console errors, page errors, HTTP errors, or
+  unexpected failed requests.
 - [ ] Five final screenshots are uploaded to Devpost in the planned order. Five
   prepared assets are recorded in [SCREENSHOT_PLAN.md](SCREENSHOT_PLAN.md), but
   no Devpost upload or public-production image comparison occurred here.
@@ -102,12 +122,15 @@ git diff --check
 - [x] Verify the owner-approved production HTTPS URL without deployment
   authentication and at `/api/health`. `https://nugget-miner-kappa.vercel.app`
   returned HTTP 200; health reported `whisper-1` and `gpt-5.6-terra`.
-- [ ] On that public URL, install/open the PWA where available; load the sample
-  library; complete the [fast judge path](JUDGING_TEST_PATH.md#fast-exploration-about-2-minutes);
-  and complete a real pasted two-idea GPT path without exposing private data.
-- [ ] Complete the physical-device, Edge/Safari, install/standalone, microphone,
-  offline/reopen, and background/reopen matrix described in the [production
-  smoke checklist](../qa/production-smoke-checklist.md#manual-and-public-validation-work-pending).
+- [x] On that public URL, install/open the PWA and complete the requested physical
+  capture durability path. Steven confirmed success in Chrome on an iPhone 14 Pro Max,
+  including save/playback after close/reopen and offline/reconnect processing
+  resume without a duplicate.
+- [x] Complete the fast sample-library judge rehearsal on public production.
+  Search/filter, structured detail/source inspection, action completion, return
+  navigation, and Markdown export all passed in clean mobile Chrome automation.
+- [ ] Optionally run an available secondary desktop browser. The owner-confirmed
+  phone result does not claim a microphone-denial, screen-reader, or keyboard-only audit.
 - [x] Primary implementation `/feedback` Session ID verified and recorded in the
   README, Devpost draft, and evidence ledger: `019f66eb-7a90-7080-8667-b6ac77c45a23`.
 - [ ] Record an owner-approved public YouTube demo under three minutes, then
@@ -150,15 +173,11 @@ Not created. These are status statements, not placeholders.
 
 ## Recommended remaining owner sequence
 
-1. Run the remaining physical-device/browser/PWA checks on the verified public
-   production path.
-2. Complete the fast judge path on that exact
-   URL; stop if the public judge path is not frictionless.
-3. If a safe nonempty key and an accepted budget are available, run the live
-   evaluation and retain its result; otherwise keep that gate visibly open.
-4. Record and publish the truthful public YouTube demo, then verify playback
+1. Retain the verified canonical v2 evaluation report with the submission
+   evidence; do not substitute the distinct two-call production smoke for it.
+2. Record and publish the truthful public YouTube demo, then verify playback
    while logged out.
-5. Perform the final app/README/Devpost/video/screenshot claim comparison.
-6. Submit Devpost and immediately reopen it to reverify persistence.
-7. Only then commit the real confirmation evidence and create/push the annotated
+3. Perform the final app/README/Devpost/video/screenshot claim comparison.
+4. Submit Devpost and immediately reopen it to reverify persistence.
+5. Only then commit the real confirmation evidence and create/push the annotated
    submission tag.

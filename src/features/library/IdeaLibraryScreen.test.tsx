@@ -111,7 +111,24 @@ function filteredRows(input: { query?: string; categoryId?: string; tagIds?: str
   );
 }
 
+function installLocalStorage() {
+  const values = new Map<string, string>();
+  Object.defineProperty(window, 'localStorage', {
+    configurable: true,
+    value: {
+      get length() { return values.size; },
+      clear: () => values.clear(),
+      getItem: (key: string) => values.get(key) ?? null,
+      key: (index: number) => [...values.keys()][index] ?? null,
+      removeItem: (key: string) => values.delete(key),
+      setItem: (key: string, value: string) => values.set(key, String(value)),
+    } satisfies Storage,
+  });
+}
+
 beforeEach(() => {
+  installLocalStorage();
+  localStorage.clear();
   vi.clearAllMocks();
   mocks.searchParams = new URLSearchParams();
   mocks.ensureDefaults.mockResolvedValue([personal, work]);
@@ -203,6 +220,38 @@ describe('IdeaLibraryScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
     expect(await screen.findByText('2 ideas')).toBeInTheDocument();
     expect(mocks.replace).toHaveBeenLastCalledWith('/ideas', { scroll: false });
+  });
+
+  it('defaults to Cards and remembers Compact without changing the active filters', async () => {
+    mocks.searchParams = new URLSearchParams('category=personal&tags=community');
+    render(<IdeaLibraryScreen />);
+
+    const cards = await screen.findByRole('button', { name: 'Cards' });
+    const compact = screen.getByRole('button', { name: 'Compact' });
+    expect(cards).toHaveAttribute('aria-pressed', 'true');
+    const replaceCallCount = mocks.replace.mock.calls.length;
+    fireEvent.click(compact);
+    expect(compact).toHaveAttribute('aria-pressed', 'true');
+    expect(localStorage.getItem('nugget:ideas:view')).toBe('compact');
+    expect(mocks.replace).toHaveBeenCalledTimes(replaceCallCount);
+    expect(mocks.search).toHaveBeenLastCalledWith(expect.objectContaining({
+      categoryId: 'personal',
+      tagIds: ['community'],
+    }));
+    const compactRow = screen.getByRole('link', { name: /Neighborhood tool library/ });
+    const expectedDate = new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }).format(rows[0]!.idea.updatedAt);
+    expect(compactRow).toHaveAttribute('href', '/ideas/tool-library');
+    expect(compactRow).toHaveTextContent(`Personal · #Community · ${expectedDate}`);
+  });
+
+  it('restores Compact from local storage', async () => {
+    localStorage.setItem('nugget:ideas:view', 'compact');
+    render(<IdeaLibraryScreen />);
+    expect(await screen.findByRole('button', { name: 'Compact' })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('points an empty library to Capture', async () => {

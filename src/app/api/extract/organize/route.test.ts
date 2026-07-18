@@ -105,7 +105,7 @@ describe('POST /api/extract/organize', () => {
       provider: 'openai',
       model: 'gpt-route-test',
       responseId: 'resp_organize',
-      promptVersion: 'organize-v1',
+      promptVersion: 'organize-v2',
       schemaVersion: 'organization-v1',
     });
     const request = openAIMocks.parse.mock.calls[0]?.[0] as { input: Array<{ role: string; content: string }> };

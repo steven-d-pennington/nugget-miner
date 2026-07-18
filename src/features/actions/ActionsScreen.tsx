@@ -127,10 +127,10 @@ export function ActionsScreen() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-8">
-      <header className="max-w-2xl">
-        <p className="mb-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#8A5700]">Next steps</p>
-        <h1 className="text-4xl font-extrabold tracking-[-0.035em] text-[#101D36] sm:text-5xl">Actions</h1>
-        <p className="mt-3 text-base leading-7 text-[#5F5B56]">Move useful ideas forward without losing where each next step came from.</p>
+      <header className="screen-heading">
+        <p className="screen-heading__eyebrow">Next steps</p>
+        <h1 className="screen-heading__title">Actions</h1>
+        <p className="screen-heading__lede">Move useful ideas forward without losing where each next step came from.</p>
       </header>
 
       {failure ? (
@@ -153,7 +153,7 @@ export function ActionsScreen() {
 
       {!loading && rows.length > 0 ? (
         <div className="space-y-10">
-          <section aria-labelledby="open-actions-heading">
+          <section aria-labelledby="open-actions-heading" className="utility-section">
             <div className="mb-4 flex items-center justify-between gap-4 border-b border-[#E8DDCE] pb-3">
               <h2 className="text-xl font-extrabold text-[#101D36]" id="open-actions-heading">Open</h2>
               <span className="text-xs font-extrabold uppercase tracking-wider text-[#6E6B67]">{openRows.length} {openRows.length === 1 ? 'action' : 'actions'}</span>
@@ -161,7 +161,7 @@ export function ActionsScreen() {
             {openRows.length ? <ul aria-label="Open actions" className="space-y-4 p-0">{openRows.map(renderRow)}</ul> : <p className="text-sm leading-6 text-[#5F5B56]">Nothing open. Completed actions stay available below.</p>}
           </section>
 
-          <section aria-labelledby="completed-actions-heading">
+          <section aria-labelledby="completed-actions-heading" className="utility-section">
             <div className="mb-4 flex items-center justify-between gap-4 border-b border-[#E8DDCE] pb-3">
               <h2 className="text-xl font-extrabold text-[#101D36]" id="completed-actions-heading">Completed</h2>
               <span className="text-xs font-extrabold uppercase tracking-wider text-[#6E6B67]">{completedRows.length} {completedRows.length === 1 ? 'action' : 'actions'}</span>

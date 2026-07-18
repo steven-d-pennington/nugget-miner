@@ -386,22 +386,32 @@ export function ReviewScreen({ captureId }: { captureId: string }) {
         ) : null}
 
         {activeIdea && activeDraft ? (
-          <IdeaCandidateForm
-            busy={busy}
-            categories={snapshot.categories}
-            discardError={
-              mutationFailure?.retry === 'discard' && mutationFailure.ideaId === activeIdea.id
-                ? `${mutationFailure.message.title}. ${mutationFailure.message.detail}`
-                : undefined
-            }
-            idea={activeIdea}
-            key={activeIdea.id}
-            onChange={(value) => changeDraft(activeIdea.id, value)}
-            onConfirm={() => void confirmOne(activeIdea.id)}
-            onDiscard={() => void discardIdea(activeIdea.id)}
-            tags={allTags}
-            value={activeDraft}
-          />
+          <>
+            <IdeaCandidateForm
+              busy={busy}
+              categories={snapshot.categories}
+              discardError={
+                mutationFailure?.retry === 'discard' && mutationFailure.ideaId === activeIdea.id
+                  ? `${mutationFailure.message.title}. ${mutationFailure.message.detail}`
+                  : undefined
+              }
+              idea={activeIdea}
+              key={activeIdea.id}
+              onChange={(value) => changeDraft(activeIdea.id, value)}
+              onConfirm={() => void confirmOne(activeIdea.id)}
+              onDiscard={() => void discardIdea(activeIdea.id)}
+              tags={allTags}
+              value={activeDraft}
+            />
+            <details className="review-source-drawer">
+              <summary>Source transcript</summary>
+              <p className="review-source-drawer__meta metadata">
+                Transcript version {snapshot.transcript.version}
+              </p>
+              <blockquote>{snapshot.transcript.text}</blockquote>
+              <Link className="review-source-link" href={sourceHref}>Open source capture</Link>
+            </details>
+          </>
         ) : null}
       </article>
     </AppShell>

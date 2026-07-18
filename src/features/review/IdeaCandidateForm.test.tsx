@@ -125,6 +125,15 @@ function Harness({
 }
 
 describe('IdeaCandidateForm controlled draft', () => {
+  it('groups the editable organization into the approved nugget-first hierarchy', () => {
+    render(<Harness />);
+    expect(screen.getByRole('heading', { name: 'Why it matters' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: "What's in the way" })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Next actions' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Title')).toHaveValue('Create a neighborhood tool-sharing library');
+    expect(screen.getByLabelText('Summary')).toHaveValue('Neighbors could share rarely used tools.');
+  });
+
   it('deep-copies initialization and updates title, summary, category, and normalized tags without mutating the idea', () => {
     const idea = ideaFixture();
     const copy = initializeIdeaDraftFormValue(idea, tags);

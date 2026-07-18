@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { IdeaLibraryRow as LibraryRow } from '@/lib/services/LibraryService';
+import type { IdeaLibraryView } from './libraryViewPreference';
 
 const categoryColors: Record<string, string> = {
   work: '#315CBF',
@@ -30,8 +31,32 @@ function Indicator({ children, icon }: { children: React.ReactNode; icon: 'block
   );
 }
 
-export function IdeaLibraryRow({ row }: { row: LibraryRow }) {
+export function IdeaLibraryRow({ row, view = 'cards' }: { row: LibraryRow; view?: IdeaLibraryView }) {
   const edgeColor = categoryColors[row.category.normalizedName] ?? '#B97700';
+
+  if (view === 'compact') {
+    return (
+      <li>
+        <Link
+          className="idea-library-row idea-library-row--compact"
+          href={`/ideas/${row.idea.id}`}
+          style={{ borderLeftColor: edgeColor }}
+        >
+          <span className="idea-library-row__compact-main">
+            <strong>{row.idea.title}</strong>
+            <span>
+              {row.category.name}
+              {row.tags[0] ? ` · #${row.tags[0].name}` : ''}
+              {` · ${dateFormatter.format(row.idea.updatedAt)}`}
+            </span>
+          </span>
+          <svg aria-hidden="true" fill="none" height="20" viewBox="0 0 24 24" width="20">
+            <path d="m9 5 7 7-7 7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+          </svg>
+        </Link>
+      </li>
+    );
+  }
 
   return (
     <li>

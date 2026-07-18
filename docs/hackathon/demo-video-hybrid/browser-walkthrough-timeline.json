@@ -1,0 +1,46 @@
+{
+  "source": "http://127.0.0.1:3107",
+  "viewport": {
+    "width": 430,
+    "height": 932
+  },
+  "sourceDurationSeconds": 46.68,
+  "captureOffsetSeconds": 1.789,
+  "chapters": [
+    {
+      "name": "ideas-cards",
+      "startSeconds": 0.742,
+      "endSeconds": 5.759
+    },
+    {
+      "name": "ideas-compact",
+      "startSeconds": 5.759,
+      "endSeconds": 10.804
+    },
+    {
+      "name": "ideas-cards-return",
+      "startSeconds": 10.804,
+      "endSeconds": 13.848
+    },
+    {
+      "name": "idea-detail",
+      "startSeconds": 13.848,
+      "endSeconds": 25.45
+    },
+    {
+      "name": "actions",
+      "startSeconds": 25.45,
+      "endSeconds": 34.242
+    },
+    {
+      "name": "settings",
+      "startSeconds": 34.242,
+      "endSeconds": 39.974
+    },
+    {
+      "name": "close",
+      "startSeconds": 39.974,
+      "endSeconds": 46.68
+    }
+  ]
+}

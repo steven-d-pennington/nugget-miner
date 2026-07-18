@@ -1,8 +1,9 @@
 # Nugget pre-submission verification — incomplete
 
 > **Gate status:** Pre-submission evidence only. The Sprint 6 submission exit
-> gate is incomplete. This record does not authorize production release,
-> provider use, publication, Devpost submission, tagging, or pushing.
+> gate is incomplete. This record does not authorize additional provider use,
+> publication, Devpost submission, tagging, or pushing. Production release is
+> separately authorized and recorded in the addendum below.
 
 ## Verification record
 
@@ -33,6 +34,40 @@
 | Infrastructure smoke | Root contained **Quick capture** and **Record**; required security headers, standalone/portrait manifest, and service-worker exclusions for non-GET and `/api/*` requests passed. |
 | Corrective evidence | The first production smoke exposed `gpt-4o-mini`; the production-only `NUGGET_LLM_MODEL` value was corrected. A PowerShell stdin attempt then exposed a trailing CRLF, so the value was replaced with Vercel CLI `--value` and the production source redeployed before the passing smoke. |
 
+### Completion-branch production addendum — July 17, 2026
+
+| Field | Verified result |
+| --- | --- |
+| Reviewed commits | Sol reviewed canonical-evaluation evidence commit `00572b2` and E2E metadata-drift fix `9087ebf`. |
+| Final local gate | `npm run check` passed typecheck, lint, 57 files / 396 tests, and the Next.js 16.2.9 production build with 13 pages. `npm audit --omit=dev` reported 0 vulnerabilities; `git diff --check` passed. |
+| E2E regression and repair | An independent initial rerun failed 3/3 because `e2e/helpers/providerMocks.ts` hard-coded `segment-v1` / `organize-v1`; the application correctly rejected invalid metadata before review. Commit `9087ebf` imports the production prompt-version constants. Terra and Sol each reran `npm run test:e2e`; both runs passed 3/3. |
+| Preview and production | Preview `dpl_23u5wWwZPjUFjja3pkBY63Z2cjFm` was READY. Its exact artifact was promoted under existing authorization to production `dpl_BH8LmRFvdRYF4rtdztZWTTUcH2tH`, READY; canonical aliases include [https://nugget-miner-kappa.vercel.app](https://nugget-miner-kappa.vercel.app). |
+| Public runtime smoke | Public health returned `ok`, `whisper-1`, and `gpt-5.6-terra`; public Settings HTML contained `segment-v2` and `organize-v2`. Required headers, the standalone/portrait manifest, and the API-excluding, GET-only service worker were reverified. |
+| Logged-out mobile Chromium | At 430 x 932, the public root returned HTTP 200 with title **Nugget**, meaningful content, **What’s on your mind?** as `h1`, visible **Record**, Capture/Ideas/Actions navigation, Settings navigation, **Load sample library**, manifest linkage, service-worker support, and zero framework overlays. |
+| Diagnostic caveat | The first browser pass observed one anonymous console 404 message. An immediate clean diagnostic rerun recorded no failed requests and no responses with status >=400. Both observations are retained; Vercel error-log query for the prior hour found no logs. |
+
+### Privacy-safe Vercel Web Analytics addendum — July 17, 2026
+
+| Field | Verified result |
+| --- | --- |
+| Implementation | `@vercel/analytics` 2.0.1 is rendered once at the root. The Vercel project Web Analytics setting is enabled. No custom events or user-content properties were added. |
+| Privacy boundary | The documented `beforeSend` hook removes query strings and fragments and replaces browser-local identifiers on `/capture/*`, `/idea/*`, `/ideas/*`, and `/review/*` with stable route placeholders. Settings discloses the anonymous page-view telemetry and its exclusions. |
+| Reviewed commits | Sol reviewed Terra commits `520ff31` (`feat: sanitize analytics page views`) and `7675528` (`fix: preserve sanitized analytics origins`). |
+| Local verification | 58 files / 402 tests passed before the narrow origin correction; the final focused privacy and Settings run passed 2 files / 15 tests. Typecheck, lint, the Next.js 16.2.9 13-page production build, all 3 E2E flows, `npm audit --omit=dev` (0 vulnerabilities), and diff checks passed. |
+| Preview wire proof | Preview `dpl_58jTxo3fDfM3rh3Hi42PVtvK95j9` was READY. A non-bot Chromium pageview for a synthetic dynamic capture URL reached the randomized v2 intake with HTTP 200. The POST contained only the preview origin plus `/capture/[capture]`; neither the synthetic record ID nor query marker appeared. |
+| Production promotion | The exact preview artifact was promoted under existing authority to production `dpl_BbBjNkew9j7gstAT2prrHSak62Fc`, READY, at [https://nugget-miner-kappa.vercel.app](https://nugget-miner-kappa.vercel.app). |
+| Public runtime proof | Logged-out mobile Chromium found root HTTP 200, Analytics script HTTP 200, Analytics pageview HTTP 200, health HTTP 200 with `whisper-1` and `gpt-5.6-terra`, and no failed requests. The captured production pageview contained `https://nugget-miner-kappa.vercel.app/capture/[capture]` with no synthetic local ID or query value. |
+
+### Owner-confirmed iPhone production/PWA addendum — July 17, 2026
+
+| Field | Verified result |
+| --- | --- |
+| Device and authority | Steven reported testing the requested production durability flow on a physical iPhone 14 Pro Max in Chrome and reported that all requested checks looked good. |
+| Capture durability | Owner-confirmed: record on the public production URL, Stop & save, fully close and reopen, then confirm that the saved recording remains available and plays. |
+| Installed/offline behavior | Owner-confirmed: Add to Home Screen/installed-app use plus offline-to-online resume completed successfully, processing resumed, and no duplicate result was observed. |
+| Evidence boundary | This is a dated owner attestation, not an independently instrumented device run or screenshot. It closes the requested physical-phone/PWA durability check but does not claim a secondary desktop-browser, microphone-denial, screen-reader, or keyboard-only audit. |
+| Correlated public smoke | At `2026-07-17T12:39:48-07:00`, Sol independently rechecked the canonical production root (HTTP 200, title **Nugget**) and health (`ok`, `whisper-1`, `gpt-5.6-terra`). |
+
 ## Clean engineering evidence
 
 | Command or check | Result |
@@ -41,10 +76,10 @@
 | `npm ci` | Exit 0; added 313 packages; audited 314 packages; 0 vulnerabilities. npm emitted a non-blocking allow-scripts warning that `sharp@0.34.5` was not covered by `allowScripts`. The warning is retained, not concealed or treated as a failure. |
 | First `npm run check` | Typecheck and lint passed; 57 normal test files / 394 tests passed. The command then failed because ignored temporary `.superpowers/sdd/sprint-6-task-3.capture.spec.ts` was discovered as an extra Vitest suite, where Playwright `test.beforeEach` cannot run under Vitest. |
 | Root-cause cleanup and rerun | Sol removed only the ignored temporary Task 3 capture spec and ignored Playwright config. Those untracked/ignored hygiene removals produced no Git diff. The rerun exited 0: typecheck and lint passed; 57 normal test files / 394 tests passed; the Next.js 16.2.9 production build compiled, passed TypeScript, generated 13 static pages, and completed. |
-| `npm run test:e2e` | Exit 0; 3/3 passed in 36.7 seconds: capture-to-library two ideas, retry idempotency, and offline queue resume. |
-| Live-eval preflight | `OPENAI_KEY_NONEMPTY=False`. `npm run eval:live` exited 1 before provider-client use with `OPENAI_API_KEY is required for the live evaluation`; one file failed and 13 tests were skipped. No `docs/evals/latest.json` exists. This is an open gate, not a passing live eval. |
-| `npm audit --omit=dev` | 0 vulnerabilities. |
-| `git diff --check` and final status | Exit 0; tree clean and synchronized before this documentation task. |
+| `npm run test:e2e` | July 17 final verification: an independent first rerun failed 3/3 on stale mock prompt metadata, which the app correctly rejected. After `9087ebf` imported source prompt constants, Terra and Sol each reran the suite and passed 3/3: capture-to-library two ideas, retry idempotency, and offline queue resume. |
+| Canonical live evaluation | **Verified July 17.** `docs/evals/latest.json` was generated at `2026-07-17T18:23:10.007Z` with `gpt-5.6-terra`, medium reasoning, `segment-v2`, and `organize-v2`. All 12 fixtures passed idea-count and category checks; invalid category IDs and unsupported explicit claims were both zero; every special requirement and both response IDs per fixture were present. The earlier failed v1 report remains in Git history at `be48e46`; the v2 prompt fix is `8d5d380`. |
+| `npm audit --omit=dev` | July 17 final verification: 0 vulnerabilities. |
+| `git diff --check` and final status | July 17 final verification: exit 0; completion branch pushed through `9087ebf`. |
 | Authenticated preview smoke | `/api/health` was `ok`; transcription `whisper-1`; organization `gpt-5.6-terra`; root contained **Quick capture** and **Record**; Settings contained **Load sample library**. This does not prove anonymous access or the public judge path. |
 
 ## Task 6 required-submission matrix
@@ -54,14 +89,14 @@
 | Apps for Your Life track selected | Not Run | Devpost was not opened or submitted in this gate. |
 | Title and descriptions pasted from the final file | Not Run | [Devpost draft](DEVPOST_SUBMISSION.md) is ready for owner review; no external field was edited. |
 | Production URL opens logged out | Verified | The canonical public URL returned HTTP 200 without deployment authentication; `/api/health` reported the expected models. |
-| Public/private repository access verified | Verified | Repository is public; current public MVP branch is pushed. Default `main` is older and must not be represented as the current MVP. |
-| MIT license present | Verified | Current public MVP branch contains `LICENSE`; default-branch GitHub license metadata remains absent because `main` is older. |
+| Public/private repository access verified | Verified | Repository is public; default `main` contains the current MVP after merge `136cc47`. |
+| MIT license present | Verified | Public default `main` contains `LICENSE`. |
 | README setup, sample, testing, GPT, Codex, and human decisions complete | Verified | [README](../../README.md) was read, searched, and link-audited in this gate; it contains each required surface and preserves known boundaries. |
 | Five screenshots uploaded and ordered | Blocked-Pending | Five prepared assets are documented in [SCREENSHOT_PLAN.md](SCREENSHOT_PLAN.md); no Devpost upload or public-production comparison was performed. |
 | Public YouTube URL opens logged out and is under three minutes | Blocked-Pending | Video not recorded or published; [recording checklist](DEMO_RECORDING_CHECKLIST.md) remains owner-executable. |
 | Primary `/feedback` Session ID entered | Verified | `019f66eb-7a90-7080-8667-b6ac77c45a23`, confirmed by the owner as the primary-task `/feedback` value. |
 | No unsupported claims | Verified | Claim-surface comparison below reviewed README, Devpost, demo, and non-test app source; no contradiction found for the requested model, review, privacy, or deferred-feature claims. |
-| Deployment remains available through August 5 | Blocked-Pending | No public production release or retention confirmation is authorized. |
+| Deployment remains available through August 5 | Blocked-Pending | Public production is authorized and live; retention through the required date still needs owner confirmation. |
 | Submit completed before 2:00 PM Pacific | Not Run | No person clicked Submit. |
 | Confirmation page/email saved | Not Run | No submission exists; no confirmation asset was created. |
 
@@ -69,13 +104,13 @@
 
 | Requirement | Status | Precise evidence or blocker |
 | --- | --- | --- |
-| Clean install, checks, E2E, live eval, and production smoke all pass | Blocked-Pending | Install, check, E2E, audit, and anonymous production infrastructure smoke passed. Live eval still has no report, and physical-device/browser checks remain open. |
+| Clean install, checks, E2E, live eval, and production smoke all pass | Verified | Install, check, E2E, audit, canonical live eval, anonymous production infrastructure smoke, owner-confirmed iPhone 14 Pro Max Chrome durability/PWA flow, and the automated public fast judge rehearsal passed. |
 | Logged-out HTTPS root and `/api/health` | Verified | Public root returned HTTP 200 and health reported `whisper-1` plus `gpt-5.6-terra` without deployment authentication. |
-| PWA fast path and live two-idea judge path | Not Run | Public production is authorized; the interactive sample/live and physical-device paths have not yet been run on it. |
+| PWA fast path and live two-idea judge path | Partial | The owner-confirmed iPhone installed/offline/reopen path and the complete public sample-library judge rehearsal passed. A two-call production smoke returned two organized ideas; the full interactive live-provider UI path was not rerun in this zero-provider-cost rehearsal. |
 | Public repository and README links open in the external judge path | Verified | The public production URL and public MVP branch are now available without Vercel deployment authentication. |
 | Public YouTube end-to-end playback | Blocked-Pending | No video URL exists. |
 | Every screenshot asset opened against deployed production | Not Run | Prepared images exist, but no owner-approved public production comparison was run. |
-| Sample library is useful, local, idempotent, and clearly labeled | Not Run | This gate reverified only the Settings action. Earlier focused evidence is retained in the [evidence ledger](BUILD_WEEK_EVIDENCE.md), but was not re-executed now. |
+| Sample library is useful, local, idempotent, and clearly labeled | Verified | In a clean mobile Chrome context, Load sample library navigated to Ideas; `community` plus Personal returned exactly the tool-sharing sample. Goal, blocker, research, suggested action, sample transcript drawer, action completion, return navigation, and Markdown export all passed without provider use. |
 | Devpost copy contains only shipped behavior | Verified | The narrative and claim-boundary checklist align with the app and documentation surfaces reviewed below. |
 | Submission completed and reverified before the internal deadline | Not Run | Devpost not submitted. |
 | Confirmation evidence and annotated tag are pushed | Not Run | No confirmation evidence or tag exists; this task has no authority to create either. |
@@ -94,7 +129,7 @@ rg -n -i -e 'self-learning|live research|cloud sync|fully closed|background proc
 
 | Surface | Comparison result |
 | --- | --- |
-| Model names | `src/lib/llm/modelConfig.ts` defaults organization to `gpt-5.6-terra`; `src/lib/server/transcriptionConfig.ts` defaults transcription to `gpt-4o-mini-transcribe`; the live-eval configuration is also `gpt-5.6-terra`. README, Devpost, and demo call out those source defaults, while separately and accurately identify the protected-preview overrides `whisper-1` and `gpt-5.6-terra`. None claims that production has been checked to match the preview. |
+| Model names | `src/lib/llm/modelConfig.ts` defaults organization to `gpt-5.6-terra`; `src/lib/server/transcriptionConfig.ts` defaults transcription to `gpt-4o-mini-transcribe`; the live-eval configuration is also `gpt-5.6-terra`. Public production health reports `whisper-1` and `gpt-5.6-terra`; the July 17 two-call production smoke and the full canonical v2 evaluation both recorded `gpt-5.6-terra` for segmentation and organization. README, Devpost, and demo distinguish defaults, observed production models, and the remaining device/submission gates. |
 | Mandatory review | `src/features/review/IdeaCandidateForm.tsx` requires reviewing highlighted fields before confirmation; `ReviewScreen.tsx` presents confirm/confirm-all controls; capture and library routes direct ready captures into review. README, Devpost, and demo consistently describe editable review and human confirmation before library use. |
 | Local/cloud boundary | `HomeScreen.tsx`, `ProcessCaptureButton.tsx`, and `SettingsScreen.tsx` state that audio/transcript content is sent for cloud processing when enabled or initiated, while saved records remain in the browser; Settings explicitly says saved recordings and ideas do not cloud-sync. README, Devpost, and demo describe browser IndexedDB/local save plus opt-in/initiated transient cloud processing without a local-only claim. |
 | Deferred and background-close claims | README and Devpost explicitly exclude self-learning, live research execution, sync, and guaranteed fully-closed-mobile-browser processing. The demo prohibits contrary narration. No reviewed app-source match advertises a conflicting capability. |
@@ -103,16 +138,127 @@ rg -n -i -e 'self-learning|live research|cloud sync|fully closed|background proc
 GPT-5.6-terra is the organization model, transcription has a separate model,
 review is mandatory, durable user records stay browser-local, cloud processing
 is disclosed, and deferred capabilities are not claimed. This conclusion does
-not replace the remaining physical-device, interactive judge-path, and
-live-provider evidence gates.
+not replace the remaining interactive live-provider judge-path or
+submission gates. The canonical v2 report is
+[`../evals/latest.json`](../evals/latest.json); the distinct two-call production
+smoke remains in [`../evals/production-smoke-2026-07-17.json`](../evals/production-smoke-2026-07-17.json).
 
 ## API usage and remaining owner sequence
 
-**API usage for this gate:** zero new provider calls and zero estimated provider
-spend. The live evaluation stopped before provider-client use; no live report
-exists.
+**API usage for the July 16 pre-submission window:** zero provider calls and
+zero estimated provider spend. The later canonical v2 evaluation is recorded
+separately in `docs/evals/latest.json`; this document does not infer a cost from
+that report.
 
-The single best remaining sequence is: run the real-device check; run a safe
-live eval only if a key is available and budget is accepted; record and publish
-the video; perform the final comparison; submit and reverify; then commit the
-real confirmation evidence and create the tag.
+The single best remaining sequence is: record and publish the video; perform
+the final claim comparison; submit and reverify; then
+commit the real confirmation evidence and create the tag.
+
+## Visual polish gate — July 17, 2026
+
+**Gate result:** Passed on the preview artifact for `55ca334`. This visual gate
+used deterministic local sample data and a generated audio tone. It made no
+live OpenAI request and is not represented as live-provider evidence.
+
+### Accepted implementation commits
+
+| Commit | Accepted change |
+| --- | --- |
+| `20f7492` | `feat: polish mobile capture feedback` |
+| `4a33a57` | `feat: foreground organized idea review` |
+| `c2baf7d` | `feat: add compact idea library view` |
+| `4623bf9` | `fix: harden compact library preference` |
+| `c146b40` | `feat: add summary-first idea detail` |
+| `55ca334` | `style: align actions and settings surfaces` |
+
+Each bounded implementation task received an independent Terra review and an
+independent Sol focused-test, typecheck, and lint gate before acceptance. The
+aggregate branch diff passed `git diff --check`.
+
+### Automated gate
+
+| Command | Result |
+| --- | --- |
+| `npm run typecheck` | Passed with no TypeScript diagnostics. |
+| `npm run lint` | Passed with no ESLint diagnostics. |
+| `npm test` | Passed: 61 files, 415 tests. |
+| `npm run build` | Passed: Next.js 16.2.9 production build, 13 routes. |
+| `npm run test:e2e` | Passed: 3 Playwright scenarios (capture-to-library, retry idempotency, offline resume). |
+| `npm audit --audit-level=high` | Passed: 0 vulnerabilities. |
+
+`npm run eval:live` was intentionally not run for visual polish.
+
+### Verified preview
+
+| Field | Result |
+| --- | --- |
+| Preview deployment | `dpl_EAt7fRL6rQ94ppiveVo1HnjC5Ddx`, READY |
+| Exact source | `55ca334bcae3fe5394901650712a475b215c186f` |
+| Preview URL | [https://nugget-miner-hkeguic3w-steven-penningtons-projects.vercel.app](https://nugget-miner-hkeguic3w-steven-penningtons-projects.vercel.app) |
+| Branch | `codex/mvp-completion-2026-07-17` |
+
+The preview remains Vercel-protected. A temporary authenticated browser session
+was used for this gate; no share token, header, cookie, environment value, or
+secret is stored in the committed evidence.
+
+### Mobile responsive and functional smoke — 430 × 932
+
+- Capture showed one dominant concave amber microphone control, a flat idle
+  continuous line, three bottom tabs, and the separate Settings gear.
+- A generated safe audio tone exercised the real browser recording UI. The
+  line responded continuously, the timer advanced, **Stop & save** remained the
+  dominant action, and **Recording saved** appeared after local persistence.
+- Settings loaded the disclosed local sample library without a provider call.
+- Ideas opened in Cards mode. Compact toggled without changing the URL, survived
+  reload, and kept the active search/category filters in the live in-app-browser
+  smoke.
+- The tool-sharing sample opened summary-first with category, title, summary,
+  provenance, tags, goals, blocker/research organization, linked actions, and
+  source utilities. Edit then Cancel returned to reading mode without mutation.
+- The sample action completed and reopened while its source-idea link remained
+  available.
+- Settings retained the exact cloud-processing, local-storage, analytics, model,
+  prompt-version, and schema-version evidence without rendering secret fields.
+  The live About health display reached `whisper-1 (available)` and
+  `gpt-5.6-terra (available)`.
+- A separate deterministic review fixture used the shipped sample transcript,
+  ideas, and organization metadata in an isolated browser database. It verified
+  the three-candidate Nugget-first form and collapsed source drawer. It did not
+  call or simulate a live provider response.
+
+The live DOM smoke ran in the connected in-app browser. Its image-capture command
+timed out on two fresh tabs, so the same READY preview was captured through the
+repository's isolated Playwright Chromium fallback. Functional assertions and
+image capture therefore have separate retained evidence rather than concealing
+the browser-tool limitation.
+
+### Desktop, motion, focus, and failure preservation
+
+- At 1440 × 1000 the shell remained centered and bounded. Cards computed to two
+  columns while keeping DOM order; Compact remained a single list.
+- With reduced motion emulated, the waveform transition computed to `1e-06s`
+  and the textual **Ready when you are** state remained visible. Global
+  `:focus-visible` rules continue to provide a three-pixel focus outline for
+  links, buttons, inputs, textareas, and selects.
+- The full regression gate retained explicit microphone-denial recovery,
+  locally queued/offline resume, processing retry/idempotency, empty-library and
+  no-results states, and the two-step exact-`ERASE` confirmation. No existing
+  user browser profile was erased.
+
+### Screenshot evidence
+
+- [`capture-idle-mobile.png`](evidence/visual-polish/capture-idle-mobile.png)
+- [`capture-recording-mobile.png`](evidence/visual-polish/capture-recording-mobile.png)
+- [`review-mobile.png`](evidence/visual-polish/review-mobile.png)
+- [`library-cards-mobile.png`](evidence/visual-polish/library-cards-mobile.png)
+- [`library-compact-mobile.png`](evidence/visual-polish/library-compact-mobile.png)
+- [`idea-detail-mobile.png`](evidence/visual-polish/idea-detail-mobile.png)
+- [`library-desktop.png`](evidence/visual-polish/library-desktop.png)
+
+### Preservation boundary
+
+This pass changed presentation only. It did not change provider calls, prompts,
+schemas, database contracts, grounding rules, confirmation requirements,
+privacy copy, analytics payloads, export payloads, local-first persistence, or
+processing behavior. `docs/hackathon/demo-video-draft/` remained untracked and
+untouched.

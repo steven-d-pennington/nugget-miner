@@ -2,7 +2,7 @@ import type { Category } from '@/types';
 import type { SegmentationResult } from '@/lib/validation/segmentationResult';
 import type { PromptDefinition } from './segmentationPrompt';
 
-export const ORGANIZATION_PROMPT_VERSION = 'organize-v1';
+export const ORGANIZATION_PROMPT_VERSION = 'organize-v2';
 
 export type OrganizationPromptCategory = Pick<Category, 'id' | 'name' | 'description'>;
 
@@ -17,6 +17,7 @@ Do not merge candidates and do not create candidates that were not supplied.
 Use only category IDs from ALLOWED CATEGORIES.
 Use the Misc category only when no other description fits.
 Label direct transcript claims explicit, reasonable interpretations inferred, and new recommendations suggested.
+Assign provenance by the speaker's semantic role, not merely by whether a detail is quoted. A quoted detail used as a goal, purpose, blocker, problem, or other role is inferred unless the speaker explicitly assigned that role.
 Every explicit field must cite at least one supplied source span ID.
 Leave absent information null or empty. Never fabricate people, dates, commitments, blockers, research findings, or links.
 Suggest resource types and search queries only; do not claim that research was performed.

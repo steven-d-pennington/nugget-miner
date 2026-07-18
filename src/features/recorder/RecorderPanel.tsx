@@ -9,6 +9,7 @@ import { userErrorMessage } from '@/lib/userErrorMessage';
 import { CaptureService } from '@/lib/services/CaptureService';
 import { ProcessingService } from '@/lib/services/ProcessingService';
 import type { RecordingDraft } from '@/types';
+import { ContinuousWaveform } from './ContinuousWaveform';
 
 function formatDuration(durationMs: number) {
   const seconds = Math.max(0, Math.round(durationMs / 1000));
@@ -146,13 +147,7 @@ export function RecorderPanel({ onCaptureLockChange, onCaptureSaved }: RecorderP
           className="recording-waveform"
           role="meter"
         >
-          {Array.from({ length: 13 }, (_, index) => (
-            <span
-              aria-hidden="true"
-              key={index}
-              style={{ transform: `scaleY(${Math.max(0.18, recorder.level * (0.55 + ((index * 7) % 9) / 10))})` }}
-            />
-          ))}
+          <ContinuousWaveform active level={recorder.level} />
         </div>
         <button className="record-stop-button" disabled={saving || recorder.state === 'stopping'} onClick={stopAndSave} type="button">
           {saving || recorder.state === 'stopping' ? 'Saving…' : 'Stop & save'}
@@ -193,10 +188,22 @@ export function RecorderPanel({ onCaptureLockChange, onCaptureSaved }: RecorderP
       {followupError ? <p className="inline-error" role="alert">{followupError}</p> : null}
 
       {canStart ? (
-        <button aria-label="Record" className="record-button" onClick={recorder.start} type="button">
-          <span aria-hidden="true" className="record-button__icon" />
-          <span>Record</span>
-        </button>
+        <>
+          <button aria-label="Record" className="record-button" onClick={recorder.start} type="button">
+            <svg aria-hidden="true" className="record-button__microphone" fill="none" viewBox="0 0 48 48">
+              <rect height="23" rx="7" stroke="currentColor" strokeWidth="3" width="14" x="17" y="7" />
+              <path d="M11 23c0 8 5 13 13 13s13-5 13-13M24 36v6M17 42h14" stroke="currentColor" strokeLinecap="round" strokeWidth="3" />
+            </svg>
+            <span>Record</span>
+          </button>
+          <div className="capture-audio-status" aria-label="Microphone ready">
+            <div className="capture-audio-status__heading">
+              <strong>Ready when you are</strong>
+              <span>Saved locally first</span>
+            </div>
+            <ContinuousWaveform active={false} level={0} />
+          </div>
+        </>
       ) : null}
 
       {recorder.draft ? (

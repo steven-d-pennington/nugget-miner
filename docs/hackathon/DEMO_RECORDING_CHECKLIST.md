@@ -2,17 +2,14 @@
 
 ## Current boundary and owner approval
 
-- [ ] **Stop unless authorized.** The current MVP preview is Vercel-auth
-  protected, production is older `main`, and the owner has not authorized a
-  production deployment, Devpost submission, YouTube upload, or external
-  publication.
-- [ ] Obtain the owner's explicit approval for the exact public production
-  deployment before recording a submission take. This checklist grants no
-  deployment authority.
+- [x] **Public production is authorized and reachable.** The current MVP is on
+  public default `main`; `https://nugget-miner-kappa.vercel.app` is the
+  owner-authorized production URL. This checklist still grants no authority to
+  change deployment settings, publish a video, or submit Devpost.
 - [ ] Obtain the owner's explicit approval to upload and publish the final
   video on YouTube. This checklist grants no publishing authority.
-- [ ] Do not submit Devpost, publish a URL, change deployment settings, call a
-  provider, or imply a public judging path exists while this gate is open.
+- [ ] Do not submit Devpost, publish a video URL, change deployment settings,
+  call a provider, or imply that unverified device/PWA behavior is complete.
 
 ## Public-production preflight
 
@@ -135,9 +132,9 @@ intentional; they are not fake URLs, identifiers, scores, or placeholders.
 
 | Evidence item | Current status | Verified value or next authorized action |
 | --- | --- | --- |
-| Public production URL | **Not authorized** | Obtain approval, deploy current MVP, then verify logged out. |
-| Production deployment identifier | **Not captured** | Record after approved production is READY. |
-| Model-health display | **Protected-preview evidence only** | Recheck public production Settings > About without secrets. |
+| Public production URL | **Verified** | `https://nugget-miner-kappa.vercel.app` returned anonymously accessible root and health responses. |
+| Production deployment identifier | **Verified** | `dpl_CZWcgTiGf3TaPyjfxDp59vg5zbqr`, READY. |
+| Model-health display | **Production health verified** | Health reports `whisper-1` transcription and `gpt-5.6-terra` organization; still capture the visible Settings > About display during recording without secrets. |
 | Live capture shown | **Not recorded** | Record the prepared safe ramble and preserve truthful state. |
 | Fallback disclosure | **Not applicable until recording** | Retain exact preprocessed/sample wording if used. |
 | Live evaluation report | **Not available** | Do not claim a result or score; no report exists in this preparation pass. |
@@ -149,7 +146,7 @@ intentional; they are not fake URLs, identifiers, scores, or placeholders.
 
 ## Final owner sign-off
 
-- [ ] Owner approves public production URL and anonymous accessibility.
+- [x] Owner authorized public production and anonymous accessibility; public root and health were verified.
 - [ ] Owner approves recorded content and every fallback disclosure used.
 - [ ] Owner approves public YouTube publication and Devpost use.
 - [ ] Owner confirms the verified public YouTube URL may be copied into the

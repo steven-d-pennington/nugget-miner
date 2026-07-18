@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { db, resetClientDatabaseForTests } from '@/lib/db';
 import { DEFAULT_CATEGORY_IDS } from '@/lib/db/defaultCategories';
@@ -42,7 +42,10 @@ describe('IdeaDetailScreen route IDs', () => {
 
     render(<IdeaDetailScreen ideaId={encodeURIComponent(id)} />);
 
-    expect(await screen.findByLabelText('Title')).toHaveValue(idea.title);
+    expect(await screen.findByRole('heading', { name: idea.title })).toBeInTheDocument();
+    expect(screen.queryByLabelText('Title')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Edit idea' }));
+    expect(screen.getByLabelText('Title')).toHaveValue(idea.title);
   });
 
   it('shows not found for a malformed encoded route ID', async () => {

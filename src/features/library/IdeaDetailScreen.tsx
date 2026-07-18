@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AudioPlayer } from '@/components/AudioPlayer';
 import { GroundedFieldEditor } from '@/features/review/GroundedFieldEditor';
+import { IdeaSummaryView } from '@/features/library/IdeaSummaryView';
 import {
   createInferredGroundedText,
   initializeIdeaDraftFormValue,
@@ -34,6 +35,14 @@ interface LoadedIdea extends IdeaExportBundle {
   transcript?: Transcript;
   allCategories: Category[];
   allTags: Tag[];
+}
+
+type SaveStatus = 'saved' | 'dirty' | 'saving' | 'invalid' | 'error';
+
+const AUTOSAVE_DELAY_MS = 900;
+
+function formSignature(value: IdeaDraftFormValue) {
+  return JSON.stringify(value);
 }
 
 function formatDate(timestamp: number) {
@@ -119,6 +128,12 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
+  const latestFormSignatureRef = useRef('');
+  const savedFormSignatureRef = useRef('');
+  const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const savePromisesRef = useRef(new Map<string, Promise<boolean>>());
 
   const repositoryIdeaId = useMemo(() => {
     try {
@@ -170,7 +185,13 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
         allTags,
       };
       setBundle(nextBundle);
-      setForm(initializeIdeaDraftFormValue(idea, allTags));
+      const nextForm = initializeIdeaDraftFormValue(idea, allTags);
+      const nextSignature = formSignature(nextForm);
+      setForm(nextForm);
+      latestFormSignatureRef.current = nextSignature;
+      savedFormSignatureRef.current = nextSignature;
+      setSaveStatus('saved');
+      setEditing(false);
     } catch (error) {
       setLoadError(error instanceof Error ? error.message : 'The idea could not be loaded.');
     } finally {
@@ -188,7 +209,41 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
   );
 
   function change(patch: Partial<IdeaDraftFormValue>) {
-    if (form && !busy) setForm({ ...form, ...patch });
+    if (!form || busy) return;
+    const nextForm = { ...form, ...patch };
+    latestFormSignatureRef.current = formSignature(nextForm);
+    setForm(nextForm);
+    setSaveStatus('dirty');
+    setErrors({});
+    setMutationError(null);
+    setNotice(null);
+  }
+
+  function beginEditing() {
+    if (!bundle || busy) return;
+    const nextForm = initializeIdeaDraftFormValue(bundle.idea, bundle.allTags);
+    const nextSignature = formSignature(nextForm);
+    setForm(nextForm);
+    latestFormSignatureRef.current = nextSignature;
+    savedFormSignatureRef.current = nextSignature;
+    setSaveStatus('saved');
+    setErrors({});
+    setMutationError(null);
+    setNotice(null);
+    setEditing(true);
+  }
+
+  function discardUnsavedEdits() {
+    if (!bundle || busy || saveStatus === 'saving') return;
+    const nextForm = initializeIdeaDraftFormValue(bundle.idea, bundle.allTags);
+    const nextSignature = formSignature(nextForm);
+    setForm(nextForm);
+    latestFormSignatureRef.current = nextSignature;
+    savedFormSignatureRef.current = nextSignature;
+    setSaveStatus('saved');
+    setErrors({});
+    setMutationError(null);
+    setEditing(false);
   }
 
   function updateList(
@@ -204,32 +259,86 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
     });
   }
 
-  async function saveChanges() {
-    if (!bundle || !form || busy) return;
-    const validation = validateIdeaDraftFormValue(bundle.idea, form, bundle.allCategories);
+  const enqueueSave = useCallback((snapshot: IdeaDraftFormValue) => {
+    if (!bundle) return Promise.resolve(false);
+
+    const validation = validateIdeaDraftFormValue(bundle.idea, snapshot, bundle.allCategories);
     setErrors(validation.errors);
     if (!validation.valid) {
-      setMutationError('Review the highlighted fields before saving.');
+      setSaveStatus('invalid');
+      return Promise.resolve(false);
+    }
+
+    const signature = formSignature(snapshot);
+    if (signature === savedFormSignatureRef.current) {
+      setSaveStatus('saved');
+      return Promise.resolve(true);
+    }
+
+    const existing = savePromisesRef.current.get(signature);
+    if (existing) return existing;
+
+    const run = saveQueueRef.current.then(async () => {
+      if (latestFormSignatureRef.current === signature) setSaveStatus('saving');
+      setMutationError(null);
+
+      try {
+        const savedTags = await tagRepository.findOrCreate(snapshot.tagNames);
+        const status = bundle.idea.status === 'archived' ? 'archived' : 'confirmed';
+        const updated = await ideaRepository.update(
+          bundle.idea.id,
+          asUpdateInput(snapshot, savedTags.map((tag) => tag.id), status),
+        );
+        const allTags = mergeTags(bundle.allTags, savedTags);
+        const category = bundle.allCategories.find((candidate) => candidate.id === updated.categoryId)!;
+        savedFormSignatureRef.current = signature;
+        setBundle((current) => current ? { ...current, idea: updated, category, tags: savedTags, allTags } : current);
+        setErrors({});
+        if (latestFormSignatureRef.current === signature) setSaveStatus('saved');
+        return true;
+      } catch (error) {
+        if (latestFormSignatureRef.current === signature) setSaveStatus('error');
+        setMutationError(error instanceof Error ? error.message : 'Changes could not be saved.');
+        return false;
+      }
+    });
+
+    saveQueueRef.current = run.then(() => undefined, () => undefined);
+    savePromisesRef.current.set(signature, run);
+    void run.finally(() => savePromisesRef.current.delete(signature));
+    return run;
+  }, [bundle]);
+
+  useEffect(() => {
+    if (!editing || !form || !bundle || busy) return;
+
+    const signature = formSignature(form);
+    latestFormSignatureRef.current = signature;
+    if (signature === savedFormSignatureRef.current) {
+      setSaveStatus('saved');
       return;
     }
+
+    setSaveStatus('dirty');
+    const timer = window.setTimeout(() => {
+      void enqueueSave(form);
+    }, AUTOSAVE_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [bundle, busy, editing, enqueueSave, form]);
+
+  async function saveChanges() {
+    if (!form || busy) return;
     setBusy(true);
-    setMutationError(null);
     setNotice(null);
     try {
-      const savedTags = await tagRepository.findOrCreate(form.tagNames);
-      const status = bundle.idea.status === 'archived' ? 'archived' : 'confirmed';
-      const updated = await ideaRepository.update(
-        bundle.idea.id,
-        asUpdateInput(form, savedTags.map((tag) => tag.id), status),
-      );
-      const allTags = mergeTags(bundle.allTags, savedTags);
-      const category = bundle.allCategories.find((candidate) => candidate.id === updated.categoryId)!;
-      setBundle({ ...bundle, idea: updated, category, tags: savedTags, allTags });
-      setForm(initializeIdeaDraftFormValue(updated, allTags));
-      setErrors({});
+      const saved = await enqueueSave(form);
+      if (!saved) {
+        setMutationError((current) => current ?? 'Review the highlighted fields before saving.');
+        return;
+      }
       setNotice('Changes saved on this device.');
-    } catch (error) {
-      setMutationError(error instanceof Error ? error.message : 'Changes could not be saved.');
+      setEditing(false);
     } finally {
       setBusy(false);
     }
@@ -304,10 +413,28 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
   const idea = bundle.idea;
   const isSample = idea.id.startsWith('demo-');
   const sectionClass = 'border-t border-[#E8DDCE] py-7';
+  const saveStatusMessage = {
+    saved: 'Saved on this device',
+    dirty: 'Changes waiting to save',
+    saving: 'Saving…',
+    invalid: 'Fix highlighted fields to save',
+    error: 'Could not save changes',
+  }[saveStatus];
 
   return (
     <article className="mx-auto max-w-3xl px-4 pb-28 pt-8 sm:px-6">
-      <header className="pb-7">
+      {editing ? (
+        <div className="idea-detail__editor">
+          <div className="idea-detail__save-bar">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#8A5700]">Auto-save</p>
+              <p aria-live="polite" className="mt-1 text-sm font-semibold text-[#101D36]" role="status">{saveStatusMessage}</p>
+            </div>
+            <button className="button-primary min-h-11" disabled={busy} onClick={() => void saveChanges()} type="button">
+              {busy ? 'Saving…' : 'Done'}
+            </button>
+          </div>
+          <header className="pb-7">
         <p className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#247A55]">
           {isSample ? <span className="rounded-full bg-[#FFF2D4] px-2 py-1 text-[#8A5700]">Sample</span> : null}
           <span>{idea.status === 'archived' ? 'Archived idea' : 'Saved idea'}</span>
@@ -326,7 +453,7 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
         <p className="mt-3 text-sm text-[#6E6B67]">Updated {formatDate(idea.updatedAt)}</p>
       </header>
 
-      <div className="idea-form">
+          <div className="idea-form">
         <section className={sectionClass}>
           <GroundedFieldEditor
             disabled={busy}
@@ -416,7 +543,18 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
           {errors['research.suggestedResourceTypes'] ? <p className="field-error" role="alert">{errors['research.suggestedResourceTypes']}</p> : null}
           <p className="field-guidance">Use one suggestion per line.</p>
         </section>
-      </div>
+          </div>
+        </div>
+      ) : (
+        <IdeaSummaryView
+          actions={bundle.actions}
+          category={bundle.category}
+          disabled={busy}
+          idea={bundle.idea}
+          onEdit={beginEditing}
+          tags={bundle.tags}
+        />
+      )}
 
       <section className={sectionClass} aria-labelledby="linked-actions-heading">
         <div className="flex items-center justify-between gap-4">
@@ -444,7 +582,12 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
       {notice ? <p aria-live="polite" className="mt-5 border-l-4 border-[#247A55] bg-green-50 p-4 text-[#14553A]">{notice}</p> : null}
 
       <section className="mt-7 flex flex-wrap gap-3 border-t border-[#E8DDCE] pt-7" aria-label="Idea actions">
-        <button className="button-primary min-h-12" disabled={busy} onClick={() => void saveChanges()} type="button">{busy ? 'Saving…' : 'Save changes'}</button>
+        {editing ? (
+          <>
+            <button className="button-primary min-h-12" disabled={busy} onClick={() => void saveChanges()} type="button">{busy ? 'Saving…' : 'Save changes'}</button>
+            <button className="button-quiet min-h-12" disabled={busy || saveStatus === 'saving' || saveStatus === 'saved'} onClick={discardUnsavedEdits} type="button">Discard unsaved edits</button>
+          </>
+        ) : null}
         <button className="button-quiet min-h-12" disabled={busy} onClick={() => void copySummary()} type="button">Copy summary</button>
         <button className="button-quiet min-h-12" disabled={busy} onClick={() => exportIdea('markdown')} type="button">Export Markdown</button>
         <button className="button-quiet min-h-12" disabled={busy} onClick={() => exportIdea('json')} type="button">Export JSON</button>

@@ -5,12 +5,24 @@ import { HomeScreen } from './HomeScreen';
 const mocks = vi.hoisted(() => ({
   listRecent: vi.fn(),
   getSettings: vi.fn(),
+  setCaptureLocked: vi.fn(),
   updateSettings: vi.fn(),
 }));
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/' }));
 vi.mock('@/lib/services/ProcessingService', () => ({
   ProcessingService: { resumePending: vi.fn().mockResolvedValue(undefined) },
+}));
+vi.mock('@/components/AppUpdateProvider', () => ({
+  useAppUpdate: () => ({
+    applyUpdate: vi.fn(),
+    captureLocked: false,
+    checkForUpdates: vi.fn(),
+    releaseId: 'test-release',
+    setCaptureLocked: mocks.setCaptureLocked,
+    status: 'idle',
+    updateReady: false,
+  }),
 }));
 vi.mock('./TextCaptureForm', () => ({ TextCaptureForm: () => <button type="button">Paste a ramble</button> }));
 vi.mock('./RecorderPanel', () => ({
@@ -88,6 +100,16 @@ describe('HomeScreen capture hierarchy', () => {
     expect(screen.queryByText(/ready to review/)).not.toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Recent captures' })).not.toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Organize captures automatically' })).not.toBeInTheDocument();
+    expect(mocks.setCaptureLocked).toHaveBeenLastCalledWith(true);
+  });
+
+  it('releases the global update lock when capture leaves the screen', () => {
+    const view = render(<HomeScreen />);
+    fireEvent.click(screen.getByRole('button', { name: 'Record' }));
+    expect(mocks.setCaptureLocked).toHaveBeenLastCalledWith(true);
+
+    view.unmount();
+    expect(mocks.setCaptureLocked).toHaveBeenLastCalledWith(false);
   });
 
   it('labels a manual pasted transcript as saved rather than processing', async () => {

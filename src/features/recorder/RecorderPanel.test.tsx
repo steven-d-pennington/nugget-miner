@@ -86,6 +86,14 @@ describe('RecorderPanel mobile capture', () => {
     expect(screen.queryByRole('button', { name: /save recording/i })).not.toBeInTheDocument();
   });
 
+  it('shows the sculpted microphone control and quiet idle waveform', () => {
+    render(<RecorderPanel />);
+    const record = screen.getByRole('button', { name: 'Record' });
+    expect(record.querySelector('svg')).not.toBeNull();
+    expect(screen.getByText('Ready when you are')).toBeInTheDocument();
+    expect(screen.getByTestId('continuous-waveform')).toBeInTheDocument();
+  });
+
   it('shows only recording feedback and Stop & save while active', () => {
     setRecorder('recording');
     render(<RecorderPanel />);
@@ -95,6 +103,8 @@ describe('RecorderPanel mobile capture', () => {
     expect(screen.getByRole('meter', { name: 'Live microphone level' })).toHaveAttribute('aria-valuenow', '55');
     expect(screen.getByRole('button', { name: 'Stop & save' })).toBeInTheDocument();
     expect(screen.getByText('Saved on this device when you stop')).toBeInTheDocument();
+    expect(screen.getByTestId('continuous-waveform')).toBeInTheDocument();
+    expect(screen.queryByTestId('waveform-bar')).not.toBeInTheDocument();
     expect(screen.queryByText(/transcript/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/idea/i)).not.toBeInTheDocument();
   });

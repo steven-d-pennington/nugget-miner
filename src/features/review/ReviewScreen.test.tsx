@@ -125,6 +125,14 @@ beforeEach(() => {
 });
 
 describe('ReviewScreen multi-idea confirmation', () => {
+  it('keeps the full source transcript collapsed beneath the active organized idea', async () => {
+    render(<ReviewScreen captureId="capture-1" />);
+    const source = await screen.findByText('Source transcript');
+    const drawer = source.closest('details');
+    expect(drawer).not.toHaveAttribute('open');
+    expect(within(drawer!).getByText('Three separate ideas in one untrusted transcript.')).toBeInTheDocument();
+  });
+
   it('renders the exact three-candidate heading, position, and source URL', async () => {
     render(<ReviewScreen captureId="capture-1" />);
 

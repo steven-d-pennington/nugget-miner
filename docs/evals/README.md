@@ -46,8 +46,24 @@ The authorized key is non-enumerable in the preflight result: client constructio
 
 The live suite is deliberately excluded from normal tests and CI. A completed run writes `docs/evals/latest.json` with public configuration metadata, raw structured results, per-fixture diagnostics, and the aggregate score. It never serializes the API key. Rerun it after any prompt, schema, model, reasoning-effort, or category-description change.
 
-## July 16 cost deferral
+## July 16 deferral and July 17 canonical result
 
 The overnight build did not run the live suite. At the configured per-fixture output ceilings, 12 fixtures can request up to `12 * (1,800 + 4,000) = 69,600` output tokens. At the supplied GPT-5.6 Sol output rate of $30 per million tokens, output alone could cost $2.088 before input tokens, which exceeds the approximately $2 overnight authorization. Pricing and actual token use can change, so verify the current estimate before authorizing a future run.
 
-Accordingly, `docs/evals/latest.json` is intentionally absent, no live score is claimed, and the Sprint 2 live-evaluation exit gate remains open. Prompt or reasoning changes must never be justified by weakening the canonical fixtures, structured schemas, grounding rules, or score thresholds.
+Accordingly, the July 16 overnight run was deferred. This was a historical
+cost/authorization decision, not a relaxation of the fixtures, structured
+schemas, grounding rules, or score thresholds.
+
+On July 17, the authorized canonical v2 run completed and wrote
+[`latest.json`](latest.json) at `2026-07-17T18:23:10.007Z`. It used
+`gpt-5.6-terra` with medium reasoning, `segment-v2`, and `organize-v2`. All 12
+fixtures passed idea-count and ordered-category checks; invalid category IDs and
+unsupported explicit claims were both zero; every fixture-specific requirement
+passed; and every result retains both provider response IDs. The initial v1
+failure remains in Git history at `be48e46`; the v2 prompt fix is `8d5d380`.
+
+The Sprint 2 quality/evaluation gate is therefore complete. This report does
+not establish physical-device behavior, PWA install/background behavior, or any
+submission outcome. Rerun it after a prompt, schema, model, reasoning-effort,
+or category-description change; do not weaken the canonical fixtures or their
+thresholds to preserve a passing result.
