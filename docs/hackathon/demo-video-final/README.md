@@ -1,5 +1,18 @@
 # Nugget demo video handoff
 
+## Approved hybrid candidate
+
+Steven approved `nugget-demo-hybrid-narrated.mp4` on July 18, 2026 as the
+current upload candidate. It combines genuine iPhone capture and live waveform
+footage with a deterministic walkthrough of the current sample library, subtle
+push-in motion, OpenAI narration, and embedded English captions.
+
+- `nugget-demo-hybrid-narrated.mp4` - approved 2:51.5 upload candidate.
+- `nugget-demo-hybrid-silent.mp4` - clean silent edit master.
+- `nugget-demo-hybrid-contact-sheet.png` - chapter-level visual verification.
+- `../demo-video-hybrid/README.md` - exact provenance, replacement workflow,
+  render commands, and verification record.
+
 ## Files
 
 - `nugget-demo-final-phone-walkthrough.mp4` — the 2:51.5 candidate that replaces

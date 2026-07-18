@@ -17,8 +17,9 @@ data as a real user's data.
 - `browser-walkthrough-timeline.json` - normalized chapter offsets read by the
   renderer.
 
-The generated media remains untracked until Steven watches and approves the
-complete review copy.
+Steven approved the complete narrated review copy on July 18, 2026. The hybrid
+candidate and its verification evidence are therefore ready to be tracked and
+published with the existing MVP pull request.
 
 ## Provenance and truthfulness
 
@@ -108,5 +109,5 @@ extra footage. Pass `-SkipNarrated` when validating only a silent replacement.
   idea detail, Actions, Settings, and close are all present; Sample and
   AI-narration disclosures remain visible.
 
-The final acceptance gate is one complete human watch on headphones and one on
-a phone speaker before the candidate is committed or uploaded.
+The final human-watch gate was approved on July 18, 2026. A logged-out playback
+check is still required after the eventual YouTube upload.
