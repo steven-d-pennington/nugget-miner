@@ -4,7 +4,7 @@ Nugget is a mobile-first voice capture PWA that turns an unstructured ramble int
 
 **OpenAI Build Week track: Apps for Your Life**
 
-**Public demo:** [nugget-miner-kappa.vercel.app](https://nugget-miner-kappa.vercel.app) — production deployment `dpl_CZWcgTiGf3TaPyjfxDp59vg5zbqr`, READY and anonymously reachable. Its health endpoint reports transcription model `whisper-1` and organization model `gpt-5.6-terra`.
+**Public demo:** [nugget-miner-kappa.vercel.app](https://nugget-miner-kappa.vercel.app) — production deployment `dpl_Hgznv72apf9t5TkCRwzakd6p3Tou`, READY and anonymously reachable from public `main` at `e50cd42`. Its health endpoint reports transcription model `whisper-1` and organization model `gpt-5.6-terra`.
 
 ## The problem
 
@@ -51,7 +51,7 @@ GPT-5.6 is the organization engine, not a chat add-on. The server-side client us
 2. **Organization:** GPT-5.6 receives those candidates plus allowed category descriptions as untrusted data. It returns an editable record with a category, tags, goals, blockers, research needs, suggested actions, provenance, and source references.
 3. **Validation:** Nugget validates structured responses, source spans, and allowed category IDs before writing reviewable records.
 
-The committed [evaluation material](./docs/evals/README.md) tests canonical fixtures, schema and grounding safeguards, category validity, and duplicate-action behavior. The cost-incurring live suite is intentionally separate and remains an outstanding submission gate; no live report has been recorded yet.
+The committed [evaluation material](./docs/evals/README.md) tests canonical fixtures, schema and grounding safeguards, category validity, and duplicate-action behavior. The recorded live report in [`docs/evals/latest.json`](./docs/evals/latest.json) used `gpt-5.6-terra` with medium reasoning and the `segment-v2` / `organize-v2` prompts. All 12 fixtures passed idea-count, category, and special-requirement gates, with zero invalid category IDs or unsupported explicit claims.
 
 ## Architecture
 
@@ -134,7 +134,7 @@ npx vitest run src/lib/evals/scoring.test.ts
 npm run eval:live
 ```
 
-`npm run check` is the combined gate: it runs typecheck, lint, the normal test suite, and the production build. `npm run eval:live` is optional, cost-incurring, and requires a safely injected nonempty `OPENAI_API_KEY`; it is excluded from normal tests and CI. An authorized live run writes `docs/evals/latest.json`, but that file does not exist because the local evaluation process could not receive a safely injected nonempty `OPENAI_API_KEY`. The recorded-event live report remains an outstanding submission gate.
+`npm run check` is the combined gate: it runs typecheck, lint, the normal test suite, and the production build. `npm run eval:live` is optional, cost-incurring, and requires a safely injected nonempty `OPENAI_API_KEY`; it is excluded from normal tests and CI. The retained Build Week run is [`docs/evals/latest.json`](./docs/evals/latest.json); rerunning the suite is unnecessary for normal development and may incur provider cost.
 
 ## Privacy and data handling
 
@@ -146,9 +146,9 @@ npm run eval:live
 
 ## Known MVP boundaries
 
-- Public production is available without Vercel Authentication and passed anonymous root, health, security-header, manifest, and service-worker checks on July 16, 2026.
-- The live evaluation report and a reusable live-result artifact are not yet recorded because the local evaluation process could not receive a safely injected nonempty `OPENAI_API_KEY`, despite authorization to make live OpenAI calls after deterministic checks within an approximate four-dollar ceiling.
-- Physical-device microphone, secondary-browser, install/standalone, and mobile background/reopen verification remain incomplete.
+- Public production is available without Vercel Authentication and passed anonymous root, health, security-header, manifest, service-worker, and current-production screenshot checks through July 18, 2026.
+- The canonical live GPT-5.6 evaluation is recorded in [`docs/evals/latest.json`](./docs/evals/latest.json); it is evidence of the fixed fixture suite, not a promise that every free-form transcript will be classified perfectly.
+- The owner verified recording, save/reopen/playback, Add to Home Screen, and offline-to-online resume on an iPhone 14 Pro Max in Chrome. Secondary-browser, screen-reader, and keyboard-only audits remain outside the verified MVP matrix.
 - Nugget does not provide self-learning from corrections, live research, cloud sync, native apps, or guaranteed processing while a mobile browser is fully closed.
 
 ## Repository map and documentation

@@ -89,7 +89,7 @@ git diff --check
 ## Repository and assets verified
 
 - [x] The repository is public and default `main` now contains the current MVP
-  after merge commit `136cc47`; the implementation branch remains available for
+  after merge commit `e50cd428`; the implementation branch remains available for
   Build Week history.
 - [x] An MIT `LICENSE` exists on public default `main`.
 - [x] The [README](../../README.md) was reviewed for setup, sample path, testing,
@@ -106,15 +106,18 @@ git diff --check
   export with zero provider calls, console errors, page errors, HTTP errors, or
   unexpected failed requests.
 - [ ] Five final screenshots are uploaded to Devpost in the planned order. Five
-  prepared assets are recorded in [SCREENSHOT_PLAN.md](SCREENSHOT_PLAN.md), but
-  no Devpost upload or public-production image comparison occurred here.
-- [ ] Final screenshots are recaptured or compared against the owner-approved
-  public production build, with every asset opened and checked for current UI,
-  truthful labels, and no secrets.
+  current-production assets are recorded in
+  [SCREENSHOT_PLAN.md](SCREENSHOT_PLAN.md); Devpost upload has not occurred.
+- [x] Final screenshots were recaptured from the owner-approved public
+  production origin on July 18 at a 430 × 932 CSS viewport. The isolated run
+  passed 1/1, all five assets were opened, and current UI, truthful labels,
+  deterministic/sample boundaries, and absence of secrets were checked. See
+  [SCREENSHOT_PLAN.md](SCREENSHOT_PLAN.md).
 
 ## Owner and external actions pending
 
-- [ ] Select **Apps for Your Life** in Devpost.
+- [x] Steven confirmed **Apps for Your Life** is selected in the existing
+  Devpost submission draft.
 - [ ] Paste the title and descriptions from the final approved
   [Devpost draft](DEVPOST_SUBMISSION.md), then visually re-read the rendered
   fields for truncation or stale wording.
@@ -133,9 +136,12 @@ git diff --check
   phone result does not claim a microphone-denial, screen-reader, or keyboard-only audit.
 - [x] Primary implementation `/feedback` Session ID verified and recorded in the
   README, Devpost draft, and evidence ledger: `019f66eb-7a90-7080-8667-b6ac77c45a23`.
-- [ ] Record an owner-approved public YouTube demo under three minutes, then
-  verify public logged-out playback, audio, captions, title, description, and
-  runtime. Follow the [demo recording checklist](DEMO_RECORDING_CHECKLIST.md).
+- [x] Owner approved the local 171.5-second narrated master with genuine iPhone
+  capture footage, deterministic/sample disclosure, AAC audio, and 14 embedded
+  English captions.
+- [ ] Upload that approved master to YouTube as Public, then verify public
+  logged-out playback, audio, captions, title, description, and runtime. Follow
+  the [demo recording checklist](DEMO_RECORDING_CHECKLIST.md).
 - [ ] Confirm the public deployment will remain free and unrestricted through
   August 5, 2026 at 5:00 PM Pacific, and record the retention evidence.
 
@@ -173,10 +179,9 @@ Not created. These are status statements, not placeholders.
 
 ## Recommended remaining owner sequence
 
-1. Retain the verified canonical v2 evaluation report with the submission
-   evidence; do not substitute the distinct two-call production smoke for it.
-2. Record and publish the truthful public YouTube demo, then verify playback
-   while logged out.
+1. Upload the approved narrated master to YouTube and verify playback while
+   logged out.
+2. Upload the five final screenshots and paste the final Devpost copy.
 3. Perform the final app/README/Devpost/video/screenshot claim comparison.
 4. Submit Devpost and immediately reopen it to reverify persistence.
 5. Only then commit the real confirmation evidence and create/push the annotated
