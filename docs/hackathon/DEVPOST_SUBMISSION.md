@@ -7,14 +7,14 @@
 - **Repository:** [steven-d-pennington/nugget-miner](https://github.com/steven-d-pennington/nugget-miner) is public. The current MVP is on public `main` after merge commit `e50cd428`.
 - **Short description:** Nugget is a mobile-first voice capture app that turns unstructured rambles into distinct, organized ideas. Record while you are moving, leave as soon as the audio is saved locally, then return to review GPT-5.6-generated idea records with editable titles, summaries, goals, blockers, research needs, categories, tags, and next actions.
 
-### Required fields that remain open
+### Required submission fields
 
 - **Public working URL:** [https://nugget-miner-kappa.vercel.app](https://nugget-miner-kappa.vercel.app). Production deployment `dpl_Hgznv72apf9t5TkCRwzakd6p3Tou` is READY from `main` at `e50cd42` and passed anonymous root, `/api/health`, security-header, manifest, service-worker, and current-production screenshot checks. Health reports `whisper-1` transcription and `gpt-5.6-terra` organization.
-- **Public video URL:** Pending authorized YouTube upload. The owner-approved local master is [`demo-video-final/nugget-demo-hybrid-narrated.mp4`](demo-video-final/nugget-demo-hybrid-narrated.mp4): 171.5 seconds, 1920 × 1080, H.264 video, AAC audio, and 14 embedded captions. Do not add a URL until public logged-out playback is verified.
+- **Public video URL:** [https://youtu.be/ct8tY_JwTPw](https://youtu.be/ct8tY_JwTPw). The owner-approved master is public: 171.5 seconds, 1920 × 1080, H.264 video, AAC audio, and a published 14-cue English subtitle track. YouTube completed processing, copyright, and Community Guidelines checks with no issues. Anonymous oEmbed access, the public watch page, title, description, runtime, audio playback, and visible timed captions were verified on July 18, 2026.
 - **Primary Codex implementation Session ID:** `019f66eb-7a90-7080-8667-b6ac77c45a23` (verified by the owner as the `/feedback` Session ID for the primary implementation task).
 - **Live evaluation report:** [`docs/evals/latest.json`](../evals/latest.json), generated `2026-07-17T18:23:10.007Z` with `gpt-5.6-terra`, medium reasoning, `segment-v2`, and `organize-v2`. All 12 fixtures passed idea-count, category, and special-requirement gates; invalid category IDs and unsupported explicit claims were both zero; both provider response IDs are retained for every fixture.
 
-Use the public production URL above as the Devpost testing URL. See the [judge test path](JUDGING_TEST_PATH.md), [screenshot plan](SCREENSHOT_PLAN.md), [demo script](DEMO_SCRIPT.md), and [demo recording checklist](DEMO_RECORDING_CHECKLIST.md) for the current, truthful demonstration material and pending public-video gate.
+Use the public production URL above as the Devpost testing URL. See the [judge test path](JUDGING_TEST_PATH.md), [screenshot plan](SCREENSHOT_PLAN.md), [demo script](DEMO_SCRIPT.md), and [demo recording checklist](DEMO_RECORDING_CHECKLIST.md) for the current, truthful demonstration and verification material.
 
 ## Inspiration
 
@@ -84,4 +84,4 @@ Use only claims supported by the current build and evidence:
 - Do not claim self-learning, live research execution, citations, sync, accounts, or cloud user-data persistence.
 - Do not claim all processing is local or fully on device; cloud processing is opt-in/initiated and transient.
 - Do not present the deterministic screenshots as a live GPT provider result.
-- Do not supply a final public URL, video URL, or live evaluation score until each exists and has been verified. Use the verified Session ID above exactly as recorded.
+- Use only the verified public app, video, repository, evaluation, and Session ID values recorded above; do not substitute a preview URL or an unverified rerun.

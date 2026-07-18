@@ -64,9 +64,11 @@ contains a persistent `AI-GENERATED NARRATION - OPENAI TTS-1-HD` disclosure.
 - Narrated MP4 size: `11,267,199` bytes
 - Silent MP4 size: approximately 4.2 MB
 
-After adding narration, watch the entire result once on headphones and once on
-a phone speaker. The public YouTube upload still requires owner approval and a
-logged-out playback check.
+The owner approved the narrated master and public upload. The published demo is
+[https://youtu.be/ct8tY_JwTPw](https://youtu.be/ct8tY_JwTPw). YouTube completed
+processing, copyright, and Community Guidelines checks with no issues; the
+source SRT was also published as the manual 14-cue English caption track and
+verified rendering in the public player.
 
 For the phone-footage source inventory, edit map, and reproducible render
 command, see `../demo-video-draft/PHONE_CAPTURE_EDIT.md`.

@@ -40,11 +40,11 @@ library**; it remains Vercel-auth protected, not a public judge path.
 `OPENAI_KEY_NONEMPTY=False` and `OPENAI_API_KEY` was required; one eval file
 failed and 13 tests skipped. That July 16 preflight made zero provider calls
 with zero spend. The later successful canonical v2 report is now
-`docs/evals/latest.json`; public production, logged-out
-PWA/live-GPT judge-path, real-device/browser matrix, public YouTube video,
-Devpost submission/confirmation, August 5 retention, and submission tag remain
-open. The primary `/feedback` Session ID was subsequently verified in the
-Primary Codex Session record above. See
+`docs/evals/latest.json`; public production and the public YouTube demo are now
+verified. The remaining open items are the interactive live-GPT judge path,
+optional secondary-browser matrix, Devpost submission/confirmation, August 5
+retention, and submission tag. The primary `/feedback` Session ID was
+subsequently verified in the Primary Codex Session record above. See
 [SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md) and
 [FINAL_VERIFICATION.md](FINAL_VERIFICATION.md).
 
@@ -236,8 +236,16 @@ Steven approved
 as the upload master. Fresh `ffprobe` evidence records 171.5 seconds, H.264
 1920 × 1080 at 30 fps, mono English AAC audio, and an embedded English subtitle
 track. The edit uses genuine iPhone capture/waveform footage plus clearly
-disclosed deterministic/sample walkthrough sections. Public YouTube upload and
-logged-out playback remain pending.
+disclosed deterministic/sample walkthrough sections.
+
+Steven subsequently authorized the public YouTube upload. The approved master
+is live at [https://youtu.be/ct8tY_JwTPw](https://youtu.be/ct8tY_JwTPw).
+YouTube completed video processing plus copyright and Community Guidelines
+checks with no issues. Public visibility, anonymous oEmbed metadata, the title,
+description, duration, audio playback, and timed English caption rendering were
+verified on July 18, 2026. The source SRT's 14-cue English track was published
+manually in YouTube Studio because the MP4-embedded subtitle stream was not
+initially exposed by the public player.
 
 The five Devpost assets were then recaptured from the public production origin
 in a clean 430 × 932 CSS browser profile. The isolated capture run passed 1/1

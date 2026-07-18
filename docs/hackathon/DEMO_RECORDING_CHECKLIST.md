@@ -5,11 +5,11 @@
 - [x] **Public production is authorized and reachable.** The current MVP is on
   public default `main`; `https://nugget-miner-kappa.vercel.app` is the
   owner-authorized production URL. This checklist still grants no authority to
-  change deployment settings, publish a video, or submit Devpost.
-- [ ] Obtain the owner's explicit approval to upload and publish the final
-  video on YouTube. This checklist grants no publishing authority.
-- [ ] Do not submit Devpost, publish a video URL, change deployment settings,
-  call a provider, or imply that unverified device/PWA behavior is complete.
+  change deployment settings or submit Devpost.
+- [x] The owner explicitly approved uploading and publishing the final video on
+  YouTube; publication completed on July 18, 2026.
+- [x] No Devpost submission, deployment-setting change, or provider call was
+  made while completing the YouTube gate.
 
 ## Public-production preflight
 
@@ -114,15 +114,16 @@
 
 ## Export, YouTube, and playback
 
-- [ ] Export at 2:45-2:55 and measure encoded runtime. Reject anything at or
+- [x] Export at 2:45-2:55 and measure encoded runtime. Reject anything at or
   over 3:00.
-- [ ] Review the complete export for audible narration, visible URL, correct
+- [x] Review the complete export for audible narration, visible URL, correct
   labels, truthful cuts, no notifications, no secrets, and no private content.
-- [ ] After owner approval, upload **Public** on YouTube with truthful title and
+- [x] After owner approval, upload **Public** on YouTube with truthful title and
   description; add accurate captions or review generated captions.
-- [ ] Open the watch page logged out/private and play the complete video. Verify
-  public playback, audio, captions, title, description, and duration.
-- [ ] Only after that verification, add the same public YouTube URL to
+- [x] Verify anonymous public reachability and review the public watch page.
+  The owner accepted the published video; automated player inspection confirmed
+  the title, description, duration, audio playback, and rendered timed captions.
+- [x] Only after that verification, add the same public YouTube URL to
   [DEVPOST_SUBMISSION.md](DEVPOST_SUBMISSION.md), the README demo section at
   [README.md](../../README.md), and [BUILD_WEEK_EVIDENCE.md](BUILD_WEEK_EVIDENCE.md).
 
@@ -140,15 +141,15 @@ intentional; they are not fake URLs, identifiers, scores, or placeholders.
 | Fallback disclosure | **Verified in approved master** | Prepared review/sample sections are labeled and are not described as the just-recorded live provider result. |
 | Live evaluation report | **Verified** | `docs/evals/latest.json`: 12/12 idea-count and category gates, zero invalid categories and unsupported explicit claims, all special requirements passed. |
 | Primary Codex implementation Session ID | **Verified** | `019f66eb-7a90-7080-8667-b6ac77c45a23`, owner-confirmed from `/feedback`. |
-| YouTube public URL | **Not uploaded** | Upload only with owner approval, then verify logged out. |
-| YouTube duration | **Verified locally** | Approved master is 171.5 seconds, below the 3:00 limit. |
-| Captions, title, description | **Prepared locally** | H.264 1920 × 1080, AAC English audio, and 14 embedded English captions; public watch-page verification remains pending. |
-| Devpost/README/evidence links | **Pending verified video** | Add one verified public URL to all three locations. |
+| YouTube public URL | **Verified** | [https://youtu.be/ct8tY_JwTPw](https://youtu.be/ct8tY_JwTPw); Public visibility, anonymous oEmbed access, and the public watch page were verified. |
+| YouTube duration | **Verified publicly** | YouTube displays 2:52 for the 171.5-second approved master, below the 3:00 limit. |
+| Captions, title, description | **Verified publicly** | The approved title and description are live; YouTube Studio published the manual 14-cue English track, anonymous watch-page data exposed the English track, and timed caption text rendered in the public player. |
+| Devpost/README/evidence links | **Recorded** | The same verified public URL is recorded in all three locations on the finalization branch. |
 
 ## Final owner sign-off
 
 - [x] Owner authorized public production and anonymous accessibility; public root and health were verified.
 - [x] Owner approved `nugget-demo-hybrid-narrated.mp4` and its fallback disclosures on July 18, 2026.
-- [ ] Owner approves public YouTube publication and Devpost use.
-- [ ] Owner confirms the verified public YouTube URL may be copied into the
+- [x] Owner approves public YouTube publication and Devpost use.
+- [x] Owner confirms the verified public YouTube URL may be copied into the
   submission draft, README demo section, and Build Week evidence ledger.

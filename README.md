@@ -6,6 +6,8 @@ Nugget is a mobile-first voice capture PWA that turns an unstructured ramble int
 
 **Public demo:** [nugget-miner-kappa.vercel.app](https://nugget-miner-kappa.vercel.app) — production deployment `dpl_Hgznv72apf9t5TkCRwzakd6p3Tou`, READY and anonymously reachable from public `main` at `e50cd42`. Its health endpoint reports transcription model `whisper-1` and organization model `gpt-5.6-terra`.
 
+**Public demo video:** [Nugget — Turn voice rambles into organized ideas with GPT-5.6](https://youtu.be/ct8tY_JwTPw) — 171.5 seconds with English narration and a published 14-cue English subtitle track.
+
 ## The problem
 
 Ideas captured while walking, commuting, or between tasks often become long voice notes. Later, finding the distinct projects, blockers, and next actions inside a ramble is slow and unreliable.

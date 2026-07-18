@@ -8,8 +8,9 @@
 
 The owner-approved local master is
 [`demo-video-final/nugget-demo-hybrid-narrated.mp4`](demo-video-final/nugget-demo-hybrid-narrated.mp4).
-It is recorded but not yet published. Public YouTube upload remains a separate
-authorization and logged-out playback gate.
+It is published at [https://youtu.be/ct8tY_JwTPw](https://youtu.be/ct8tY_JwTPw).
+Public visibility, runtime, title, description, audio, and the manually
+published 14-cue English caption track were verified on July 18, 2026.
 
 The hard runtime ceiling is **2:59**. Target an exported runtime of **2:50**
 (acceptable range: **2:45-2:55**). The Sprint 6 plan windows total 2:59; the

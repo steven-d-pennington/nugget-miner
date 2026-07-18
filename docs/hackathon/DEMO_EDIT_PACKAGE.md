@@ -2,10 +2,10 @@
 
 ## Deliverable boundary
 
-This is an edit-ready package, not a claim that a video has been recorded or
-published. The final public YouTube upload still requires Steven's approval and
-an end-to-end playback check. Export the final file at **2:45 to 2:55**, never
-at or over three minutes.
+This is the reproducible edit package for the owner-approved master now
+published at [https://youtu.be/ct8tY_JwTPw](https://youtu.be/ct8tY_JwTPw).
+The export remains constrained to **2:45 to 2:55**, never at or over three
+minutes.
 
 The visual sequence uses safe sample data and no personal recordings. The
 opening capture sequence may be recorded live if convenient; the organization
@@ -79,14 +79,14 @@ Use these verbatim, in clear high-contrast text:
 7. Watch the complete file with sound before any upload; check every disclosure,
    the public URL, the Sample chips, readability, and absence of private data.
 
-## Remaining owner actions
+## Publication outcome
 
-- Record the optional live capture opening, or approve the all-prepared visual
-  version.
-- Record/approve the narration.
-- Upload the final video publicly to YouTube and verify it in a logged-out
-  browser.
-- Add that verified public URL to the Devpost draft, README, and submission
-  evidence documents.
+- Steven approved the hybrid narrated master and public YouTube publication.
+- YouTube processing, copyright, and Community Guidelines checks completed with
+  no issues.
+- The source SRT was published as a manual 14-cue English subtitle track and
+  rendered timed text was verified in the public player.
+- The verified public URL is recorded in the Devpost draft, README, and
+  submission evidence documents.
 - The verified Codex `/feedback` Session ID is already recorded in the README,
   Devpost draft, and evidence ledger; it does not need to appear on screen.
