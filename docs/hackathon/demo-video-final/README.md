@@ -2,6 +2,8 @@
 
 ## Files
 
+- `nugget-demo-final-with-openai-narration.mp4` — the finished 2:52 video with
+  OpenAI TTS narration and an embedded English caption track.
 - `nugget-demo-silent-walkthrough.mp4` — the 1920x1080, 30 fps, silent
   picture master locked at 2:52.
 - `NUGGET_DEMO_VOICEOVER_BEAT_MAP.md` — timestamped narration, voice-clone
@@ -22,14 +24,26 @@ tone, and the shipped local sample library. No personal data or API key appears
 in the video, and no OpenAI request was made for this capture. The prepared
 review state and local sample views are explicitly labeled in the edit.
 
+## Narration
+
+The narrated export uses OpenAI `tts-1-hd` with the `onyx` voice at 0.95x
+generation speed. The fourteen narration cues were generated separately and
+placed at the beat-map timestamps. Thirteen fit without time compression; the
+short model-health cue was adjusted by 3.7% to remain inside its visual beat.
+
+The audio is normalized to -16 LUFS with a true peak below -1 dBTP. The video
+contains a persistent `AI-GENERATED NARRATION - OPENAI TTS-1-HD` disclosure.
+
 ## Verification
 
 - Encoded duration: `172.000000` seconds
 - Video: H.264, 1920x1080, 30 fps, `yuv420p`
-- Audio: none; intentionally reserved for Steven's voiceover
+- Narrated export audio: AAC, 48 kHz, mono, English
+- Narrated export captions: embedded English `mov_text` track plus source SRT
 - Full decode: passed with no reported frame errors
 - Caption cues: 14
-- Final MP4 size: approximately 4.2 MB
+- Narrated MP4 size: approximately 6.6 MB
+- Silent MP4 size: approximately 4.2 MB
 
 After adding narration, watch the entire result once on headphones and once on
 a phone speaker. The public YouTube upload still requires owner approval and a
