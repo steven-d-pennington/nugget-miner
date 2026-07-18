@@ -71,9 +71,10 @@
   at `/ideas/<ideaId>`; keep `Sample` visible for the local fallback.
 - [ ] 2:06-2:24: `/ideas/<ideaId>` and `/actions`; show goal, blocker,
   `Research needed`, action, linked source, and completion.
-- [ ] 2:24-2:44: `/settings` **About**, truthful model health, then README,
-  source, schema, or focused-test evidence. Do not show or claim a live
-  evaluation report because none exists.
+- [x] 2:24-2:44: `/settings` **About**, truthful model health, then README,
+  source, schema, focused-test, and retained live-evaluation evidence. The
+  approved edit identifies the fixed evaluation suite without presenting it as
+  proof of every possible transcript.
 - [ ] 2:44-2:56: actual commit history and Codex/human-role explanation; do not
   invent a primary implementation Session ID.
 - [ ] 2:56-2:59: clean Nugget close. Aim for 2:45-2:55; 2:59 is maximum only.
@@ -133,21 +134,21 @@ intentional; they are not fake URLs, identifiers, scores, or placeholders.
 | Evidence item | Current status | Verified value or next authorized action |
 | --- | --- | --- |
 | Public production URL | **Verified** | `https://nugget-miner-kappa.vercel.app` returned anonymously accessible root and health responses. |
-| Production deployment identifier | **Verified** | `dpl_CZWcgTiGf3TaPyjfxDp59vg5zbqr`, READY. |
+| Production deployment identifier | **Verified July 18** | `dpl_Hgznv72apf9t5TkCRwzakd6p3Tou`, READY from `main` at `e50cd42`. |
 | Model-health display | **Production health verified** | Health reports `whisper-1` transcription and `gpt-5.6-terra` organization; still capture the visible Settings > About display during recording without secrets. |
-| Live capture shown | **Not recorded** | Record the prepared safe ramble and preserve truthful state. |
-| Fallback disclosure | **Not applicable until recording** | Retain exact preprocessed/sample wording if used. |
-| Live evaluation report | **Not available** | Do not claim a result or score; no report exists in this preparation pass. |
+| Live capture shown | **Verified in approved master** | The hybrid candidate includes genuine iPhone capture and live waveform footage plus the deterministic walkthrough. |
+| Fallback disclosure | **Verified in approved master** | Prepared review/sample sections are labeled and are not described as the just-recorded live provider result. |
+| Live evaluation report | **Verified** | `docs/evals/latest.json`: 12/12 idea-count and category gates, zero invalid categories and unsupported explicit claims, all special requirements passed. |
 | Primary Codex implementation Session ID | **Verified** | `019f66eb-7a90-7080-8667-b6ac77c45a23`, owner-confirmed from `/feedback`. |
 | YouTube public URL | **Not uploaded** | Upload only with owner approval, then verify logged out. |
-| YouTube duration | **Not measured** | Record encoded runtime; it must be under 3:00. |
-| Captions, title, description | **Not reviewed** | Verify on the public watch page after upload. |
+| YouTube duration | **Verified locally** | Approved master is 171.5 seconds, below the 3:00 limit. |
+| Captions, title, description | **Prepared locally** | H.264 1920 × 1080, AAC English audio, and 14 embedded English captions; public watch-page verification remains pending. |
 | Devpost/README/evidence links | **Pending verified video** | Add one verified public URL to all three locations. |
 
 ## Final owner sign-off
 
 - [x] Owner authorized public production and anonymous accessibility; public root and health were verified.
-- [ ] Owner approves recorded content and every fallback disclosure used.
+- [x] Owner approved `nugget-demo-hybrid-narrated.mp4` and its fallback disclosures on July 18, 2026.
 - [ ] Owner approves public YouTube publication and Devpost use.
 - [ ] Owner confirms the verified public YouTube URL may be copied into the
   submission draft, README demo section, and Build Week evidence ledger.

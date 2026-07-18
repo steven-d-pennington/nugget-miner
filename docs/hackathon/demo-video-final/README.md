@@ -55,13 +55,13 @@ contains a persistent `AI-GENERATED NARRATION - OPENAI TTS-1-HD` disclosure.
 
 ## Verification
 
-- Encoded duration: `172.000000` seconds
+- Encoded duration: `171.500000` seconds
 - Video: H.264, 1920x1080, 30 fps, `yuv420p`
 - Narrated export audio: AAC, 48 kHz, mono, English
 - Narrated export captions: embedded English `mov_text` track plus source SRT
 - Full decode: passed with no reported frame errors
 - Caption cues: 14
-- Narrated MP4 size: approximately 6.6 MB
+- Narrated MP4 size: `11,267,199` bytes
 - Silent MP4 size: approximately 4.2 MB
 
 After adding narration, watch the entire result once on headphones and once on

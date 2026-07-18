@@ -28,6 +28,12 @@
 > public default `main` as `136cc47` after the full `npm run check` gate passed
 > (57 test files / 394 tests and the production build). The preceding `main`
 > references are preserved as Task 5's historical repository snapshot.
+>
+> **Current update — July 18, 2026:** PR
+> [#5](https://github.com/steven-d-pennington/nugget-miner/pull/5) merged the
+> completed MVP and submission assets to public `main` as `e50cd428`. GitHub
+> Actions run `29655752694` passed, and production deployment
+> `dpl_Hgznv72apf9t5TkCRwzakd6p3Tou` is READY from that exact mainline source.
 
 ## Access and remaining gates
 

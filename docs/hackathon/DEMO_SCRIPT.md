@@ -6,10 +6,10 @@
 
 ## Recording boundary
 
-This is preparation, not evidence that a public demo has been recorded or
-published. Record only after the owner authorizes a current, public,
-account-free production build. The verified preview is Vercel-auth protected,
-and the older production deployment is not the current MVP.
+The owner-approved local master is
+[`demo-video-final/nugget-demo-hybrid-narrated.mp4`](demo-video-final/nugget-demo-hybrid-narrated.mp4).
+It is recorded but not yet published. Public YouTube upload remains a separate
+authorization and logged-out playback gate.
 
 The hard runtime ceiling is **2:59**. Target an exported runtime of **2:50**
 (acceptable range: **2:45-2:55**). The Sprint 6 plan windows total 2:59; the
@@ -26,7 +26,7 @@ at or over 3:00.
 | 0:57-1:38 | 0:39 | **Review** at `/review/<captureId>`. Show `2 ideas found` (or truthful count), Personal and Work drafts, category, tags, blocker, research-needed content, provenance, `View source capture`, then confirm ready ideas. | "One transcript becomes distinct, editable idea records. I can correct the title, category, tags, blocker, research need, and next steps. Provenance and the source capture keep the proposal connected to the ramble, and I confirm only what I trust." | Cut from the timeline only after the actual capture is ready. A preprocessed safe capture requires the disclosure below. | Truthful count; separate Personal and Work records; editable fields; `Explicit`, `Inferred`, or `Suggested`; source link; confirmation action. |
 | 1:38-2:06 | 0:27 | **Ideas** at `/ideas`. Search `community`, select `Personal`, and open **Create a neighborhood tool-sharing library** at `/ideas/<ideaId>`. Prefer actual confirmed output. If using local samples, keep `Sample` visible and say so. | "Confirmed records are in Ideas, where search and category and tag filters retrieve them locally. I search community and select Personal. If this row says Sample, it is clearly labeled local demo data, not a live GPT result." | Standard library flow. Never remove a `Sample` chip or call a sample row the live result. | `Ideas`; `community`; `Personal`; category/tag filters; row title; `Sample` if applicable. |
 | 2:06-2:24 | 0:17 | **Idea** at `/ideas/<ideaId>`, then **Actions** at `/actions`. Show tool-sharing goal, blocker, `Research needed`, suggested action, `Linked actions`, then complete **Draft a one-page interest survey.** | "The detail keeps the goal, blocker, research need, and suggested action with the idea. Actions collects accepted next steps without losing their source idea." | Click once into Actions; retain the source title or link. | Goal; blocker; `Research needed`; suggested action; linked action; completion state. |
-| 2:24-2:44 | 0:19 | **Settings** at `/settings`, `About`. Show `Built with GPT-5.6 and Codex`, non-secret `Transcription` and `Organization` health, then brief README/source/test-fixture evidence. | "Settings exposes non-secret model health. On the currently verified preview, transcription reports whisper-1 and organization reports gpt-5.6-terra; verify the displayed values again on production. The repository shows schemas, focused tests, and fixtures. I do not show a live evaluation report because none exists yet." | Show actual displayed values only. Do not show credentials, a fake score, or a missing report. | About heading; actual health; structured-output/schema or focused-test evidence; no secret. |
+| 2:24-2:44 | 0:19 | **Settings** at `/settings`, `About`. Show `Built with GPT-5.6 and Codex`, non-secret `Transcription` and `Organization` health, then brief README/source/evaluation evidence. | "Settings exposes non-secret model health: transcription reports whisper-1 and organization reports gpt-5.6-terra. The repository retains schemas, focused tests, and a 12-fixture live evaluation with the real response IDs." | Show actual displayed values only. Do not show credentials or imply the fixed fixture suite proves every possible ramble. | About heading; actual health; structured-output/schema, focused-test, or evaluation evidence; no secret. |
 | 2:44-2:56 | 0:10 | Keep actual README or dated commit history in view; do not display a Session ID in the recording. | "Codex supported plans, implementation, focused tests, browser checks, debugging, and verification. The human owner made the product and release decisions. The verified Session ID is recorded in the submission materials." | Slow dissolve toward Capture or Ideas. | Actual history; no private task content; no fabricated Session ID. |
 | 2:56-2:59 | 0:03 | Return to the Nugget mark and a clean Capture or Ideas screen. | "Nugget makes moving thoughts useful." | End cleanly; no fade beyond 2:59. | Nugget mark; no third-party logo or music issue. |
 
@@ -42,9 +42,8 @@ Do not say that a transcript can direct the model, that the product executes
 live research, or that all processing happens on-device.
 
 The source defaults are `gpt-4o-mini-transcribe` for transcription and
-`gpt-5.6-terra` for organization. The current protected preview reports
-`whisper-1` and `gpt-5.6-terra` through Settings health. On an authorized
-production recording, narrate only the values actually displayed there.
+`gpt-5.6-terra` for organization. Current public production reports
+`whisper-1` and `gpt-5.6-terra` through Settings health.
 
 ### Codex explanation used by the recording
 

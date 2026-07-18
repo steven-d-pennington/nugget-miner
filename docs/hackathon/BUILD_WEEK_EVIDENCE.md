@@ -220,3 +220,30 @@ under the existing authorization. Final production
 <https://nugget-miner-kappa.vercel.app>; public root, health, and worker smoke
 passed with `whisper-1`, `gpt-5.6-terra`, the final deployment release ID,
 explicit activation, and no automatic install activation.
+
+## July 18 merged MVP, approved video, and final screenshot gate
+
+Steven authorized merging PR
+[#5](https://github.com/steven-d-pennington/nugget-miner/pull/5). Public
+`main` now contains merge commit `e50cd428`; GitHub Actions run `29655752694`
+passed. Vercel built that exact source automatically as production deployment
+`dpl_Hgznv72apf9t5TkCRwzakd6p3Tou`, READY. `vercel inspect` reported target
+production, branch `main`, and commit `e50cd42`; the canonical public alias
+remains <https://nugget-miner-kappa.vercel.app>.
+
+Steven approved
+[`demo-video-final/nugget-demo-hybrid-narrated.mp4`](demo-video-final/nugget-demo-hybrid-narrated.mp4)
+as the upload master. Fresh `ffprobe` evidence records 171.5 seconds, H.264
+1920 × 1080 at 30 fps, mono English AAC audio, and an embedded English subtitle
+track. The edit uses genuine iPhone capture/waveform footage plus clearly
+disclosed deterministic/sample walkthrough sections. Public YouTube upload and
+logged-out playback remain pending.
+
+The five Devpost assets were then recaptured from the public production origin
+in a clean 430 × 932 CSS browser profile. The isolated capture run passed 1/1
+and made no provider call. Every output was opened and visually checked. The
+final images cover idle Capture, local recording save and processing stages,
+three-idea review, filtered balanced-card library with the Compact toggle, and
+complete summary-first idea detail. Dimensions, byte sizes, SHA-256 hashes,
+state provenance, and the exact command are retained in
+[`SCREENSHOT_PLAN.md`](SCREENSHOT_PLAN.md).

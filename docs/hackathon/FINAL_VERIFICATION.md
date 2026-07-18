@@ -15,9 +15,9 @@
 | Latest verified preview | [nugget-miner-782mixz1t-steven-penningtons-projects.vercel.app](https://nugget-miner-782mixz1t-steven-penningtons-projects.vercel.app) |
 | Preview deployment | `dpl_BRjPt1wGKEsxp6b1qbFF1KxgbDJu`, `READY`, Next.js; exact deployed source `f9bb639` |
 | Preview access boundary | Vercel-auth protected. It is not a logged-out, public, or account-free judge path. |
-| Public repository | Public; `main` now contains the current MVP and MIT `LICENSE` after merge commit `136cc47`. |
+| Public repository | Public; `main` contains the current MVP and MIT `LICENSE` after merge commit `e50cd428`. |
 | Public production URL | **Authorized and verified in the release addendum below.** |
-| Public YouTube URL and duration | **Not recorded / not published.** |
+| Public YouTube URL and duration | **Approved local master, not published.** `nugget-demo-hybrid-narrated.mp4` is 171.5 seconds; public logged-out YouTube playback remains pending. |
 | Primary Codex implementation Session ID | **Verified:** `019f66eb-7a90-7080-8667-b6ac77c45a23` (owner-confirmed `/feedback` ID for the primary implementation task). |
 | Devpost Submit actor | **Not submitted.** No person clicked Submit in this gate. |
 | Confirmation page or email | **Not captured.** |
@@ -45,6 +45,16 @@
 | Public runtime smoke | Public health returned `ok`, `whisper-1`, and `gpt-5.6-terra`; public Settings HTML contained `segment-v2` and `organize-v2`. Required headers, the standalone/portrait manifest, and the API-excluding, GET-only service worker were reverified. |
 | Logged-out mobile Chromium | At 430 x 932, the public root returned HTTP 200 with title **Nugget**, meaningful content, **What’s on your mind?** as `h1`, visible **Record**, Capture/Ideas/Actions navigation, Settings navigation, **Load sample library**, manifest linkage, service-worker support, and zero framework overlays. |
 | Diagnostic caveat | The first browser pass observed one anonymous console 404 message. An immediate clean diagnostic rerun recorded no failed requests and no responses with status >=400. Both observations are retained; Vercel error-log query for the prior hour found no logs. |
+
+### Current merged production and submission assets — July 18, 2026
+
+| Field | Verified result |
+| --- | --- |
+| Public source | PR [#5](https://github.com/steven-d-pennington/nugget-miner/pull/5) merged as `e50cd428`; GitHub Actions run `29655752694` passed. |
+| Current production | `dpl_Hgznv72apf9t5TkCRwzakd6p3Tou`, READY, built automatically from public `main` at `e50cd42`. |
+| Approved local video | `nugget-demo-hybrid-narrated.mp4`: 171.5 seconds, H.264 1920 × 1080 at 30 fps, mono English AAC, and embedded English subtitles. Public YouTube playback is pending. |
+| Final screenshots | Public-production capture passed 1/1 in a clean 430 × 932 profile. Five images were opened and accepted; dimensions, hashes, and state boundaries are in [SCREENSHOT_PLAN.md](SCREENSHOT_PLAN.md). |
+| Submission-package gate | `npm test` passed 66 files / 433 tests; `npm run typecheck`, `git diff --check`, changed-Markdown relative-link validation, stale-claim search, image metadata/hash verification, and video stream/duration probing passed. |
 
 ### Privacy-safe Vercel Web Analytics addendum — July 17, 2026
 
@@ -86,14 +96,14 @@
 
 | Task 6 requirement | Status | Precise evidence or blocker |
 | --- | --- | --- |
-| Apps for Your Life track selected | Not Run | Devpost was not opened or submitted in this gate. |
+| Apps for Your Life track selected | Owner-Verified | Steven confirmed the existing Devpost draft is in **Apps for Your Life**; the final rendered submission still requires re-verification before Submit. |
 | Title and descriptions pasted from the final file | Not Run | [Devpost draft](DEVPOST_SUBMISSION.md) is ready for owner review; no external field was edited. |
 | Production URL opens logged out | Verified | The canonical public URL returned HTTP 200 without deployment authentication; `/api/health` reported the expected models. |
-| Public/private repository access verified | Verified | Repository is public; default `main` contains the current MVP after merge `136cc47`. |
+| Public/private repository access verified | Verified | Repository is public; default `main` contains the current MVP after merge `e50cd428`. |
 | MIT license present | Verified | Public default `main` contains `LICENSE`. |
 | README setup, sample, testing, GPT, Codex, and human decisions complete | Verified | [README](../../README.md) was read, searched, and link-audited in this gate; it contains each required surface and preserves known boundaries. |
-| Five screenshots uploaded and ordered | Blocked-Pending | Five prepared assets are documented in [SCREENSHOT_PLAN.md](SCREENSHOT_PLAN.md); no Devpost upload or public-production comparison was performed. |
-| Public YouTube URL opens logged out and is under three minutes | Blocked-Pending | Video not recorded or published; [recording checklist](DEMO_RECORDING_CHECKLIST.md) remains owner-executable. |
+| Five screenshots uploaded and ordered | Blocked-Pending | Five current-production assets passed the capture and visual gate documented in [SCREENSHOT_PLAN.md](SCREENSHOT_PLAN.md); Devpost upload remains pending. |
+| Public YouTube URL opens logged out and is under three minutes | Blocked-Pending | The owner-approved local master is 171.5 seconds with audio and embedded captions; YouTube upload and logged-out playback remain pending. |
 | Primary `/feedback` Session ID entered | Verified | `019f66eb-7a90-7080-8667-b6ac77c45a23`, confirmed by the owner as the primary-task `/feedback` value. |
 | No unsupported claims | Verified | Claim-surface comparison below reviewed README, Devpost, demo, and non-test app source; no contradiction found for the requested model, review, privacy, or deferred-feature claims. |
 | Deployment remains available through August 5 | Blocked-Pending | Public production is authorized and live; retention through the required date still needs owner confirmation. |
@@ -108,8 +118,8 @@
 | Logged-out HTTPS root and `/api/health` | Verified | Public root returned HTTP 200 and health reported `whisper-1` plus `gpt-5.6-terra` without deployment authentication. |
 | PWA fast path and live two-idea judge path | Partial | The owner-confirmed iPhone installed/offline/reopen path and the complete public sample-library judge rehearsal passed. A two-call production smoke returned two organized ideas; the full interactive live-provider UI path was not rerun in this zero-provider-cost rehearsal. |
 | Public repository and README links open in the external judge path | Verified | The public production URL and public MVP branch are now available without Vercel deployment authentication. |
-| Public YouTube end-to-end playback | Blocked-Pending | No video URL exists. |
-| Every screenshot asset opened against deployed production | Not Run | Prepared images exist, but no owner-approved public production comparison was run. |
+| Public YouTube end-to-end playback | Blocked-Pending | No public video URL exists yet. |
+| Every screenshot asset opened against deployed production | Verified | The July 18 public-production capture passed 1/1 at 430 × 932 CSS pixels. All five output images were opened and checked; metadata and hashes are in [SCREENSHOT_PLAN.md](SCREENSHOT_PLAN.md). |
 | Sample library is useful, local, idempotent, and clearly labeled | Verified | In a clean mobile Chrome context, Load sample library navigated to Ideas; `community` plus Personal returned exactly the tool-sharing sample. Goal, blocker, research, suggested action, sample transcript drawer, action completion, return navigation, and Markdown export all passed without provider use. |
 | Devpost copy contains only shipped behavior | Verified | The narrative and claim-boundary checklist align with the app and documentation surfaces reviewed below. |
 | Submission completed and reverified before the internal deadline | Not Run | Devpost not submitted. |
