@@ -1,6 +1,6 @@
 # Nugget PWA Update Safety Design
 
-**Date:** July 18, 2026  
+**Date:** July 18, 2026
 **Status:** Implemented and engineering-verified; physical two-deployment iPhone check pending
 **Scope:** Installed-PWA update discovery, optional pre-update export, controlled activation, and recovery
 
@@ -31,7 +31,7 @@ When a new worker is waiting and capture is not locked, render a compact update 
 
 Required copy:
 
-> **New version ready**  
+> **New version ready**
 > Update Nugget when you're ready. You can export a copy of your local data first.
 
 Required actions:

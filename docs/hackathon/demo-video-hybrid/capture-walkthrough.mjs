@@ -1,8 +1,10 @@
 import { chromium, expect } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
+import { log } from 'node:console';
 import { mkdir, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { performance } from 'node:perf_hooks';
+import process from 'node:process';
 
 const baseUrl = (process.env.NUGGET_DEMO_BASE_URL ?? 'http://127.0.0.1:3000').replace(/\/$/, '');
 const outputDirectory = path.resolve('docs/hackathon/demo-video-hybrid');
@@ -53,12 +55,12 @@ async function goto(route) {
 async function slowScrollBy(distance, duration = 900) {
   await page.evaluate(async ({ distance: totalDistance, duration: totalDuration }) => {
     const steps = 30;
-    const start = window.scrollY;
+    const start = globalThis.window.scrollY;
     for (let step = 1; step <= steps; step += 1) {
       const progress = step / steps;
       const eased = 1 - ((1 - progress) ** 3);
-      window.scrollTo({ top: start + (totalDistance * eased), behavior: 'instant' });
-      await new Promise((resolve) => window.setTimeout(resolve, totalDuration / steps));
+      globalThis.window.scrollTo({ top: start + (totalDistance * eased), behavior: 'instant' });
+      await new Promise((resolve) => globalThis.window.setTimeout(resolve, totalDuration / steps));
     }
   }, { distance, duration });
 }
@@ -174,5 +176,5 @@ await writeFile(
   'utf8',
 );
 
-console.log(`Saved browser capture: ${videoOutput}`);
-console.log(`Saved chapter timeline: ${timelineOutput}`);
+log(`Saved browser capture: ${videoOutput}`);
+log(`Saved chapter timeline: ${timelineOutput}`);
