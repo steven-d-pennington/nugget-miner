@@ -1,4 +1,5 @@
 import { dirname } from 'node:path';
+import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 const root = dirname(fileURLToPath(import.meta.url));
