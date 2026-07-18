@@ -136,3 +136,30 @@ These gaps are retained intentionally; this Sprint 5 evidence pass does not eras
 ## Task 6 status
 
 The authenticated preview, completion-branch public production, environment-entry presence, local automated gate, headers, manifest, service-worker policy, owner-confirmed iPhone 14 Pro Max Chrome durability/PWA path, and public fast judge rehearsal are documented. Task 6 remains incomplete for the video, Devpost submission, and confirmation evidence; a secondary-browser pass would be optional additional evidence.
+
+## Controlled installed-app updates — July 18, 2026
+
+### Engineering and local production proof
+
+| Check | Verified result |
+| --- | --- |
+| Automated gate | `npm test -- --run`: 66 files / 430 tests passed. `npm run typecheck`, changed-file ESLint, `npm run build`, and `git diff --check` passed. |
+| Worker response | Local production `/sw.js` returned HTTP 200, `application/javascript`, `Cache-Control: no-cache, no-store, must-revalidate`, and `Service-Worker-Allowed: /`. Release `local-mrq5dbi4` appeared in the worker body and cache identity. |
+| Activation policy | Install does not call `skipWaiting()`. The worker waits for the explicit `SKIP_WAITING` message; provider tests prove capture-lock refusal, one-time `controllerchange` reload, and retry after activation timeout. |
+| First install | A clean production-mode browser registered the worker without displaying **New version ready**. Settings manual check returned **Nugget is up to date.** |
+| Mobile routes | At a 430 x 932 browser viewport, Capture, Ideas, Actions, and Settings rendered their expected headings with no horizontal overflow. The Capture viewport screenshot was visually reviewed. |
+| Runtime diagnostics | No browser console errors or warnings occurred across the four primary routes. |
+| Export contract | Settings and the update prompt use the same full JSON export operation. Success copy is **Export created. Your data remains in Nugget.** Export remains optional and no restore capability is claimed. |
+
+### First-rollout and device handoff
+
+The release immediately preceding this feature uses the legacy auto-activating
+worker. After the controlled-update release reaches production, open the
+installed app while online, fully close it, and reopen it once. That loads the
+new update client. A later deployment should then produce **New version ready**
+inside the installed app without requiring a browser refresh control.
+
+The remaining manual acceptance check is the physical iPhone two-deployment
+transition: confirm the prompt is suppressed throughout recording and local
+save, optionally create an export, choose **Update now**, observe one reload,
+and verify existing recordings, ideas, categories, and actions remain present.

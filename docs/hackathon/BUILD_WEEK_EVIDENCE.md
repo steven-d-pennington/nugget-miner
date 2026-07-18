@@ -169,3 +169,28 @@ calls. Full evidence and the retained harness-diagnostic notes are in
 A follow-up clean-context idempotency check loaded the sample library twice;
 the Ideas list remained exactly three items after both loads with zero console
 errors.
+
+## July 18 controlled PWA update implementation
+
+Sol implemented the approved installed-app update design without delegation.
+The service worker now receives a unique build/deployment release identity,
+waits for explicit activation, and excludes APIs and user content from Cache
+Storage. A root provider discovers waiting workers on launch, foreground,
+focus, and reconnect; suppresses activation during capture-sensitive work; and
+reloads once after the requested worker takes control. Nugget now offers a
+persistent **New version ready** surface, optional local-data export, and
+release/check/update controls in Settings.
+
+Task-sized commits are `5c1fecc`, `a86c058`, `038bea6`, `d95b803`, and
+`0782e9b`. Local verification passed 66 test files / 430 tests, TypeScript,
+changed-file ESLint, the Next.js 16.2.9 production build, and diff checks. A
+production-mode mobile browser pass at 430 x 932 verified Capture, Ideas,
+Actions, and Settings with no horizontal overflow and no console warnings or
+errors. Local `/sw.js` returned the required JavaScript type, no-cache headers,
+root scope, release identity, and explicit `SKIP_WAITING` handshake while the
+first installation correctly showed no update prompt.
+
+This engineering evidence does not claim the remaining physical iPhone
+two-deployment transition. The first controlled release requires one online
+open plus full close/reopen because the previously deployed client cannot
+retroactively display the new prompt.

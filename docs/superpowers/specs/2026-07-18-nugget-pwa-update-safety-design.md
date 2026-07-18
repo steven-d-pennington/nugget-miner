@@ -1,7 +1,7 @@
 # Nugget PWA Update Safety Design
 
 **Date:** July 18, 2026  
-**Status:** Approved product design; awaiting written-spec review  
+**Status:** Implemented and engineering-verified; physical two-deployment iPhone check pending  
 **Scope:** Installed-PWA update discovery, optional pre-update export, controlled activation, and recovery
 
 ## 1. Problem
