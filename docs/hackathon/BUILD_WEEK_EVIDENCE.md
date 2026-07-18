@@ -182,7 +182,7 @@ persistent **New version ready** surface, optional local-data export, and
 release/check/update controls in Settings.
 
 Task-sized commits are `5c1fecc`, `a86c058`, `038bea6`, `d95b803`, and
-`0782e9b`. Local verification passed 66 test files / 430 tests, TypeScript,
+`0782e9b`. Initial verification passed 66 test files / 430 tests, TypeScript,
 changed-file ESLint, the Next.js 16.2.9 production build, and diff checks. A
 production-mode mobile browser pass at 430 x 932 verified Capture, Ideas,
 Actions, and Settings with no horizontal overflow and no console warnings or
@@ -207,3 +207,16 @@ controls; selecting **Update now** caused one navigation/reload, cleared the
 waiting actions, preserved the displayed release, and produced no console
 warnings or errors. Physical-iPhone capture suppression, export, and local-data
 survival remain the final device-specific evidence.
+
+A final acceptance audit found that optional export generation temporarily
+disabled **Update now**, prompt buttons had fallen below the approved 48-pixel
+target, and the arriving prompt needed its polite live-region announcement.
+Commit `2b6c472` corrected all three and added regression coverage. The final
+gate passed 66 files / 432 tests, TypeScript, focused changed-file ESLint, the
+production build, and diff checks. Preview
+`dpl_5GKqjWzu5mbjSaWz1pR7TES6P637` passed authenticated smoke and was promoted
+under the existing authorization. Final production
+`dpl_8tmhJ46GR5kPZh5oh7poG1mTmdYJ` is READY at
+<https://nugget-miner-kappa.vercel.app>; public root, health, and worker smoke
+passed with `whisper-1`, `gpt-5.6-terra`, the final deployment release ID,
+explicit activation, and no automatic install activation.

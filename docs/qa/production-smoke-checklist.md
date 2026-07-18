@@ -143,7 +143,7 @@ The authenticated preview, completion-branch public production, environment-entr
 
 | Check | Verified result |
 | --- | --- |
-| Automated gate | `npm test -- --run`: 66 files / 430 tests passed. `npm run typecheck`, changed-file ESLint, `npm run build`, and `git diff --check` passed. |
+| Automated gate | Final `npm test -- --run`: 66 files / 432 tests passed. `npm run typecheck`, changed-file ESLint, `npm run build`, and `git diff --check` passed. |
 | Worker response | Local production `/sw.js` returned HTTP 200, `application/javascript`, `Cache-Control: no-cache, no-store, must-revalidate`, and `Service-Worker-Allowed: /`. Release `local-mrq5dbi4` appeared in the worker body and cache identity. |
 | Activation policy | Install does not call `skipWaiting()`. The worker waits for the explicit `SKIP_WAITING` message; provider tests prove capture-lock refusal, one-time `controllerchange` reload, and retry after activation timeout. |
 | First install | A clean production-mode browser registered the worker without displaying **New version ready**. Settings manual check returned **Nugget is up to date.** |
@@ -173,3 +173,6 @@ and verify existing recordings, ideas, categories, and actions remain present.
 | Production | Promoted under the existing authorization as `dpl_8e3ASxpfBaKWacCo3DeXVnoZM6S4`, READY at `https://nugget-miner-kappa.vercel.app`. |
 | Public smoke | Root, `/api/health`, and `/sw.js` returned HTTP 200. Health reported `whisper-1` and `gpt-5.6-terra`; worker release matched the production deployment ID with the required explicit-activation and cache headers. |
 | Deployed transition | A mobile production browser with the prior worker saw waiting-version controls, selected **Update now**, reloaded once, retained release `dpl_8e3ASxpf`, removed the waiting actions, and produced no console warnings or errors. This is deployed-browser evidence, not the remaining physical-iPhone attestation. |
+| Final acceptance fix | `2b6c472` keeps **Update now** enabled while optional export generation runs, restores 48-pixel prompt actions, and adds polite prompt announcement. Focused tests passed 21/21 before the final 432-test gate. |
+| Final preview | `dpl_5GKqjWzu5mbjSaWz1pR7TES6P637`, READY at `https://nugget-miner-q6spglp19-steven-penningtons-projects.vercel.app`; authenticated root, health, and worker smoke passed. |
+| Final production | `dpl_8tmhJ46GR5kPZh5oh7poG1mTmdYJ`, READY at `https://nugget-miner-kappa.vercel.app`; public root, health, and worker smoke passed with release identity matching the deployment. |
