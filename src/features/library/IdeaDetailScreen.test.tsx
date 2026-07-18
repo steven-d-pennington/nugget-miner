@@ -131,7 +131,7 @@ describe('IdeaDetailScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Edit idea' }));
     expect(screen.getByLabelText('Title')).toHaveValue(idea.title);
     fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Unsaved title' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel editing' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Discard unsaved edits' }));
     expect(screen.getByRole('heading', { name: idea.title })).toBeInTheDocument();
     expect(screen.queryByDisplayValue('Unsaved title')).not.toBeInTheDocument();
 
@@ -140,6 +140,19 @@ describe('IdeaDetailScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
     expect(await screen.findByRole('heading', { name: 'Neighborhood lending pilot' })).toBeInTheDocument();
     expect(screen.queryByLabelText('Title')).not.toBeInTheDocument();
+  });
+
+  it('autosaves valid edits locally and keeps the editor open with visible status', async () => {
+    render(<IdeaDetailScreen ideaId="idea-1" />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit idea' }));
+
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Neighborhood lending pilot' } });
+    expect(screen.getByRole('status')).toHaveTextContent('Changes waiting to save');
+
+    await waitFor(() => expect(updateIdea).toHaveBeenCalled(), { timeout: 2_000 });
+    expect(await screen.findByRole('status')).toHaveTextContent('Saved on this device');
+    expect(screen.getByLabelText('Title')).toHaveValue('Neighborhood lending pilot');
+    expect(screen.getByRole('button', { name: 'Done' })).toBeInTheDocument();
   });
 
   it('labels a demo idea and truthfully identifies its transcript-only source', async () => {

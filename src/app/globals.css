@@ -1346,6 +1346,23 @@ time {
   font-weight: 750;
 }
 
+.idea-detail__save-bar {
+  position: sticky;
+  z-index: 20;
+  top: calc(64px + env(safe-area-inset-top, 0px));
+  display: flex;
+  margin: 0 -0.5rem 1.25rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 0.7rem 0.8rem 0.7rem 1rem;
+  background: rgb(251 248 242 / 0.96);
+  box-shadow: 0 10px 30px rgb(16 29 54 / 0.1);
+  backdrop-filter: blur(12px);
+}
+
 .idea-form__actions {
   position: sticky;
   z-index: 10;
