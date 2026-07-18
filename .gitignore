@@ -1,6 +1,7 @@
 node_modules
 .next
 .vercel
+# Local Superpowers planning and runtime state
 .superpowers/
 out
 coverage
