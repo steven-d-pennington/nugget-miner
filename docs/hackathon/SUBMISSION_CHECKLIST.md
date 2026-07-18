@@ -4,10 +4,11 @@
 > 2026 engineering evidence window and this documentation claim-surface review.
 >
 > **Authority boundary:** This checklist does not authorize a Vercel setting
-> change, additional provider call, YouTube publication, Devpost submission,
+> change, additional provider call, Devpost submission,
 > tag, push, or any external publication. Checked boxes mean evidence was
 > verified in this gate; unchecked boxes require the named owner action and
-> fresh evidence.
+> fresh evidence. The subsequently authorized YouTube publication is recorded
+> below.
 
 Use this alongside the [final verification record](FINAL_VERIFICATION.md),
 [Devpost submission draft](DEVPOST_SUBMISSION.md), [demo recording
@@ -139,9 +140,13 @@ git diff --check
 - [x] Owner approved the local 171.5-second narrated master with genuine iPhone
   capture footage, deterministic/sample disclosure, AAC audio, and 14 embedded
   English captions.
-- [ ] Upload that approved master to YouTube as Public, then verify public
-  logged-out playback, audio, captions, title, description, and runtime. Follow
-  the [demo recording checklist](DEMO_RECORDING_CHECKLIST.md).
+- [x] Upload that approved master to YouTube as Public, then verify anonymous
+  reachability, owner-reviewed playback, audio, captions, title, description,
+  and runtime. Follow
+  the [demo recording checklist](DEMO_RECORDING_CHECKLIST.md). The verified URL
+  is [https://youtu.be/ct8tY_JwTPw](https://youtu.be/ct8tY_JwTPw); YouTube
+  processing, copyright, and Community Guidelines checks completed with no
+  issues, and the 14-cue English subtitle track is published.
 - [ ] Confirm the public deployment will remain free and unrestricted through
   August 5, 2026 at 5:00 PM Pacific, and record the retention evidence.
 
@@ -179,10 +184,8 @@ Not created. These are status statements, not placeholders.
 
 ## Recommended remaining owner sequence
 
-1. Upload the approved narrated master to YouTube and verify playback while
-   logged out.
-2. Upload the five final screenshots and paste the final Devpost copy.
-3. Perform the final app/README/Devpost/video/screenshot claim comparison.
-4. Submit Devpost and immediately reopen it to reverify persistence.
-5. Only then commit the real confirmation evidence and create/push the annotated
+1. Upload the five final screenshots and paste the final Devpost copy.
+2. Perform the final app/README/Devpost/video/screenshot claim comparison.
+3. Submit Devpost and immediately reopen it to reverify persistence.
+4. Only then commit the real confirmation evidence and create/push the annotated
    submission tag.

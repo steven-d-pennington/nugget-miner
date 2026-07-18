@@ -2,8 +2,8 @@
 
 > **Gate status:** Pre-submission evidence only. The Sprint 6 submission exit
 > gate is incomplete. This record does not authorize additional provider use,
-> publication, Devpost submission, tagging, or pushing. Production release is
-> separately authorized and recorded in the addendum below.
+> Devpost submission, tagging, or pushing. Production release and the public
+> YouTube video were separately authorized and are recorded below.
 
 ## Verification record
 
@@ -17,7 +17,7 @@
 | Preview access boundary | Vercel-auth protected. It is not a logged-out, public, or account-free judge path. |
 | Public repository | Public; `main` contains the current MVP and MIT `LICENSE` after merge commit `e50cd428`. |
 | Public production URL | **Authorized and verified in the release addendum below.** |
-| Public YouTube URL and duration | **Approved local master, not published.** `nugget-demo-hybrid-narrated.mp4` is 171.5 seconds; public logged-out YouTube playback remains pending. |
+| Public YouTube URL and duration | **Verified:** [https://youtu.be/ct8tY_JwTPw](https://youtu.be/ct8tY_JwTPw), 171.5 seconds (YouTube display 2:52), Public visibility. |
 | Primary Codex implementation Session ID | **Verified:** `019f66eb-7a90-7080-8667-b6ac77c45a23` (owner-confirmed `/feedback` ID for the primary implementation task). |
 | Devpost Submit actor | **Not submitted.** No person clicked Submit in this gate. |
 | Confirmation page or email | **Not captured.** |
@@ -52,7 +52,7 @@
 | --- | --- |
 | Public source | PR [#5](https://github.com/steven-d-pennington/nugget-miner/pull/5) merged as `e50cd428`; GitHub Actions run `29655752694` passed. |
 | Current production | `dpl_Hgznv72apf9t5TkCRwzakd6p3Tou`, READY, built automatically from public `main` at `e50cd42`. |
-| Approved local video | `nugget-demo-hybrid-narrated.mp4`: 171.5 seconds, H.264 1920 × 1080 at 30 fps, mono English AAC, and embedded English subtitles. Public YouTube playback is pending. |
+| Published demo video | [https://youtu.be/ct8tY_JwTPw](https://youtu.be/ct8tY_JwTPw): the approved 171.5-second H.264/AAC master is Public. YouTube processing, copyright, and Community Guidelines checks completed with no issues; the manual 14-cue English subtitle track is published and rendered in the public player. |
 | Final screenshots | Public-production capture passed 1/1 in a clean 430 × 932 profile. Five images were opened and accepted; dimensions, hashes, and state boundaries are in [SCREENSHOT_PLAN.md](SCREENSHOT_PLAN.md). |
 | Submission-package gate | `npm test` passed 66 files / 433 tests; `npm run typecheck`, `git diff --check`, changed-Markdown relative-link validation, stale-claim search, image metadata/hash verification, and video stream/duration probing passed. |
 
@@ -103,7 +103,7 @@
 | MIT license present | Verified | Public default `main` contains `LICENSE`. |
 | README setup, sample, testing, GPT, Codex, and human decisions complete | Verified | [README](../../README.md) was read, searched, and link-audited in this gate; it contains each required surface and preserves known boundaries. |
 | Five screenshots uploaded and ordered | Blocked-Pending | Five current-production assets passed the capture and visual gate documented in [SCREENSHOT_PLAN.md](SCREENSHOT_PLAN.md); Devpost upload remains pending. |
-| Public YouTube URL opens logged out and is under three minutes | Blocked-Pending | The owner-approved local master is 171.5 seconds with audio and embedded captions; YouTube upload and logged-out playback remain pending. |
+| Public YouTube URL opens anonymously and is under three minutes | Verified | Anonymous oEmbed access returned the approved title and public embed; the watch page exposes the 171.5-second video, English narration, and the published manual English caption track at [https://youtu.be/ct8tY_JwTPw](https://youtu.be/ct8tY_JwTPw). |
 | Primary `/feedback` Session ID entered | Verified | `019f66eb-7a90-7080-8667-b6ac77c45a23`, confirmed by the owner as the primary-task `/feedback` value. |
 | No unsupported claims | Verified | Claim-surface comparison below reviewed README, Devpost, demo, and non-test app source; no contradiction found for the requested model, review, privacy, or deferred-feature claims. |
 | Deployment remains available through August 5 | Blocked-Pending | Public production is authorized and live; retention through the required date still needs owner confirmation. |
@@ -118,7 +118,7 @@
 | Logged-out HTTPS root and `/api/health` | Verified | Public root returned HTTP 200 and health reported `whisper-1` plus `gpt-5.6-terra` without deployment authentication. |
 | PWA fast path and live two-idea judge path | Partial | The owner-confirmed iPhone installed/offline/reopen path and the complete public sample-library judge rehearsal passed. A two-call production smoke returned two organized ideas; the full interactive live-provider UI path was not rerun in this zero-provider-cost rehearsal. |
 | Public repository and README links open in the external judge path | Verified | The public production URL and public MVP branch are now available without Vercel deployment authentication. |
-| Public YouTube end-to-end playback | Blocked-Pending | No public video URL exists yet. |
+| Public YouTube playback | Verified | The owner accepted the public result. Anonymous access, public metadata, title, description, runtime, audio playback, and rendered timed caption text were verified for [https://youtu.be/ct8tY_JwTPw](https://youtu.be/ct8tY_JwTPw). |
 | Every screenshot asset opened against deployed production | Verified | The July 18 public-production capture passed 1/1 at 430 × 932 CSS pixels. All five output images were opened and checked; metadata and hashes are in [SCREENSHOT_PLAN.md](SCREENSHOT_PLAN.md). |
 | Sample library is useful, local, idempotent, and clearly labeled | Verified | In a clean mobile Chrome context, Load sample library navigated to Ideas; `community` plus Personal returned exactly the tool-sharing sample. Goal, blocker, research, suggested action, sample transcript drawer, action completion, return navigation, and Markdown export all passed without provider use. |
 | Devpost copy contains only shipped behavior | Verified | The narrative and claim-boundary checklist align with the app and documentation surfaces reviewed below. |
@@ -160,8 +160,8 @@ zero estimated provider spend. The later canonical v2 evaluation is recorded
 separately in `docs/evals/latest.json`; this document does not infer a cost from
 that report.
 
-The single best remaining sequence is: record and publish the video; perform
-the final claim comparison; submit and reverify; then
+The single best remaining sequence is: upload the five Devpost screenshots and
+paste the final submission copy; perform the final claim comparison; submit and reverify; then
 commit the real confirmation evidence and create the tag.
 
 ## Visual polish gate — July 17, 2026
