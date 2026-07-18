@@ -1,11 +1,8 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { InstallAppButton, InstallAppProvider } from './InstallAppButton';
+import { buildServiceWorkerSource } from '@/lib/pwa/serviceWorkerSource';
 import { ServiceWorkerRegistration } from './ServiceWorkerRegistration';
-
-const serviceWorkerPath = resolve(process.cwd(), 'public/sw.js');
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -50,8 +47,8 @@ describe('ServiceWorkerRegistration', () => {
     expect(register).toHaveBeenCalledTimes(1);
   });
 
-  it('pre-caches only the application shell and excludes API responses', async () => {
-    const source = await readFile(serviceWorkerPath, 'utf8');
+  it('pre-caches only the application shell and excludes API responses', () => {
+    const source = buildServiceWorkerSource('test-release');
     const shell = source.match(/const SHELL = \[([\s\S]*?)\];/)?.[1] ?? '';
 
     expect(shell).not.toContain('/api/');

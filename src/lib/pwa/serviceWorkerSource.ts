@@ -1,16 +1,23 @@
-/* global self, caches, fetch, URL */
+export function buildServiceWorkerSource(releaseId: string) {
+  return `/* global self, caches, fetch, URL */
 
-const CACHE = 'nugget-shell-v1';
+const RELEASE_ID = ${JSON.stringify(releaseId)};
+const CACHE_PREFIX = 'nugget-shell-';
+const CACHE = CACHE_PREFIX + RELEASE_ID;
 const SHELL = ['/', '/ideas', '/actions', '/settings', '/icons/nugget.svg'];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting()));
+  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)));
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') event.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((key) => key.startsWith('nugget-') && key !== CACHE).map((key) => caches.delete(key))))
+      .then((keys) => Promise.all(keys.filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE).map((key) => caches.delete(key))))
       .then(() => self.clients.claim()),
   );
 });
@@ -35,3 +42,5 @@ self.addEventListener('fetch', (event) => {
     })));
   }
 });
+`;
+}
