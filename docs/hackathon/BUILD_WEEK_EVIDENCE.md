@@ -194,3 +194,16 @@ This engineering evidence does not claim the remaining physical iPhone
 two-deployment transition. The first controlled release requires one online
 open plus full close/reopen because the previously deployed client cannot
 retroactively display the new prompt.
+
+Git preview `dpl_DJfmdSEQgTiENgjWyYPJkRwCLtvr` reached READY from branch
+commit `95092ff`. After authenticated root, health, worker-policy, and release
+identity checks passed, Sol promoted it under the existing authorization.
+Production deployment `dpl_8e3ASxpfBaKWacCo3DeXVnoZM6S4` reached READY at
+<https://nugget-miner-kappa.vercel.app>. Public root, health, and worker smoke
+passed with `whisper-1`, `gpt-5.6-terra`, deployment-stamped worker bytes,
+no-cache/root-scope headers, and explicit activation. A mobile production
+browser carrying the previous worker then exposed the real waiting-update
+controls; selecting **Update now** caused one navigation/reload, cleared the
+waiting actions, preserved the displayed release, and produced no console
+warnings or errors. Physical-iPhone capture suppression, export, and local-data
+survival remain the final device-specific evidence.

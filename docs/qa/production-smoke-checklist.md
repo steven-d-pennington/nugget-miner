@@ -163,3 +163,13 @@ The remaining manual acceptance check is the physical iPhone two-deployment
 transition: confirm the prompt is suppressed throughout recording and local
 save, optionally create an export, choose **Update now**, observe one reload,
 and verify existing recordings, ideas, categories, and actions remain present.
+
+### Preview and production publication
+
+| Item | Verified result |
+| --- | --- |
+| Git source | Branch `codex/mvp-completion-2026-07-17`, commit `95092ffa8b34e603b5e0911a9167b412085fd2ed`. |
+| Preview | `dpl_DJfmdSEQgTiENgjWyYPJkRwCLtvr`, READY at `https://nugget-miner-rk5aog2dr-steven-penningtons-projects.vercel.app`. Authenticated root, health, and worker smoke passed. |
+| Production | Promoted under the existing authorization as `dpl_8e3ASxpfBaKWacCo3DeXVnoZM6S4`, READY at `https://nugget-miner-kappa.vercel.app`. |
+| Public smoke | Root, `/api/health`, and `/sw.js` returned HTTP 200. Health reported `whisper-1` and `gpt-5.6-terra`; worker release matched the production deployment ID with the required explicit-activation and cache headers. |
+| Deployed transition | A mobile production browser with the prior worker saw waiting-version controls, selected **Update now**, reloaded once, retained release `dpl_8e3ASxpf`, removed the waiting actions, and produced no console warnings or errors. This is deployed-browser evidence, not the remaining physical-iPhone attestation. |
