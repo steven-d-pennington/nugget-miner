@@ -2,6 +2,12 @@
 
 ## Files
 
+- `nugget-demo-final-phone-walkthrough.mp4` — the 2:51.5 candidate that replaces
+  the first 2:16 with Steven's real iPhone walkthrough footage while retaining
+  the verified Settings, attribution, closing beats, OpenAI narration, and
+  embedded English captions.
+- `nugget-demo-phone-contact-sheet.png` — visual QC overview of the phone-footage
+  candidate.
 - `nugget-demo-final-with-openai-narration.mp4` — the finished 2:52 video with
   OpenAI TTS narration and an embedded English caption track.
 - `nugget-demo-silent-walkthrough.mp4` — the 1920x1080, 30 fps, silent
@@ -48,3 +54,6 @@ contains a persistent `AI-GENERATED NARRATION - OPENAI TTS-1-HD` disclosure.
 After adding narration, watch the entire result once on headphones and once on
 a phone speaker. The public YouTube upload still requires owner approval and a
 logged-out playback check.
+
+For the phone-footage source inventory, edit map, and reproducible render
+command, see `../demo-video-draft/PHONE_CAPTURE_EDIT.md`.
