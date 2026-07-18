@@ -239,8 +239,13 @@ describe('IdeaLibraryScreen', () => {
       tagIds: ['community'],
     }));
     const compactRow = screen.getByRole('link', { name: /Neighborhood tool library/ });
+    const expectedDate = new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }).format(rows[0]!.idea.updatedAt);
     expect(compactRow).toHaveAttribute('href', '/ideas/tool-library');
-    expect(compactRow).toHaveTextContent('Personal · #Community · Jul 14, 2026');
+    expect(compactRow).toHaveTextContent(`Personal · #Community · ${expectedDate}`);
   });
 
   it('restores Compact from local storage', async () => {
