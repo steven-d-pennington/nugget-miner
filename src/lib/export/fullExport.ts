@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import type {
   ActionItem,
+  ActivationBrief,
   AppSettings,
   CaptureSession,
   Category,
@@ -12,7 +13,7 @@ import type {
   Transcript,
 } from '@/types';
 
-export const FULL_EXPORT_SCHEMA_VERSION = 'nugget-full-export-v1' as const;
+export const FULL_EXPORT_SCHEMA_VERSION = 'nugget-full-export-v2' as const;
 
 export interface NuggetFullExport {
   schemaVersion: typeof FULL_EXPORT_SCHEMA_VERSION;
@@ -25,6 +26,7 @@ export interface NuggetFullExport {
   categories: Category[];
   tags: Tag[];
   actions: ActionItem[];
+  activationBriefs: ActivationBrief[];
   settings: Pick<AppSettings, 'automaticProcessing' | 'cloudProcessingConsent'>;
 }
 
@@ -53,9 +55,9 @@ function byId<T extends { id: string }>(rows: T[]) {
 }
 
 export async function buildFullExport(now: Date = new Date()): Promise<NuggetFullExport> {
-  const [captures, recordings, transcripts, extractionRuns, ideas, categories, tags, actions, settingsRow] = await db.transaction(
+  const [captures, recordings, transcripts, extractionRuns, ideas, categories, tags, actions, activationBriefs, settingsRow] = await db.transaction(
     'r',
-    [db.captureSessions, db.recordings, db.transcripts, db.extractionRuns, db.ideas, db.categories, db.tags, db.actionItems, db.settings],
+    [db.captureSessions, db.recordings, db.transcripts, db.extractionRuns, db.ideas, db.categories, db.tags, db.actionItems, db.activationBriefs, db.settings],
     () => Promise.all([
       db.captureSessions.toArray(),
       db.recordings.toArray(),
@@ -65,6 +67,7 @@ export async function buildFullExport(now: Date = new Date()): Promise<NuggetFul
       db.categories.toArray(),
       db.tags.toArray(),
       db.actionItems.toArray(),
+      db.activationBriefs.toArray(),
       db.settings.get('app'),
     ]),
   );
@@ -85,6 +88,7 @@ export async function buildFullExport(now: Date = new Date()): Promise<NuggetFul
     categories: byId(categories),
     tags: byId(tags),
     actions: byId(actions),
+    activationBriefs: byId(activationBriefs),
     settings: {
       automaticProcessing: settingsRow?.automaticProcessing ?? false,
       cloudProcessingConsent: settingsRow?.cloudProcessingConsent ?? 'unknown',

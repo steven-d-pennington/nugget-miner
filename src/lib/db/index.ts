@@ -1,6 +1,7 @@
 import Dexie, { type Table } from 'dexie';
 import type {
   ActionItem,
+  ActivationBrief,
   AppSettings,
   CaptureSession,
   Category,
@@ -14,7 +15,7 @@ import type {
 } from '@/types';
 import { DEFAULT_CATEGORIES, DEFAULT_CATEGORY_IDS } from './defaultCategories';
 
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 interface LegacyIdeaV2 {
   id: string;
@@ -107,6 +108,7 @@ export class NuggetDatabase extends Dexie {
   nuggets!: Table<Nugget, string>;
   questions!: Table<Question, string>;
   actionItems!: Table<ActionItem, string>;
+  activationBriefs!: Table<ActivationBrief, string>;
   settings!: Table<AppSettings, string>;
 
   constructor(name = 'nugget') {
@@ -125,7 +127,7 @@ export class NuggetDatabase extends Dexie {
       questions: '&id, ideaId, extractionRunId, status',
       actionItems: '&id, ideaId, extractionRunId, status, priority, dueDate, *tags',
     });
-    this.version(SCHEMA_VERSION)
+    this.version(3)
       .stores({
         captureSessions: '&id, createdAt, updatedAt, processingState, source, [processingState+updatedAt]',
         ideas: '&id, captureSessionId, extractionRunId, status, categoryId, createdAt, updatedAt, *tagIds, [status+updatedAt]',
@@ -288,6 +290,21 @@ export class NuggetDatabase extends Dexie {
             delete row.extractionRunId;
           });
       });
+
+    this.version(4).stores({
+      captureSessions: '&id, createdAt, updatedAt, processingState, source, [processingState+updatedAt]',
+      ideas: '&id, captureSessionId, extractionRunId, status, categoryId, createdAt, updatedAt, *tagIds, [status+updatedAt]',
+      recordings: '&id, captureSessionId',
+      transcripts: '&id, captureSessionId, [captureSessionId+version], contentHash',
+      extractionRuns: '&id, captureSessionId, transcriptId, status, stage, startedAt, idempotencyKey, &[idempotencyKey+attempt]',
+      categories: '&id, &normalizedName, sortOrder, isFallback',
+      tags: '&id, &normalizedName, createdAt',
+      nuggets: '&id, captureSessionId, extractionRunId, status',
+      questions: '&id, captureSessionId, extractionRunId, status',
+      actionItems: '&id, ideaId, status, createdAt, &[ideaId+sourceSuggestionId]',
+      activationBriefs: '&id, ideaId, [ideaId+intent], updatedAt',
+      settings: '&key',
+    });
 
     this.on('populate', (tx) => {
       const timestamp = Date.now();

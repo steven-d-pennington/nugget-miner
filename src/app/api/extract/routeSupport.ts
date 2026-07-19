@@ -37,12 +37,16 @@ export async function runValidatedStructured<TParsed, TResult>(
   throw new InvalidModelOutputError();
 }
 
-export function extractionErrorResponse(error: unknown) {
+export function structuredLlmErrorResponse(error: unknown, fallbackCode: string, fallbackMessage: string) {
   if (error instanceof InvalidModelOutputError) {
     return errorResponse(502, 'invalid_model_output', 'The LLM returned output Nugget could not validate.');
   }
   if (error instanceof LlmProviderError) {
     return errorResponse(502, 'provider_error', 'The LLM provider request failed.');
   }
-  return errorResponse(500, 'extract_failed', 'Extraction failed.');
+  return errorResponse(500, fallbackCode, fallbackMessage);
+}
+
+export function extractionErrorResponse(error: unknown) {
+  return structuredLlmErrorResponse(error, 'extract_failed', 'Extraction failed.');
 }

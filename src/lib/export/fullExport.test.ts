@@ -26,6 +26,12 @@ describe('buildFullExport', () => {
     await db.tags.add({ id: 'tag-1', name: 'Export', normalizedName: 'export', createdAt: 1 });
     await db.ideas.add({ id: 'idea-1', captureSessionId: 'a-capture', extractionRunId: 'run-1', status: 'confirmed', title: 'Export everything', summary: { id: 'summary-1', text: 'Build a useful exporter.', basis: 'explicit', sourceSpanIds: ['span-1'] }, goals: [], blockers: [], questions: [], suggestedActions: [], research: { needed: false, suggestedQueries: [], suggestedResourceTypes: [] }, categoryId: 'category-custom', tagIds: ['tag-1'], sourceSpans: [{ id: 'span-1', startChar: 0, endChar: 24, quote: 'Build a useful exporter.' }], createdAt: 1, updatedAt: 1, confirmedAt: 2 });
     await db.actionItems.add({ id: 'action-1', ideaId: 'idea-1', text: 'Verify the export', status: 'open', createdAt: 1, updatedAt: 1 });
+    await db.activationBriefs.add({
+      id: 'idea-1:agent', ideaId: 'idea-1', intent: 'agent', includeTranscript: false, needsClarification: false,
+      clarifyingQuestions: [], provider: 'local', promptVersion: 'activate-local-v1', schemaVersion: 'activation-v1',
+      brief: { title: 'Agent brief', objective: 'Verify the export.', context: 'Export context.', assumptions: [], constraints: [], deliverables: ['Verification.'], successCriteria: ['Export passes.'], prompt: 'Verify the export.' },
+      createdAt: 1, updatedAt: 2,
+    });
     await db.settings.put({
       key: 'app', automaticProcessing: true, cloudProcessingConsent: 'granted', clientId: 'private-client-id',
       createdAt: 1, updatedAt: 2,
@@ -37,12 +43,12 @@ describe('buildFullExport', () => {
     const decoded = Uint8Array.from(atob(result.recordings[0]!.base64), (character) => character.charCodeAt(0));
 
     expect(result).toMatchObject({
-      schemaVersion: 'nugget-full-export-v1',
+      schemaVersion: 'nugget-full-export-v2',
       exportedAt: '2026-07-16T12:00:00.000Z',
       settings: { automaticProcessing: true, cloudProcessingConsent: 'granted' },
     });
     expect(Object.keys(result).sort()).toEqual([
-      'actions', 'captures', 'categories', 'exportedAt', 'extractionRuns', 'ideas', 'recordings',
+      'actions', 'activationBriefs', 'captures', 'categories', 'exportedAt', 'extractionRuns', 'ideas', 'recordings',
       'schemaVersion', 'settings', 'tags', 'transcripts',
     ]);
     expect(Object.keys(result.settings).sort()).toEqual(['automaticProcessing', 'cloudProcessingConsent']);
@@ -53,7 +59,8 @@ describe('buildFullExport', () => {
     expect(result.categories.length).toBeGreaterThanOrEqual(1);
     expect(result.tags).toHaveLength(1);
     expect(result.actions).toHaveLength(1);
-    for (const rows of [result.captures, result.recordings, result.transcripts, result.extractionRuns, result.ideas, result.categories, result.tags, result.actions]) {
+    expect(result.activationBriefs).toHaveLength(1);
+    for (const rows of [result.captures, result.recordings, result.transcripts, result.extractionRuns, result.ideas, result.categories, result.tags, result.actions, result.activationBriefs]) {
       const ids = rows.map(({ id }) => id);
       expect(ids).toEqual([...ids].sort((left, right) => left < right ? -1 : left > right ? 1 : 0));
     }

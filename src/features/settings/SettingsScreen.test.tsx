@@ -46,7 +46,7 @@ beforeEach(() => {
   appUpdate.checkForUpdates.mockResolvedValue('up-to-date');
   getSettings.mockResolvedValue(baseSettings);
   updateSettings.mockImplementation(async (patch) => ({ ...baseSettings, ...patch }));
-  buildFullExport.mockResolvedValue({ schemaVersion: 'nugget-full-export-v1', exportedAt: '2026-07-16T12:00:00.000Z' });
+  buildFullExport.mockResolvedValue({ schemaVersion: 'nugget-full-export-v2', exportedAt: '2026-07-16T12:00:00.000Z' });
   deleteAll.mockResolvedValue(undefined);
   estimateStorage.mockResolvedValue({ usage: 2_048, quota: 8_192 });
   persistedStorage.mockResolvedValue(false);
@@ -101,7 +101,7 @@ describe('SettingsScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Export all local data' }));
     await waitFor(() => expect(downloadText).toHaveBeenCalledWith(
       'nugget-full-export-2026-07-16.json',
-      expect.stringContaining('nugget-full-export-v1'),
+      expect.stringContaining('nugget-full-export-v2'),
       'application/json',
     ));
     expect(fetch).toHaveBeenCalledTimes(1);
@@ -129,7 +129,7 @@ describe('SettingsScreen', () => {
     appUpdate.updateReady = true;
     appUpdate.status = 'ready';
     buildFullExport.mockReturnValueOnce(new Promise((resolve) => {
-      finishExport = () => resolve({ schemaVersion: 'nugget-full-export-v1', exportedAt: '2026-07-16T12:00:00.000Z' });
+      finishExport = () => resolve({ schemaVersion: 'nugget-full-export-v2', exportedAt: '2026-07-16T12:00:00.000Z' });
     }));
     render(<SettingsScreen />);
 
@@ -161,7 +161,7 @@ describe('SettingsScreen', () => {
 
   it('keeps the sample button label accurate while another local action is busy', async () => {
     let finishExport: (() => void) | undefined;
-    buildFullExport.mockReturnValueOnce(new Promise((resolve) => { finishExport = () => resolve({ schemaVersion: 'nugget-full-export-v1', exportedAt: '2026-07-16T12:00:00.000Z' }); }));
+    buildFullExport.mockReturnValueOnce(new Promise((resolve) => { finishExport = () => resolve({ schemaVersion: 'nugget-full-export-v2', exportedAt: '2026-07-16T12:00:00.000Z' }); }));
     render(<SettingsScreen />);
 
     await screen.findByRole('button', { name: 'Load sample library' });

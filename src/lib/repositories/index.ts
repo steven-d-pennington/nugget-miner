@@ -1,4 +1,5 @@
 export { actionItemRepository, type AcceptActionSuggestionInput } from './actionItemRepository';
+export { activationBriefRepository, type SaveActivationBriefInput } from './activationBriefRepository';
 export { captureRepository, type CapturePatch, type CreateCaptureInput } from './captureRepository';
 export {
   categoryRepository,
