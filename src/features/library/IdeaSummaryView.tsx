@@ -27,6 +27,7 @@ export function IdeaSummaryView({
   actions,
   onEdit,
   disabled,
+  activation,
 }: {
   idea: Idea;
   category: Category;
@@ -34,6 +35,7 @@ export function IdeaSummaryView({
   actions: ActionItem[];
   onEdit(): void;
   disabled: boolean;
+  activation?: React.ReactNode;
 }) {
   const isSample = idea.id.startsWith('demo-');
   const why = [idea.purpose, ...idea.goals, idea.problem?.statement]
@@ -60,6 +62,8 @@ export function IdeaSummaryView({
       </div>
 
       {tags.length ? <div aria-label="Tags" className="idea-summary__tags">{tags.map((tag) => <span key={tag.id}>#{tag.name}</span>)}</div> : null}
+
+      {activation}
 
       {why.length ? (
         <SummarySection title="Why it matters">

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AudioPlayer } from '@/components/AudioPlayer';
+import { IdeaActivationCard } from '@/features/activation/IdeaActivationCard';
 import { GroundedFieldEditor } from '@/features/review/GroundedFieldEditor';
 import { IdeaSummaryView } from '@/features/library/IdeaSummaryView';
 import {
@@ -547,6 +548,9 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
         </div>
       ) : (
         <IdeaSummaryView
+          activation={bundle.idea.status === 'confirmed' ? (
+            <IdeaActivationCard actions={bundle.actions} category={bundle.category} idea={bundle.idea} tags={bundle.tags} transcript={bundle.transcript} />
+          ) : undefined}
           actions={bundle.actions}
           category={bundle.category}
           disabled={busy}

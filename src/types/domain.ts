@@ -15,6 +15,7 @@ export type ContentBasis = 'explicit' | 'inferred' | 'suggested';
 export type IdeaStatus = 'draft' | 'confirmed' | 'archived';
 export type CloudProcessingConsent = 'unknown' | 'granted' | 'denied';
 export type ActionStatus = 'open' | 'completed';
+export type ActivationIntent = 'explore' | 'plan' | 'agent';
 
 export type ProviderMode = 'mock' | 'local' | 'browser' | 'cloud';
 export type Priority = 'low' | 'medium' | 'high';
@@ -115,6 +116,41 @@ export interface ActionItem {
   createdAt: number;
   updatedAt: number;
   completedAt?: number;
+}
+
+export interface ActivationQuestion {
+  id: string;
+  question: string;
+  reason: string;
+  answer?: string;
+}
+
+export interface ActivationBriefContent {
+  title: string;
+  objective: string;
+  context: string;
+  assumptions: string[];
+  constraints: string[];
+  deliverables: string[];
+  successCriteria: string[];
+  prompt: string;
+}
+
+export interface ActivationBrief {
+  id: string;
+  ideaId: string;
+  intent: ActivationIntent;
+  includeTranscript: boolean;
+  needsClarification: boolean;
+  clarifyingQuestions: ActivationQuestion[];
+  brief: ActivationBriefContent;
+  provider: 'local' | 'openai';
+  model?: string;
+  responseId?: string;
+  promptVersion: string;
+  schemaVersion: string;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export interface Recording {

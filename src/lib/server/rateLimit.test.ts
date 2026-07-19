@@ -29,6 +29,7 @@ describe('consumeRateLimit', () => {
     expect(consumeRateLimit(rateLimitKey('transcription', identity), 1, 60_000, now)).toMatchObject({ allowed: true });
     expect(consumeRateLimit(rateLimitKey('segmentation', identity), 1, 60_000, now)).toMatchObject({ allowed: true });
     expect(consumeRateLimit(rateLimitKey('organization', identity), 1, 60_000, now)).toMatchObject({ allowed: true });
+    expect(consumeRateLimit(rateLimitKey('activation', identity), 1, 60_000, now)).toMatchObject({ allowed: true });
     expect(consumeRateLimit(rateLimitKey('transcription', identity), 1, 60_000, now + 1)).toMatchObject({ allowed: false });
   });
 

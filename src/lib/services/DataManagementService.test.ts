@@ -21,14 +21,24 @@ describe('DataManagementService', () => {
     await db.nuggets.add({ id: 'nugget', captureSessionId: 'capture', extractionRunId: 'run', title: 'Legacy', category: 'idea', status: 'pending', createdAt: 1, updatedAt: 1 });
     await db.questions.add({ id: 'question', captureSessionId: 'capture', text: 'Legacy?', status: 'pending', createdAt: 1, updatedAt: 1 });
     await db.actionItems.add({ id: 'action', ideaId: 'idea', text: 'Act', status: 'open', createdAt: 1, updatedAt: 1 });
+    await db.activationBriefs.add({
+      id: 'idea:plan', ideaId: 'idea', intent: 'plan', includeTranscript: false,
+      needsClarification: false, clarifyingQuestions: [],
+      brief: {
+        title: 'Plan the idea', objective: 'Turn the idea into a plan.', context: 'Summary',
+        assumptions: [], constraints: [], deliverables: ['Plan'],
+        successCriteria: ['A useful plan exists'], prompt: 'Create a plan.',
+      },
+      provider: 'local', promptVersion: 'activate-local-v1', schemaVersion: 'activation-v1', createdAt: 1, updatedAt: 1,
+    });
     await db.settings.put({ key: 'app', automaticProcessing: true, cloudProcessingConsent: 'granted', clientId: 'old-id', createdAt: 1, updatedAt: 1 });
 
     await DataManagementService.deleteAll();
 
     await expect(Promise.all([
       db.captureSessions.count(), db.recordings.count(), db.transcripts.count(), db.extractionRuns.count(), db.ideas.count(),
-      db.tags.count(), db.nuggets.count(), db.questions.count(), db.actionItems.count(),
-    ])).resolves.toEqual([0, 0, 0, 0, 0, 0, 0, 0, 0]);
+      db.tags.count(), db.nuggets.count(), db.questions.count(), db.actionItems.count(), db.activationBriefs.count(),
+    ])).resolves.toEqual([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
     expect(await db.categories.toArray()).toHaveLength(DEFAULT_CATEGORIES.length);
     expect(await db.categories.toArray()).toEqual(expect.arrayContaining(DEFAULT_CATEGORIES.map((category) => expect.objectContaining({ id: category.id, name: category.name }))));
     const settings = await settingsRepository.get();

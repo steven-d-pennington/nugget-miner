@@ -17,7 +17,7 @@ vi.mock('./download', () => ({
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.buildFullExport.mockResolvedValue({
-    schemaVersion: 'nugget-full-export-v1',
+    schemaVersion: 'nugget-full-export-v2',
     exportedAt: '2026-07-18T08:00:00.000Z',
   });
 });
@@ -28,7 +28,7 @@ describe('exportLocalData', () => {
 
     expect(mocks.downloadText).toHaveBeenCalledWith(
       'nugget-full-export-2026-07-18.json',
-      expect.stringContaining('nugget-full-export-v1'),
+      expect.stringContaining('nugget-full-export-v2'),
       'application/json',
     );
     expect(result).toEqual({
