@@ -1,0 +1,56 @@
+1
+00:00:00,500 --> 00:00:08,000
+Good ideas arrive while you're moving, then disappear inside a long voice note.
+
+2
+00:00:08,000 --> 00:00:16,000
+Nugget starts with one tap: capture first, organize later.
+
+3
+00:00:16,000 --> 00:00:29,000
+The voice-first screen stays deliberately simple. I can speak naturally, watch the live waveform, and stop when the thought is out of my head.
+
+4
+00:00:29,000 --> 00:00:49,000
+The recording is saved in this browser before cloud processing begins. Nugget can transcribe the audio, organize the transcript, and return a reviewable result without losing the source.
+
+5
+00:00:49,000 --> 00:01:02,000
+For this interface walkthrough, I'm switching to a clearly disclosed, preprocessed safe capture. One ramble has become three separate idea drafts.
+
+6
+00:01:02,000 --> 00:01:18,000
+Each draft is editable before I trust it: title, summary, category, tags, goals, blockers, research needs, and next actions. Grounding labels show how every field relates to the source.
+
+7
+00:01:18,000 --> 00:01:30,000
+Confirmed ideas become a searchable local library. This view uses Nugget's labeled sample data, so it does not make a new GPT call.
+
+8
+00:01:30,000 --> 00:01:47,000
+Opening an idea keeps its summary, category, tags, goals, blockers, research, and next actions together instead of burying the useful parts back inside a transcript.
+
+9
+00:01:47,000 --> 00:01:55,000
+I captured this feature idea in Nugget itself. That saved thought became what you're seeing now.
+
+10
+00:01:55,000 --> 00:02:09,000
+Work with this idea can explore a thought, create a plan, or prepare a grounded brief for another AI. The source transcript stays off unless I explicitly include it.
+
+11
+00:02:09,000 --> 00:02:13,000
+I confirm exactly what is sent, then GPT-5.6 gets to work.
+
+12
+00:02:13,000 --> 00:02:37,000
+The result is a structured, editable brief with an objective, context, assumptions, constraints, deliverables, and success criteria. It stays grounded in the organized idea, labels missing context instead of inventing it, and produces a prompt I can copy or download.
+
+13
+00:02:37,000 --> 00:02:46,000
+Settings keeps the privacy boundary visible and reports live Whisper and GPT-5.6 Terra health.
+
+14
+00:02:46,000 --> 00:02:51,200
+Nugget captures ideas and helps bring them into the real world.
+

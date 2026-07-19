@@ -1,46 +1,71 @@
 {
-  "source": "http://127.0.0.1:3107",
+  "source": "https://nugget-miner-kappa.vercel.app",
   "viewport": {
     "width": 430,
     "height": 932
   },
-  "sourceDurationSeconds": 46.68,
-  "captureOffsetSeconds": 1.789,
+  "sourceDurationSeconds": 95.2,
+  "captureOffsetSeconds": 1.836,
   "chapters": [
     {
       "name": "ideas-cards",
-      "startSeconds": 0.742,
-      "endSeconds": 5.759
+      "startSeconds": 5.772,
+      "endSeconds": 10.784
     },
     {
       "name": "ideas-compact",
-      "startSeconds": 5.759,
-      "endSeconds": 10.804
+      "startSeconds": 10.784,
+      "endSeconds": 15.841
     },
     {
       "name": "ideas-cards-return",
-      "startSeconds": 10.804,
-      "endSeconds": 13.848
+      "startSeconds": 15.841,
+      "endSeconds": 18.883
     },
     {
       "name": "idea-detail",
-      "startSeconds": 13.848,
-      "endSeconds": 25.45
+      "startSeconds": 18.883,
+      "endSeconds": 30.867
+    },
+    {
+      "name": "activation-intents",
+      "startSeconds": 30.867,
+      "endSeconds": 38.181
+    },
+    {
+      "name": "activation-setup",
+      "startSeconds": 38.181,
+      "endSeconds": 42.222
+    },
+    {
+      "name": "activation-consent",
+      "startSeconds": 42.222,
+      "endSeconds": 46.293
+    },
+    {
+      "name": "activation-processing",
+      "startSeconds": 46.293,
+      "endSeconds": 60.544
+    },
+    {
+      "name": "activation-brief",
+      "startSeconds": 60.544,
+      "endSeconds": 72.991
     },
     {
       "name": "actions",
-      "startSeconds": 25.45,
-      "endSeconds": 34.242
+      "startSeconds": 72.991,
+      "endSeconds": 82.496
     },
     {
       "name": "settings",
-      "startSeconds": 34.242,
-      "endSeconds": 39.974
+      "startSeconds": 82.496,
+      "endSeconds": 88.272
     },
     {
       "name": "close",
-      "startSeconds": 39.974,
-      "endSeconds": 46.68
+      "startSeconds": 88.272,
+      "endSeconds": 95.2
     }
   ]
 }

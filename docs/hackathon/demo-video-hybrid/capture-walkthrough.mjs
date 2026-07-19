@@ -115,6 +115,48 @@ try {
     await pause(4_000);
   });
 
+  await mark('activation-intents', async () => {
+    await goto('/ideas/demo-idea-tool-sharing');
+    const activationRegion = page.getByRole('region', { name: 'Work with this idea' });
+    await activationRegion.scrollIntoViewIfNeeded();
+    await expect(activationRegion).toBeVisible();
+    await pause(2_000);
+    await activationRegion.getByRole('button', { name: 'Choose what to do' }).click();
+    await expect(page.getByRole('dialog', { name: 'What do you want to make?' })).toBeVisible();
+    await pause(4_000);
+  });
+
+  await mark('activation-setup', async () => {
+    await page.getByRole('button', { name: /Prepare for an AI agent/ }).click();
+    await expect(page.getByRole('dialog', { name: 'Prepare for an AI agent' })).toBeVisible();
+    await expect(page.getByRole('checkbox', { name: /Include source transcript/ })).not.toBeChecked();
+    await pause(4_000);
+  });
+
+  await mark('activation-consent', async () => {
+    await page.getByRole('button', { name: 'Enhance with GPT-5.6' }).click();
+    const consentDialog = page.getByRole('dialog', { name: 'Send for cloud processing?' });
+    await expect(consentDialog).toBeVisible();
+    await expect(consentDialog.getByText(/organized idea/)).toBeVisible();
+    await pause(4_000);
+  });
+
+  await mark('activation-processing', async () => {
+    await page.getByRole('button', { name: 'Send for processing' }).click();
+    await expect(page.getByText(/Enhanced with gpt-5\.6-terra/i)).toBeVisible({ timeout: 90_000 });
+  });
+
+  await mark('activation-brief', async () => {
+    await expect(page.getByText(/Enhanced with gpt-5\.6-terra/i)).toBeVisible();
+    await pause(3_000);
+    await slowScrollBy(420, 1_200);
+    await pause(3_000);
+    const prompt = page.getByRole('textbox', { name: /AI-ready prompt/ });
+    await prompt.scrollIntoViewIfNeeded();
+    await expect(prompt).toBeVisible();
+    await pause(5_000);
+  });
+
   await mark('actions', async () => {
     await goto('/actions');
     await expect(page.getByRole('heading', { name: 'Actions', exact: true })).toBeVisible();
