@@ -666,6 +666,322 @@ time {
   font-weight: 700;
 }
 
+.activation-card {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  border: 1px solid #edcc88;
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  background:
+    radial-gradient(circle at 90% 12%, rgb(229 161 26 / 16%), transparent 34%),
+    var(--surface-warm);
+  box-shadow: var(--shadow-card);
+}
+
+.activation-card h2,
+.activation-card p {
+  margin: 0;
+}
+
+.activation-card h2 {
+  color: var(--ink);
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.activation-card > p:not(.activation-card__eyebrow) {
+  max-width: 36rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.activation-card .button-primary {
+  justify-self: start;
+  margin-top: 0.25rem;
+}
+
+.activation-card__eyebrow {
+  color: var(--accent-strong);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.activation-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgb(16 29 54 / 62%);
+}
+
+.activation-dialog {
+  width: 100%;
+  max-height: 94dvh;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 1.5rem 1.5rem 0 0;
+  padding: 1.25rem 1rem calc(1.25rem + env(safe-area-inset-bottom));
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 -18px 48px rgb(16 29 54 / 20%);
+}
+
+.activation-dialog__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1rem;
+}
+
+.activation-dialog__header h2 {
+  margin: 0.25rem 0 0;
+  font-size: clamp(1.55rem, 7vw, 2.1rem);
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+}
+
+.activation-dialog__close {
+  display: grid;
+  min-width: 48px;
+  min-height: 48px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.activation-intents {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.activation-intents > button {
+  display: grid;
+  gap: 0.3rem;
+  min-height: 76px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+
+.activation-intents > button:hover,
+.activation-intents > button:focus-visible {
+  border-color: var(--accent-strong);
+  outline: 2px solid rgb(229 161 26 / 30%);
+}
+
+.activation-intents > button strong {
+  font-size: 1rem;
+}
+
+.activation-intents > button span,
+.activation-setup > p,
+.activation-dialog__privacy {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.activation-dialog__privacy {
+  margin: 0.5rem 0 0;
+  font-size: 0.82rem;
+}
+
+.activation-setup,
+.activation-brief {
+  display: grid;
+  gap: 1rem;
+}
+
+.activation-link {
+  min-height: 44px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--accent-strong);
+  cursor: pointer;
+  font-weight: 800;
+  text-align: left;
+  text-decoration: underline;
+}
+
+.activation-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  background: var(--surface);
+}
+
+.activation-checkbox input {
+  width: 22px;
+  height: 22px;
+  margin-top: 0.1rem;
+  accent-color: var(--accent-strong);
+}
+
+.activation-checkbox span {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.activation-checkbox small,
+.activation-prompt small,
+.activation-questions label small {
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.activation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.activation-brief__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.75rem;
+  color: var(--success);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.activation-brief__meta .activation-link {
+  min-height: 36px;
+  font-size: 0.8rem;
+}
+
+.activation-brief__title {
+  margin: 0.35rem 0 0;
+  font-size: 1.35rem;
+}
+
+.activation-brief__section {
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
+}
+
+.activation-brief__section h4,
+.activation-brief__section p,
+.activation-brief__section ul {
+  margin: 0;
+}
+
+.activation-brief__section h4 {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.activation-brief__section p,
+.activation-brief__section li {
+  line-height: 1.55;
+}
+
+.activation-brief__section ul {
+  padding-left: 1.2rem;
+}
+
+.activation-questions {
+  display: grid;
+  gap: 0.8rem;
+  border: 1px solid #edcc88;
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  background: var(--surface-warm);
+}
+
+.activation-questions h3,
+.activation-questions p {
+  margin: 0;
+}
+
+.activation-questions label,
+.activation-prompt {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 800;
+}
+
+.activation-questions textarea,
+.activation-prompt textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 0.8rem;
+  padding: 0.8rem;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 400;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.activation-prompt {
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
+}
+
+.activation-error,
+.activation-notice {
+  margin: 1rem 0 0;
+  border-left: 4px solid var(--danger);
+  padding: 0.85rem 1rem;
+  background: #fff4f2;
+  color: #8f2828;
+}
+
+.activation-error p,
+.activation-notice {
+  margin-block: 0;
+}
+
+.activation-notice {
+  border-left-color: var(--success);
+  background: #effaf4;
+  color: #14553a;
+}
+
+@media (min-width: 640px) {
+  .activation-dialog-backdrop {
+    align-items: center;
+    padding: 1.5rem;
+  }
+
+  .activation-dialog {
+    max-width: 44rem;
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+  }
+
+  .activation-actions--sticky {
+    position: sticky;
+    bottom: -1.5rem;
+    margin-inline: -1.5rem;
+    padding: 1rem 1.5rem 1.5rem;
+    background: linear-gradient(transparent, var(--surface) 22%);
+  }
+}
+
 .idea-summary__section {
   margin-top: 1.5rem;
   border-top: 1px solid var(--line);

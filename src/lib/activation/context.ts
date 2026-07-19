@@ -30,6 +30,16 @@ export const activationIdeaContextSchema = z
 
 export type ActivationIdeaContext = z.infer<typeof activationIdeaContextSchema>;
 
+function uniqueText(values: string[]) {
+  const seen = new Set<string>();
+  return values.filter((value) => {
+    const key = value.trim().toLocaleLowerCase();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 export function buildActivationIdeaContext(input: {
   idea: Idea;
   category: Category;
@@ -39,6 +49,8 @@ export function buildActivationIdeaContext(input: {
   includeTranscript: boolean;
 }): ActivationIdeaContext {
   const { idea } = input;
+  const openActions = input.actions.filter((action) => action.status === 'open').map((action) => action.text);
+  const nextActions = uniqueText([...openActions, ...idea.suggestedActions.map((value) => value.text)]);
   return {
     title: idea.title,
     summary: idea.summary.text,
@@ -47,7 +59,7 @@ export function buildActivationIdeaContext(input: {
     problem: idea.problem?.statement.text,
     blockers: idea.blockers.map((value) => value.text),
     openQuestions: idea.questions.map((value) => value.text),
-    suggestedActions: idea.suggestedActions.map((value) => value.text),
+    suggestedActions: nextActions.filter((value) => !openActions.some((action) => action.trim().toLocaleLowerCase() === value.trim().toLocaleLowerCase())),
     research: {
       needed: idea.research.needed,
       assessment: idea.research.assessment?.text,
@@ -56,7 +68,7 @@ export function buildActivationIdeaContext(input: {
     },
     category: input.category.name,
     tags: input.tags.map((tag) => tag.name),
-    actions: input.actions.filter((action) => action.status === 'open').map((action) => action.text),
+    actions: uniqueText(openActions),
     transcript: input.includeTranscript ? input.transcript?.text : undefined,
   };
 }
