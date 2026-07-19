@@ -49,4 +49,3 @@ claim that the sample tool-sharing idea is that original capture.
 - Do not say that the transcript was included; it remained off during this run.
 - Do not imply that the app autonomously implemented the feature. Nugget
   captured and activated the idea; Steven and Codex made and verified the code.
-

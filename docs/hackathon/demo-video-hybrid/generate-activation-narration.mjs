@@ -57,4 +57,3 @@ await writeFile(
 );
 
 console.log(`Saved narration manifest: ${path.join(outputDirectory, 'manifest.json')}`);
-
