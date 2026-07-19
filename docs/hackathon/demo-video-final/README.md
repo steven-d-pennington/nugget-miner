@@ -11,15 +11,22 @@ idea that led to the feature.
 
 - Runtime: `171.2` seconds
 - Video: H.264, 1920x1080, 30 fps, `yuv420p`
+- Narrated review master: `nugget-demo-activation-narrated.mp4`
+- Narration: OpenAI `tts-1-hd`, `onyx`, English 48 kHz mono AAC
+- Audio verification: `-17.6 LUFS` integrated, `-1.5 dBFS` true peak
+- Captions: 14 embedded English `mov_text` cues plus the source SRT
+- Full narrated-file decode: passed with no reported frame errors
 - Contact sheet: `nugget-demo-activation-contact-sheet.png`
 - Narration plan: `NUGGET_DEMO_ACTIVATION_BEAT_MAP.md`
 - Caption source: `nugget-demo-activation-voiceover.srt`
 - Reproducible renderer: `../demo-video-hybrid/build-activation-demo.ps1`
 
-This revision is not the published YouTube master until narration is rendered,
-the owner approves the complete file, and the public upload is deliberately
-replaced. The previously approved/public candidate below remains the submission
-source of truth until then.
+The generated narration uses the planned timing without truncation. Cue 11 is
+gently adjusted by `1.082x` to fit its four-second processing beat; every other
+cue plays at its generated speed. The complete file still requires owner
+approval before the public YouTube upload is deliberately replaced. The
+previously approved/public candidate below remains the submission source of
+truth until then.
 
 ## Approved hybrid candidate
 

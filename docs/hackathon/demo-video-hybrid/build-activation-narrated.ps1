@@ -36,7 +36,7 @@ for ($index = 0; $index -lt $manifest.cues.Count; $index += 1) {
     if ($LASTEXITCODE -ne 0) { throw "Could not probe narration cue: $file" }
     $duration = [double]::Parse($durationText.Trim(), [Globalization.CultureInfo]::InvariantCulture)
     $slot = [double]$cue.endSeconds - [double]$cue.startSeconds - 0.12
-    $speed = [Math]::Max(1, $duration / $slot)
+    $speed = [Math]::Max(1.0, $duration / $slot)
     if ($speed -gt 1.25) {
         throw "Cue $($cue.id) is too long for its beat ($([Math]::Round($speed, 3))x required). Shorten or regenerate it."
     }
