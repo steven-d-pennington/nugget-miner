@@ -21,12 +21,14 @@ describe('cloud transcription provider', () => {
     const result = await provider.transcribe({
       captureSessionId: 'capture-1',
       recordingId: 'recording-1',
+      safetyIdentifier: '20000000-0000-4000-8000-000000000001',
       audioBlob: new Blob(['audio'], { type: 'audio/webm' }),
     });
 
     expect(fetcher).toHaveBeenCalledWith('/api/transcribe', expect.objectContaining({ method: 'POST', body: expect.any(FormData) }));
     const body = (fetcher.mock.calls[0]?.[1] as RequestInit | undefined)?.body as FormData;
     expect(body.get('captureSessionId')).toBe('capture-1');
+    expect(body.get('safetyIdentifier')).toBe('20000000-0000-4000-8000-000000000001');
     expect(body.has('ideaId')).toBe(false);
     expect(result).toMatchObject({ text: 'Cloud transcript', provider: 'cloud', model: 'whisper-test' });
   });

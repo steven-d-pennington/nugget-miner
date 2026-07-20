@@ -3,6 +3,7 @@ import type { ProviderMode, TranscriptResult } from '@/types';
 export interface TranscriptionInput {
   captureSessionId: string;
   recordingId: string;
+  safetyIdentifier?: string;
   audioBlob: Blob;
   signal?: AbortSignal;
 }

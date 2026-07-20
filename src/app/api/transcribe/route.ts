@@ -73,7 +73,12 @@ export async function POST(request: Request) {
     return errorResponse(413, 'payload_too_large', 'The audio recording is too large to transcribe.');
   }
 
-  const limit = consumeRateLimit(rateLimitKey('transcription', requestIdentity(request)), TRANSCRIPTION_RATE_LIMIT, RATE_LIMIT_WINDOW_MS);
+  const clientId = form.get('safetyIdentifier');
+  const limit = consumeRateLimit(
+    rateLimitKey('transcription', requestIdentity(request, typeof clientId === 'string' ? clientId : undefined)),
+    TRANSCRIPTION_RATE_LIMIT,
+    RATE_LIMIT_WINDOW_MS,
+  );
   if (!limit.allowed) return rateLimitedResponse(limit);
 
   try {

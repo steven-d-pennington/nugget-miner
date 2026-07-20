@@ -1,9 +1,11 @@
 // @vitest-environment node
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { resetRateLimitsForTest } from '@/lib/server/rateLimit';
 import { GET, POST } from './route';
 
 afterEach(() => {
+  resetRateLimitsForTest();
   vi.unstubAllEnvs();
   vi.restoreAllMocks();
 });
@@ -13,6 +15,7 @@ function formRequest(file: File) {
   form.set('file', file);
   form.set('captureSessionId', 'capture-1');
   form.set('recordingId', 'recording-1');
+  form.set('safetyIdentifier', '20000000-0000-4000-8000-000000000001');
   return new Request('http://localhost/api/transcribe', { method: 'POST', body: form });
 }
 
@@ -119,6 +122,31 @@ describe('/api/transcribe', () => {
     });
   });
 
+  it('isolates valid device identifiers behind the same forwarded IP', async () => {
+    vi.stubEnv('NUGGET_TRANSCRIPTION_API_KEY', 'secret-key');
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ text: 'Transcript' }), { status: 200, headers: { 'content-type': 'application/json' } }),
+      ),
+    );
+    const request = (safetyIdentifier: string) => {
+      const form = new FormData();
+      form.set('file', new File(['audio'], 'clip.webm', { type: 'audio/webm' }));
+      form.set('safetyIdentifier', safetyIdentifier);
+      return new Request('http://localhost/api/transcribe', {
+        method: 'POST',
+        headers: { 'x-forwarded-for': '198.51.100.42' },
+        body: form,
+      });
+    };
+
+    for (let index = 0; index < 10; index += 1) {
+      await expect(POST(request('20000000-0000-4000-8000-000000000001'))).resolves.toMatchObject({ status: 200 });
+    }
+
+    await expect(POST(request('20000000-0000-4000-8000-000000000002'))).resolves.toMatchObject({ status: 200 });
+  });
+
   it('maps provider success to TranscriptResult JSON', async () => {
     vi.stubEnv('NUGGET_TRANSCRIPTION_API_KEY', 'secret-key');
     vi.stubEnv('NUGGET_TRANSCRIPTION_MODEL', 'whisper-test');
@@ -134,5 +162,6 @@ describe('/api/transcribe', () => {
     const providerBody = (vi.mocked(globalThis.fetch).mock.calls[0]?.[1] as RequestInit | undefined)?.body as FormData;
     expect(providerBody.has('captureSessionId')).toBe(false);
     expect(providerBody.has('recordingId')).toBe(false);
+    expect(providerBody.has('safetyIdentifier')).toBe(false);
   });
 });
