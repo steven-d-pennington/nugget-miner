@@ -66,6 +66,7 @@ export function createCloudTranscriptionProvider(options: CloudTranscriptionProv
       form.set('file', file);
       form.set('captureSessionId', input.captureSessionId);
       form.set('recordingId', input.recordingId);
+      if (input.safetyIdentifier) form.set('safetyIdentifier', input.safetyIdentifier);
 
       const response = await fetcher(endpoint, {
         method: 'POST',

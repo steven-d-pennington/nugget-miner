@@ -426,6 +426,7 @@ export function createCapturePipeline(
           const result = await transcriptionProvider.transcribe({
             captureSessionId: capture.id,
             recordingId: recording.id,
+            safetyIdentifier: settings.clientId,
             audioBlob: recording.blob,
             signal,
           });

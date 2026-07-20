@@ -60,6 +60,25 @@ anonymous access. It can support authenticated smoke checks, but it is not a
 public judging URL. Do not change Deployment Protection or create a production
 deployment without explicit authorization.
 
+## Production AI endpoint rate limiting
+
+The production Vercel Firewall protects only paid AI `POST` routes:
+
+- `/api/transcribe`
+- `/api/extract/segment`
+- `/api/extract/organize`
+- `/api/activate`
+
+The active rule, `Protect Nugget AI endpoints`, uses a 60-request fixed window
+over 600 seconds, keyed by both IP address and JA4 fingerprint, and denies
+excess requests with HTTP 429. Normal page loads, `/api/health`, and read-only
+provider configuration requests do not count toward the limit.
+
+The application-level limiter remains a secondary guard against accidental
+client loops. It is not the production abuse boundary because its counters are
+process-local. Transcription identifies a valid installed client separately so
+multiple judges sharing one network do not consume the same secondary bucket.
+
 ## Pull environment values locally
 
 ```powershell
