@@ -3,7 +3,8 @@ import { defineConfig, devices } from '@playwright/test';
 
 const tone = path.resolve('e2e/fixtures/tone.wav');
 const port = Number(process.env.E2E_PORT ?? '3000');
-const baseURL = `http://127.0.0.1:${port}`;
+const deployedBaseURL = process.env.E2E_BASE_URL?.trim();
+const baseURL = deployedBaseURL || `http://127.0.0.1:${port}`;
 
 export default defineConfig({
   testDir: './e2e',
@@ -27,7 +28,7 @@ export default defineConfig({
       ],
     },
   },
-  webServer: {
+  webServer: deployedBaseURL ? undefined : {
     command: `npm run build && npx next start --hostname 127.0.0.1 --port ${port}`,
     url: baseURL,
     reuseExistingServer: false,
