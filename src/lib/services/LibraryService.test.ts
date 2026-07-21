@@ -157,13 +157,13 @@ describe('LibraryService.search', () => {
     expect(rows.map((row) => row.idea.id)).toEqual(['title-match']);
   });
 
-  it('excludes archived ideas by default and sorts included rows by most recent update', async () => {
+  it('shows active ideas by default and supports an archived-only view', async () => {
     await expect(LibraryService.search()).resolves.toSatisfy((rows: Awaited<ReturnType<typeof LibraryService.search>>) =>
       rows.every((row) => row.idea.status === 'confirmed'),
     );
 
-    const rows = await LibraryService.search({ includeArchived: true });
-    expect(rows.map((row) => row.idea.id)).toEqual(['archived', 'title-match', 'summary-match', 'tag-match']);
+    const rows = await LibraryService.search({ status: 'archived' });
+    expect(rows.map((row) => row.idea.id)).toEqual(['archived']);
   });
 
   it('enriches rows with category, tags, blocker, research, and open-action indicators', async () => {

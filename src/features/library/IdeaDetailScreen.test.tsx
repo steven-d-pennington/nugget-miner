@@ -6,6 +6,8 @@ import { IdeaDetailScreen } from './IdeaDetailScreen';
 const getIdea = vi.fn();
 const updateIdea = vi.fn();
 const setArchived = vi.fn();
+const deleteSaved = vi.fn();
+const replace = vi.fn();
 const listCategories = vi.fn();
 const listTags = vi.fn();
 const findOrCreateTags = vi.fn();
@@ -20,6 +22,7 @@ vi.mock('@/lib/repositories', () => ({
     getById: (...args: unknown[]) => getIdea(...args),
     update: (...args: unknown[]) => updateIdea(...args),
     setArchived: (...args: unknown[]) => setArchived(...args),
+    deleteSaved: (...args: unknown[]) => deleteSaved(...args),
   },
   categoryRepository: { list: (...args: unknown[]) => listCategories(...args) },
   tagRepository: {
@@ -30,6 +33,10 @@ vi.mock('@/lib/repositories', () => ({
   captureRepository: { getById: (...args: unknown[]) => getCapture(...args) },
   recordingRepository: { getByCaptureId: (...args: unknown[]) => getRecording(...args) },
   transcriptRepository: { getCurrent: (...args: unknown[]) => getTranscript(...args) },
+}));
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ replace }),
 }));
 
 vi.mock('@/lib/export/download', () => ({
@@ -92,6 +99,7 @@ beforeEach(() => {
   findOrCreateTags.mockResolvedValue(tags);
   updateIdea.mockImplementation(async (_id, input) => ({ ...idea, ...input, updatedAt: idea.updatedAt + 1 }));
   setArchived.mockResolvedValue(undefined);
+  deleteSaved.mockResolvedValue(undefined);
   Object.defineProperty(navigator, 'clipboard', {
     configurable: true,
     value: { writeText: vi.fn(async () => undefined) },
@@ -185,18 +193,34 @@ describe('IdeaDetailScreen', () => {
     expect(await screen.findByText('Changes saved on this device.')).toBeInTheDocument();
   });
 
-  it('requires confirmation before archiving an idea with open actions', async () => {
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true);
+  it('archives immediately even with open actions and offers undo', async () => {
+    const confirm = vi.spyOn(window, 'confirm');
     render(<IdeaDetailScreen ideaId="idea-1" />);
 
     const archive = await screen.findByRole('button', { name: 'Archive idea' });
     fireEvent.click(archive);
-    expect(confirm).toHaveBeenCalledWith('Archive this idea with 1 open action?');
-    expect(setArchived).not.toHaveBeenCalled();
-
-    fireEvent.click(archive);
     await waitFor(() => expect(setArchived).toHaveBeenCalledWith('idea-1', true));
+    expect(confirm).not.toHaveBeenCalled();
     expect(await screen.findByRole('button', { name: 'Restore idea' })).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Idea archived');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+    await waitFor(() => expect(setArchived).toHaveBeenLastCalledWith('idea-1', false));
+    expect(await screen.findByRole('button', { name: 'Archive idea' })).toBeInTheDocument();
+  });
+
+  it('requires confirmation before permanently deleting an idea and returns to the library', async () => {
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true);
+    render(<IdeaDetailScreen ideaId="idea-1" />);
+
+    const remove = await screen.findByRole('button', { name: 'Delete idea' });
+    fireEvent.click(remove);
+    expect(deleteSaved).not.toHaveBeenCalled();
+    expect(confirm).toHaveBeenCalledWith(expect.stringContaining('linked actions and AI-ready briefs'));
+
+    fireEvent.click(remove);
+    await waitFor(() => expect(deleteSaved).toHaveBeenCalledWith('idea-1'));
+    expect(replace).toHaveBeenCalledWith('/ideas');
   });
 
   it('archives immediately when there are no open actions', async () => {

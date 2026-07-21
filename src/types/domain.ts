@@ -33,6 +33,7 @@ export interface CaptureSession {
   id: string;
   source: CaptureSource;
   recordingId?: string;
+  recordingDeletedAt?: number;
   transcriptId?: string;
   activeExtractionRunId?: string;
   processingState: ProcessingState;

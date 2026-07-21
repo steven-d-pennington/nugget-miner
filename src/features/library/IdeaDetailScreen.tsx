@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AudioPlayer } from '@/components/AudioPlayer';
 import { IdeaActivationCard } from '@/features/activation/IdeaActivationCard';
@@ -121,6 +122,7 @@ function ActionList({ actions }: { actions: ActionItem[] }) {
 }
 
 export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
+  const router = useRouter();
   const [bundle, setBundle] = useState<LoadedIdea | null>(null);
   const [form, setForm] = useState<IdeaDraftFormValue | null>(null);
   const [loading, setLoading] = useState(true);
@@ -129,6 +131,7 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [archiveUndoAvailable, setArchiveUndoAvailable] = useState(false);
   const [editing, setEditing] = useState(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
   const latestFormSignatureRef = useRef('');
@@ -204,11 +207,6 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
     void load();
   }, [load]);
 
-  const openActions = useMemo(
-    () => bundle?.actions.filter((action) => action.status === 'open') ?? [],
-    [bundle?.actions],
-  );
-
   function change(patch: Partial<IdeaDraftFormValue>) {
     if (!form || busy) return;
     const nextForm = { ...form, ...patch };
@@ -218,6 +216,7 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
     setErrors({});
     setMutationError(null);
     setNotice(null);
+    setArchiveUndoAvailable(false);
   }
 
   function beginEditing() {
@@ -348,11 +347,6 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
   async function toggleArchive() {
     if (!bundle || busy) return;
     const archiving = bundle.idea.status !== 'archived';
-    if (
-      archiving &&
-      openActions.length > 0 &&
-      !window.confirm(`Archive this idea with ${openActions.length} open action${openActions.length === 1 ? '' : 's'}?`)
-    ) return;
 
     setBusy(true);
     setMutationError(null);
@@ -361,10 +355,47 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
       await ideaRepository.setArchived(bundle.idea.id, archiving);
       const idea = { ...bundle.idea, status: archiving ? 'archived' as const : 'confirmed' as const, updatedAt: Date.now() };
       setBundle({ ...bundle, idea });
-      setNotice(archiving ? 'Idea archived.' : 'Idea restored.');
+      setNotice(archiving ? 'Idea archived. You can find it in Archived ideas.' : 'Idea restored to Active ideas.');
+      setArchiveUndoAvailable(archiving);
     } catch (error) {
       setMutationError(error instanceof Error ? error.message : 'The idea status could not be changed.');
     } finally {
+      setBusy(false);
+    }
+  }
+
+  async function undoArchive() {
+    if (!bundle || bundle.idea.status !== 'archived' || busy) return;
+    setBusy(true);
+    setMutationError(null);
+    try {
+      await ideaRepository.setArchived(bundle.idea.id, false);
+      setBundle({ ...bundle, idea: { ...bundle.idea, status: 'confirmed', updatedAt: Date.now() } });
+      setNotice('Archive undone.');
+      setArchiveUndoAvailable(false);
+    } catch (error) {
+      setMutationError(error instanceof Error ? error.message : 'The archive could not be undone.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function deleteIdea() {
+    if (!bundle || busy) return;
+    const confirmed = window.confirm(
+      'Delete this idea permanently? Its linked actions and AI-ready briefs will also be deleted. The source recording and transcript will remain. This cannot be undone.',
+    );
+    if (!confirmed) return;
+
+    setBusy(true);
+    setMutationError(null);
+    setNotice(null);
+    try {
+      const returnHref = bundle.idea.status === 'archived' ? '/ideas?archived=1' : '/ideas';
+      await ideaRepository.deleteSaved(bundle.idea.id);
+      router.replace(returnHref);
+    } catch (error) {
+      setMutationError(error instanceof Error ? error.message : 'The idea could not be deleted.');
       setBusy(false);
     }
   }
@@ -583,7 +614,14 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
       </details>
 
       {mutationError ? <p className="mt-5 border-l-4 border-red-700 bg-red-50 p-4 text-red-800" role="alert">{mutationError}</p> : null}
-      {notice ? <p aria-live="polite" className="mt-5 border-l-4 border-[#247A55] bg-green-50 p-4 text-[#14553A]">{notice}</p> : null}
+      {notice ? (
+        <div aria-live="polite" className="mt-5 flex flex-wrap items-center justify-between gap-3 border-l-4 border-[#247A55] bg-green-50 p-4 text-[#14553A]" role="status">
+          <p>{notice}</p>
+          {archiveUndoAvailable ? (
+            <button className="min-h-12 font-bold underline underline-offset-4" disabled={busy} onClick={() => void undoArchive()} type="button">Undo</button>
+          ) : null}
+        </div>
+      ) : null}
 
       <section className="mt-7 flex flex-wrap gap-3 border-t border-[#E8DDCE] pt-7" aria-label="Idea actions">
         {editing ? (
@@ -595,7 +633,8 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
         <button className="button-quiet min-h-12" disabled={busy} onClick={() => void copySummary()} type="button">Copy summary</button>
         <button className="button-quiet min-h-12" disabled={busy} onClick={() => exportIdea('markdown')} type="button">Export Markdown</button>
         <button className="button-quiet min-h-12" disabled={busy} onClick={() => exportIdea('json')} type="button">Export JSON</button>
-        <button className="review-text-button review-text-button--danger min-h-12" disabled={busy} onClick={() => void toggleArchive()} type="button">{idea.status === 'archived' ? 'Restore idea' : 'Archive idea'}</button>
+        <button className="button-quiet min-h-12" disabled={busy} onClick={() => void toggleArchive()} type="button">{idea.status === 'archived' ? 'Restore idea' : 'Archive idea'}</button>
+        <button className="review-text-button review-text-button--danger min-h-12" disabled={busy} onClick={() => void deleteIdea()} type="button">Delete idea</button>
       </section>
     </article>
   );

@@ -2,6 +2,9 @@ import path from 'node:path';
 import { defineConfig, devices } from '@playwright/test';
 
 const tone = path.resolve('e2e/fixtures/tone.wav');
+const port = Number(process.env.E2E_PORT ?? '3000');
+const deployedBaseURL = process.env.E2E_BASE_URL?.trim();
+const baseURL = deployedBaseURL || `http://127.0.0.1:${port}`;
 
 export default defineConfig({
   testDir: './e2e',
@@ -11,7 +14,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: 'http://127.0.0.1:3000',
+    baseURL,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -25,10 +28,10 @@ export default defineConfig({
       ],
     },
   },
-  webServer: {
-    command: 'npm run build && npx next start --hostname 127.0.0.1',
-    url: 'http://127.0.0.1:3000',
-    reuseExistingServer: !process.env.CI,
+  webServer: deployedBaseURL ? undefined : {
+    command: `npm run build && npx next start --hostname 127.0.0.1 --port ${port}`,
+    url: baseURL,
+    reuseExistingServer: false,
     timeout: 120_000,
   },
 });

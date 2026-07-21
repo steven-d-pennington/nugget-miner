@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   replace: vi.fn(),
   getCapture: vi.fn(),
   getRecording: vi.fn(),
+  deleteProcessedAudio: vi.fn(),
   getTranscript: vi.fn(),
   transition: vi.fn(),
   updateText: vi.fn(),
@@ -31,7 +32,10 @@ vi.mock('@/lib/repositories', () => ({
     getById: (...args: unknown[]) => mocks.getCapture(...args),
     transition: (...args: unknown[]) => mocks.transition(...args),
   },
-  recordingRepository: { getByCaptureId: (...args: unknown[]) => mocks.getRecording(...args) },
+  recordingRepository: {
+    getByCaptureId: (...args: unknown[]) => mocks.getRecording(...args),
+    deleteProcessedAudio: (...args: unknown[]) => mocks.deleteProcessedAudio(...args),
+  },
   transcriptRepository: {
     getCurrent: (...args: unknown[]) => mocks.getTranscript(...args),
     updateText: (...args: unknown[]) => mocks.updateText(...args),
@@ -101,6 +105,7 @@ beforeEach(() => {
   Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' });
   mocks.getCapture.mockResolvedValue(capture());
   mocks.getRecording.mockResolvedValue(undefined);
+  mocks.deleteProcessedAudio.mockResolvedValue(undefined);
   mocks.getTranscript.mockResolvedValue(transcript());
   mocks.transition.mockResolvedValue(undefined);
   mocks.updateText.mockResolvedValue(transcript({ id: 'transcript-2', version: 2, text: 'Edited transcript', source: 'edited' }));
@@ -162,6 +167,28 @@ describe('CaptureDetailScreen', () => {
     expect(progress).toHaveTextContent('Transcribing current step');
     expect(progress).toHaveTextContent('Organizing');
     expect(progress).toHaveTextContent('Ready for review');
+  });
+
+  it('requires confirmation before deleting processed audio and preserves the transcript', async () => {
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true);
+    mocks.getCapture.mockResolvedValue(capture({
+      source: 'audio',
+      recordingId: 'recording-1',
+      processingState: 'confirmed',
+    }));
+    mocks.getRecording.mockResolvedValue(recording());
+    render(<CaptureDetailScreen captureId="capture-1" stayOnCapture />);
+
+    const remove = await screen.findByRole('button', { name: 'Delete recording audio' });
+    fireEvent.click(remove);
+    expect(mocks.deleteProcessedAudio).not.toHaveBeenCalled();
+    expect(confirm).toHaveBeenCalledWith(expect.stringContaining('transcript and extracted ideas will remain'));
+
+    fireEvent.click(remove);
+    await waitFor(() => expect(mocks.deleteProcessedAudio).toHaveBeenCalledWith('capture-1'));
+    expect(screen.queryByLabelText('Saved recording playback')).not.toBeInTheDocument();
+    expect(screen.getByText(/Recording audio deleted from this device/)).toBeInTheDocument();
+    expect(screen.getByLabelText('Transcript text')).toHaveValue('Original transcript');
   });
 
   it('marks the recoverable failed stage and says the source remains safe', async () => {

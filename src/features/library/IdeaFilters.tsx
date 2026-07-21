@@ -7,13 +7,13 @@ interface IdeaFiltersProps {
   query: string;
   categoryId?: string;
   tagIds: string[];
-  includeArchived: boolean;
+  scope: 'active' | 'archived';
   categories: Category[];
   tags: Tag[];
   onQueryChange: (query: string) => void;
   onCategoryChange: (categoryId?: string) => void;
   onTagToggle: (tagId: string) => void;
-  onIncludeArchivedChange: (includeArchived: boolean) => void;
+  onScopeChange: (scope: 'active' | 'archived') => void;
   onClear: () => void;
 }
 
@@ -21,20 +21,34 @@ export function IdeaFilters({
   query,
   categoryId,
   tagIds,
-  includeArchived,
+  scope,
   categories,
   tags,
   onQueryChange,
   onCategoryChange,
   onTagToggle,
-  onIncludeArchivedChange,
+  onScopeChange,
   onClear,
 }: IdeaFiltersProps) {
-  const hasFilters = Boolean(query || categoryId || tagIds.length || includeArchived);
-  const [moreFiltersOpen, setMoreFiltersOpen] = useState(tagIds.length > 0 || includeArchived);
+  const hasFilters = Boolean(query || categoryId || tagIds.length);
+  const [moreFiltersOpen, setMoreFiltersOpen] = useState(tagIds.length > 0);
 
   return (
     <section aria-label="Idea filters" className="space-y-4">
+      <div aria-label="Idea status" className="grid grid-cols-2 rounded-xl border border-[#D8CCBB] bg-[#F6F0E6] p-1" role="group">
+        {(['active', 'archived'] as const).map((option) => (
+          <button
+            aria-pressed={scope === option}
+            className={`min-h-12 rounded-lg px-4 text-sm font-extrabold transition-colors ${scope === option ? 'bg-white text-[#101D36] shadow-sm' : 'text-[#6E6B67] hover:text-[#101D36]'}`}
+            key={option}
+            onClick={() => onScopeChange(option)}
+            type="button"
+          >
+            {option === 'active' ? 'Active' : 'Archived'}
+          </button>
+        ))}
+      </div>
+
       <div>
         <label className="mb-2 block text-sm font-bold text-[#101D36]" htmlFor="idea-search">
           Search ideas
@@ -100,15 +114,6 @@ export function IdeaFilters({
                 #{tag.name}
               </button>
             )) : <p className="py-2 text-sm text-[#6E6B67]">Tags appear here after you confirm tagged ideas.</p>}
-            <label className="flex min-h-12 w-full cursor-pointer items-center gap-3 text-sm font-medium text-[#101D36]">
-              <input
-                checked={includeArchived}
-                className="h-5 w-5 accent-[#B97700]"
-                onChange={(event) => onIncludeArchivedChange(event.target.checked)}
-                type="checkbox"
-              />
-              Include archived ideas
-            </label>
           </div>
         </details>
 

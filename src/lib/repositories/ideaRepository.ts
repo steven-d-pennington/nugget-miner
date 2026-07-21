@@ -124,6 +124,14 @@ export const ideaRepository = {
       .then((ideas) => ideas.reverse());
   },
 
+  async listByStatus(status: 'confirmed' | 'archived'): Promise<Idea[]> {
+    return db.ideas
+      .where('status')
+      .equals(status)
+      .sortBy('updatedAt')
+      .then((ideas) => ideas.reverse());
+  },
+
   async confirm(id: string, input: ConfirmIdeaInput): Promise<Idea> {
     return db.transaction('rw', db.ideas, db.categories, db.captureSessions, async () => {
       const [idea, category] = await Promise.all([db.ideas.get(id), db.categories.get(input.categoryId)]);
@@ -233,5 +241,21 @@ export const ideaRepository = {
 
   async archive(id: string): Promise<void> {
     await this.setArchived(id, true);
+  },
+
+  async deleteSaved(id: string): Promise<void> {
+    await db.transaction('rw', db.ideas, db.actionItems, db.activationBriefs, async () => {
+      const idea = await db.ideas.get(id);
+      if (!idea) return;
+      if (!isLibraryStatus(idea.status)) {
+        throw new ValidationError('Only confirmed or archived ideas may be permanently deleted.');
+      }
+
+      await Promise.all([
+        db.actionItems.where('ideaId').equals(id).delete(),
+        db.activationBriefs.where('ideaId').equals(id).delete(),
+      ]);
+      await db.ideas.delete(id);
+    });
   },
 };

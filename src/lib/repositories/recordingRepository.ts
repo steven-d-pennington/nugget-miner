@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { StorageError } from '@/lib/errors';
+import { StorageError, ValidationError } from '@/lib/errors';
 import type { Recording, RecordingDraft } from '@/types';
 
 export const recordingRepository = {
@@ -24,5 +24,28 @@ export const recordingRepository = {
 
   async getByCaptureId(captureSessionId: string): Promise<Recording | undefined> {
     return db.recordings.where('captureSessionId').equals(captureSessionId).first();
+  },
+
+  async deleteProcessedAudio(captureSessionId: string): Promise<void> {
+    await db.transaction('rw', db.captureSessions, db.recordings, db.transcripts, async () => {
+      const [capture, recording, transcript] = await Promise.all([
+        db.captureSessions.get(captureSessionId),
+        db.recordings.where('captureSessionId').equals(captureSessionId).first(),
+        db.transcripts.where('captureSessionId').equals(captureSessionId).first(),
+      ]);
+      if (!capture) throw new ValidationError('Capture not found.');
+      if (!recording) return;
+      if (!transcript) {
+        throw new ValidationError('Recording audio can be deleted after transcription is complete.');
+      }
+
+      const timestamp = Date.now();
+      await db.recordings.where('captureSessionId').equals(captureSessionId).delete();
+      await db.captureSessions.update(captureSessionId, {
+        recordingId: undefined,
+        recordingDeletedAt: timestamp,
+        updatedAt: timestamp,
+      });
+    });
   },
 };

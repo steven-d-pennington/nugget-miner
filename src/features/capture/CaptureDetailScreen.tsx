@@ -57,6 +57,9 @@ export function CaptureDetailScreen({ captureId, stayOnCapture = false }: Captur
   const [editBusy, setEditBusy] = useState(false);
   const [editNotice, setEditNotice] = useState<string | null>(null);
   const [editRecovery, setEditRecovery] = useState<EditRecovery | null>(null);
+  const [sourceBusy, setSourceBusy] = useState(false);
+  const [sourceNotice, setSourceNotice] = useState<string | null>(null);
+  const [sourceError, setSourceError] = useState<string | null>(null);
   const [lifecycleObserved, setLifecycleObserved] = useState(false);
   const refreshPromise = useRef<Promise<void> | null>(null);
   const automaticProbeCount = useRef(0);
@@ -211,6 +214,34 @@ export function CaptureDetailScreen({ captureId, stayOnCapture = false }: Captur
     }
   }
 
+  async function deleteRecordingAudio() {
+    if (!recording || !transcript || processing || sourceBusy) return;
+    const confirmed = window.confirm(
+      'Delete this recording audio from this device? The transcript and extracted ideas will remain. This cannot be undone.',
+    );
+    if (!confirmed) return;
+
+    setSourceBusy(true);
+    setSourceNotice(null);
+    setSourceError(null);
+    try {
+      await recordingRepository.deleteProcessedAudio(captureId);
+      const timestamp = Date.now();
+      setRecording(undefined);
+      setCapture((current) => current ? {
+        ...current,
+        recordingId: undefined,
+        recordingDeletedAt: timestamp,
+        updatedAt: timestamp,
+      } : current);
+      setSourceNotice('Recording audio deleted. The transcript and extracted ideas remain on this device.');
+    } catch (error) {
+      setSourceError(error instanceof Error ? error.message : 'The recording audio could not be deleted.');
+    } finally {
+      setSourceBusy(false);
+    }
+  }
+
   if (loading) {
     return <AppShell backHref="/" title="Capture"><p aria-live="polite">Loading capture…</p></AppShell>;
   }
@@ -264,14 +295,30 @@ export function CaptureDetailScreen({ captureId, stayOnCapture = false }: Captur
               <p className="metadata capture-detail__metadata">
                 {formatDuration(recording.durationMs)} · {recording.mimeType} · {(recording.sizeBytes / 1_024).toFixed(1)} KB
               </p>
+              {transcript && !processing ? (
+                <button
+                  className="review-text-button review-text-button--danger min-h-12"
+                  disabled={sourceBusy}
+                  onClick={() => void deleteRecordingAudio()}
+                  type="button"
+                >
+                  {sourceBusy ? 'Deleting…' : 'Delete recording audio'}
+                </button>
+              ) : null}
             </>
           ) : capture.source === 'text' ? (
             <p className="capture-detail__typed-label">Typed capture · saved locally in this browser</p>
+          ) : capture.recordingDeletedAt ? (
+            <p className="capture-detail__typed-label">
+              Recording audio deleted from this device. The transcript and extracted ideas remain available.
+            </p>
           ) : (
             <p className="inline-error" role="alert">
               Audio playback is unavailable. The capture record is still saved in this browser.
             </p>
           )}
+          {sourceNotice ? <p aria-live="polite" className="success-note">{sourceNotice}</p> : null}
+          {sourceError ? <p className="inline-error" role="alert">{sourceError}</p> : null}
         </section>
 
         <section aria-labelledby="progress-heading" className="capture-detail__section capture-detail__progress">
