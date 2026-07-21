@@ -4,6 +4,7 @@ import { DEFAULT_CATEGORY_IDS } from '@/lib/db/defaultCategories';
 import { StorageError, ValidationError } from '@/lib/errors';
 import {
   actionItemRepository,
+  activationBriefRepository,
   captureRepository,
   extractionRunRepository,
   ideaRepository,
@@ -65,6 +66,40 @@ describe('capture, recording, and transcript repositories', () => {
       sizeBytes: 11,
     });
     await expect(captureRepository.listRecent()).resolves.toContainEqual(expect.objectContaining({ id: capture.id }));
+  });
+
+  it('deletes processed recording audio while preserving the capture and transcript', async () => {
+    const capture = await captureRepository.create({
+      source: 'audio',
+      durationMs: draft.durationMs,
+      processingPreference: 'manual',
+    });
+    const recording = await recordingRepository.add(capture.id, draft);
+    const transcript = await transcriptRepository.createVersion(capture.id, {
+      text: 'A processed recording transcript.',
+      provider: 'test',
+    });
+    await captureRepository.transition(capture.id, 'confirmed', {
+      recordingId: recording.id,
+      transcriptId: transcript.id,
+    });
+
+    await recordingRepository.deleteProcessedAudio(capture.id);
+
+    await expect(recordingRepository.getByCaptureId(capture.id)).resolves.toBeUndefined();
+    await expect(transcriptRepository.getCurrent(capture.id)).resolves.toMatchObject({ id: transcript.id });
+    await expect(captureRepository.getById(capture.id)).resolves.toMatchObject({
+      processingState: 'confirmed',
+      recordingDeletedAt: expect.any(Number),
+    });
+  });
+
+  it('refuses to delete audio before a transcript exists', async () => {
+    const capture = await captureRepository.create({ source: 'audio', processingPreference: 'manual' });
+    await recordingRepository.add(capture.id, draft);
+
+    await expect(recordingRepository.deleteProcessedAudio(capture.id)).rejects.toBeInstanceOf(ValidationError);
+    await expect(recordingRepository.getByCaptureId(capture.id)).resolves.toBeDefined();
   });
 
   it('creates immutable transcript versions with deterministic content hashes', async () => {
@@ -238,6 +273,44 @@ describe('canonical idea repository', () => {
 
     expect(confirmed).toMatchObject({ status: 'confirmed', categoryId: DEFAULT_CATEGORY_IDS.personal });
     await expect(captureRepository.getById(capture.id)).resolves.toMatchObject({ processingState: 'confirmed' });
+  });
+
+  it('permanently deletes a saved idea with its actions and AI briefs but preserves its source capture', async () => {
+    const capture = await captureRepository.create({ source: 'text', processingPreference: 'manual' });
+    const savedIdea = { ...draftIdea(capture.id, 'saved-idea'), status: 'confirmed' as const };
+    await db.ideas.add(savedIdea);
+    const action = await actionItemRepository.acceptSuggestion({
+      ideaId: savedIdea.id,
+      sourceSuggestionId: 'suggestion-1',
+      text: 'Draft a survey.',
+    });
+    await activationBriefRepository.save({
+      ideaId: savedIdea.id,
+      intent: 'agent',
+      includeTranscript: false,
+      needsClarification: false,
+      clarifyingQuestions: [],
+      brief: {
+        title: 'Agent brief',
+        objective: 'Act on the saved idea.',
+        context: 'Grounded context.',
+        assumptions: [],
+        constraints: [],
+        deliverables: ['A result.'],
+        successCriteria: ['It works.'],
+        prompt: 'Act on this idea.',
+      },
+      provider: 'local',
+      promptVersion: 'activate-local-v1',
+      schemaVersion: 'activation-v1',
+    });
+
+    await ideaRepository.deleteSaved(savedIdea.id);
+
+    await expect(ideaRepository.getById(savedIdea.id)).resolves.toBeUndefined();
+    await expect(actionItemRepository.getById(action.id)).resolves.toBeUndefined();
+    await expect(activationBriefRepository.listByIdea(savedIdea.id)).resolves.toEqual([]);
+    await expect(captureRepository.getById(capture.id)).resolves.toMatchObject({ id: capture.id });
   });
 });
 

@@ -1,10 +1,13 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { db, resetClientDatabaseForTests } from '@/lib/db';
 import { DEFAULT_CATEGORY_IDS } from '@/lib/db/defaultCategories';
 import type { Idea } from '@/types';
 import { IdeaDetailScreen } from './IdeaDetailScreen';
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ replace: vi.fn() }),
+}));
 
 function productionIdea(id: string): Idea {
   return {

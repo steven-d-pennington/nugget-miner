@@ -19,7 +19,7 @@ export interface SearchIdeasInput {
   query?: string;
   categoryId?: string;
   tagIds?: string[];
-  includeArchived?: boolean;
+  status?: 'confirmed' | 'archived';
 }
 
 function normalizeSearch(value: string) {
@@ -36,7 +36,7 @@ function matchesQuery(row: IdeaLibraryRow, query: string) {
 export const LibraryService = {
   async search(input: SearchIdeasInput = {}): Promise<IdeaLibraryRow[]> {
     const [ideas, categories, tags, openActions] = await Promise.all([
-      ideaRepository.listConfirmed(input.includeArchived),
+      ideaRepository.listByStatus(input.status ?? 'confirmed'),
       categoryRepository.list(),
       tagRepository.list(),
       actionItemRepository.listByStatus('open'),

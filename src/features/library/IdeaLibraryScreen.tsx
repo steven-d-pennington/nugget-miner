@@ -15,7 +15,7 @@ interface FilterState {
   query: string;
   categoryId?: string;
   tagIds: string[];
-  includeArchived: boolean;
+  scope: 'active' | 'archived';
 }
 
 function parseTagIds(value: string | null) {
@@ -27,7 +27,7 @@ function filtersFromParams(params: { get(name: string): string | null }): Filter
     query: params.get('q') ?? '',
     categoryId: params.get('category') ?? undefined,
     tagIds: parseTagIds(params.get('tags')),
-    includeArchived: params.get('archived') === '1',
+    scope: params.get('archived') === '1' ? 'archived' : 'active',
   };
 }
 
@@ -36,14 +36,14 @@ function canonicalFilterQuery(filters: FilterState) {
   if (filters.query) params.set('q', filters.query);
   if (filters.categoryId) params.set('category', filters.categoryId);
   if (filters.tagIds.length) params.set('tags', filters.tagIds.join(','));
-  if (filters.includeArchived) params.set('archived', '1');
+  if (filters.scope === 'archived') params.set('archived', '1');
   return params.toString();
 }
 
 function filtersEqual(left: FilterState, right: FilterState) {
   return left.query === right.query
     && left.categoryId === right.categoryId
-    && left.includeArchived === right.includeArchived
+    && left.scope === right.scope
     && left.tagIds.length === right.tagIds.length
     && left.tagIds.every((tagId, index) => tagId === right.tagIds[index]);
 }
@@ -54,7 +54,7 @@ export function IdeaLibraryScreen() {
   const [query, setQuery] = useState(() => searchParams.get('q') ?? '');
   const [categoryId, setCategoryId] = useState<string | undefined>(() => searchParams.get('category') ?? undefined);
   const [tagIds, setTagIds] = useState<string[]>(() => parseTagIds(searchParams.get('tags')));
-  const [includeArchived, setIncludeArchived] = useState(() => searchParams.get('archived') === '1');
+  const [scope, setScope] = useState<'active' | 'archived'>(() => searchParams.get('archived') === '1' ? 'archived' : 'active');
   const [debouncedQuery, setDebouncedQuery] = useState(query);
   const [rows, setRows] = useState<LibraryRow[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -66,7 +66,7 @@ export function IdeaLibraryScreen() {
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [view, setView] = useState<IdeaLibraryView>('cards');
   const searchParamsKey = searchParams.toString();
-  const currentFilters: FilterState = { query, categoryId, tagIds, includeArchived };
+  const currentFilters: FilterState = { query, categoryId, tagIds, scope };
   const filtersRef = useRef(currentFilters);
   filtersRef.current = currentFilters;
   const canonicalCurrentParams = canonicalFilterQuery(filtersFromParams(searchParams));
@@ -87,14 +87,14 @@ export function IdeaLibraryScreen() {
     setDebouncedQuery(nextFilters.query);
     setCategoryId(nextFilters.categoryId);
     setTagIds(nextFilters.tagIds);
-    setIncludeArchived(nextFilters.includeArchived);
+    setScope(nextFilters.scope);
   }, [searchParamsKey]);
 
   const applyFilters = useCallback((nextFilters: FilterState) => {
     setQuery(nextFilters.query);
     setCategoryId(nextFilters.categoryId);
     setTagIds(nextFilters.tagIds);
-    setIncludeArchived(nextFilters.includeArchived);
+    setScope(nextFilters.scope);
     const nextParams = canonicalFilterQuery(nextFilters);
     if (nextParams !== canonicalCurrentParams) {
       router.replace(nextParams ? `/ideas?${nextParams}` : '/ideas', { scroll: false });
@@ -143,7 +143,7 @@ export function IdeaLibraryScreen() {
       query: debouncedQuery || undefined,
       categoryId,
       tagIds,
-      includeArchived,
+      status: scope === 'archived' ? 'archived' : 'confirmed',
     }).then((nextRows) => {
       if (!active) return;
       setRows(nextRows);
@@ -154,13 +154,13 @@ export function IdeaLibraryScreen() {
       setLoading(false);
     });
     return () => { active = false; };
-  }, [categoryId, debouncedQuery, includeArchived, refreshVersion, tagIds]);
+  }, [categoryId, debouncedQuery, refreshVersion, scope, tagIds]);
 
   const clearFilters = useCallback(() => {
-    applyFilters({ query: '', categoryId: undefined, tagIds: [], includeArchived: false });
-  }, [applyFilters]);
+    applyFilters({ query: '', categoryId: undefined, tagIds: [], scope });
+  }, [applyFilters, scope]);
 
-  const hasFilters = Boolean(query || categoryId || tagIds.length || includeArchived);
+  const hasFilters = Boolean(query || categoryId || tagIds.length);
   const resultLabel = `${rows.length} ${rows.length === 1 ? 'idea' : 'ideas'}`;
 
   return (
@@ -200,10 +200,10 @@ export function IdeaLibraryScreen() {
       <IdeaFilters
         categories={categories}
         categoryId={categoryId}
-        includeArchived={includeArchived}
+        scope={scope}
         onCategoryChange={(nextCategoryId) => updateFilters({ categoryId: nextCategoryId })}
         onClear={clearFilters}
-        onIncludeArchivedChange={(nextIncludeArchived) => updateFilters({ includeArchived: nextIncludeArchived })}
+        onScopeChange={(nextScope) => updateFilters({ scope: nextScope })}
         onQueryChange={(nextQuery) => updateFilters({ query: nextQuery })}
         onTagToggle={(tagId) => updateFilters({ tagIds: tagIds.includes(tagId) ? tagIds.filter((id) => id !== tagId) : [...tagIds, tagId] })}
         query={query}
@@ -213,7 +213,7 @@ export function IdeaLibraryScreen() {
 
       <section aria-labelledby="library-results-heading" aria-busy={loading}>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-          <h2 className="text-lg font-extrabold text-[#101D36]" id="library-results-heading">Library</h2>
+          <h2 className="text-lg font-extrabold text-[#101D36]" id="library-results-heading">{scope === 'archived' ? 'Archived ideas' : 'Library'}</h2>
           <LibraryViewToggle disabled={loading} onChange={changeView} value={view} />
           <p aria-live="polite" className="metadata text-xs font-semibold uppercase tracking-wider text-[#6E6B67]">{loading ? 'Loading ideas…' : resultLabel}</p>
         </div>
@@ -230,6 +230,13 @@ export function IdeaLibraryScreen() {
               <h3 className="text-xl font-extrabold text-[#101D36]">No ideas match these filters</h3>
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#5F5B56]">Try a broader search, another category, or clear the filters to see the full library.</p>
               <button className="mt-5 min-h-12 rounded-xl bg-[#101D36] px-5 font-bold text-white" onClick={clearFilters} type="button">Clear filters</button>
+            </div>
+          ) : scope === 'archived' ? (
+            <div className="rounded-2xl border border-[#E8DDCE] bg-white px-6 py-10 text-center">
+              <span aria-hidden="true" className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#F6F0E6] text-2xl text-[#8A5700]">◇</span>
+              <h3 className="mt-4 text-xl font-extrabold text-[#101D36]">No archived ideas</h3>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#5F5B56]">Ideas you archive will stay available here until you restore or permanently delete them.</p>
+              <button className="mt-5 min-h-12 rounded-xl bg-[#101D36] px-5 font-bold text-white" onClick={() => updateFilters({ scope: 'active' })} type="button">View active ideas</button>
             </div>
           ) : (
             <div className="rounded-2xl border border-[#E8DDCE] bg-white px-6 py-10 text-center">

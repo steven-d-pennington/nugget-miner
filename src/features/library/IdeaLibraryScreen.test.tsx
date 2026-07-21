@@ -102,9 +102,11 @@ function capture(id: string, createdAt: number): CaptureSession {
   };
 }
 
-function filteredRows(input: { query?: string; categoryId?: string; tagIds?: string[] }) {
+function filteredRows(input: { query?: string; categoryId?: string; tagIds?: string[]; status?: 'confirmed' | 'archived' }) {
   const query = input.query?.toLocaleLowerCase().trim();
   return rows.filter((row) =>
+    row.idea.status === (input.status ?? 'confirmed')
+    &&
     (!query || `${row.idea.title} ${row.idea.summary.text} ${row.tags.map((tag) => tag.name).join(' ')}`.toLocaleLowerCase().includes(query))
     && (!input.categoryId || row.idea.categoryId === input.categoryId)
     && (input.tagIds ?? []).every((tagId) => row.idea.tagIds.includes(tagId)),
@@ -149,7 +151,7 @@ describe('IdeaLibraryScreen', () => {
       query: undefined,
       categoryId: undefined,
       tagIds: [],
-      includeArchived: false,
+      status: 'confirmed',
     });
     expect(screen.getByText('Blocked')).toBeInTheDocument();
     expect(screen.getByText('Research')).toBeInTheDocument();
@@ -197,12 +199,12 @@ describe('IdeaLibraryScreen', () => {
     expect(screen.getByRole('searchbox', { name: 'Search ideas' })).toHaveValue('meeting');
     expect(screen.getByRole('button', { name: 'Work' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: '#Planning' })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('checkbox', { name: 'Include archived ideas' })).toBeChecked();
+    expect(screen.getByRole('button', { name: 'Archived' })).toHaveAttribute('aria-pressed', 'true');
     await waitFor(() => expect(mocks.search).toHaveBeenLastCalledWith({
       query: 'meeting',
       categoryId: 'work',
       tagIds: ['planning'],
-      includeArchived: true,
+      status: 'archived',
     }));
     expect(mocks.replace).not.toHaveBeenCalled();
   });
@@ -310,7 +312,7 @@ describe('IdeaLibraryScreen', () => {
       query: 'meeting',
       categoryId: 'work',
       tagIds: ['planning'],
-      includeArchived: false,
+      status: 'confirmed',
     });
   });
 
